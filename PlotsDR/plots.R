@@ -933,7 +933,78 @@ png_file <- paste0(output_path, "/Coup_Zimbabwe.png")
 # Save the plot as a PNG
 ggsave(filename = png_file, plot = p, device = "png", width = 10, height = 8, dpi = 300)
 
+#############################################
+## Code to create a single figure with all ##
+## the coup plots                          ##
+#############################################
 
+library(patchwork)
+
+# Define a function to create plots for each country
+create_coup_plot <- function(country_name, min_date, max_date, vertical_lines) {
+  # Filter data for the country
+  country_data <- df_merged %>% filter(country == country_name)
+  
+  # Create the plot
+  p <- ggplot(country_data, aes(x = date, y = n_coup * 100)) +
+    geom_line() +  # Line plot
+    geom_point(data = country_data %>% filter(coup.y == 1),
+               aes(x = date, y = n_coup * 100),
+               color = "red", size = 2) + # Red dots where coup is 1
+    geom_vline(data = vertical_lines, 
+               aes(xintercept = dates, color = labels), 
+               linetype = "dashed", size = 0.8) + # Vertical lines with legend
+    labs(title = paste("Share of Articles about Coups in", country_name),
+         x = "Date",
+         y = "% of Articles",
+         color = "") + # Legend title
+    theme_minimal() +
+    # Set x-axis to show ticks every 2 months and limit
+    scale_x_date(
+      limits = c(min_date, max_date),
+      date_breaks = "2 months",
+      date_labels = "%b %Y"
+    ) +
+    # Customize text appearance for x-axis labels
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+          legend.position = "bottom") + # Place the legend at the bottom
+    # Ensure Y-axis shows percentage values
+    scale_y_continuous(labels = scales::label_percent(scale = 1)) +
+    # Manually set colors for the vertical lines
+    scale_color_manual(values = c("Attempt" = "blue", "Coup" = "red", "Self-Coup" = "orange"))
+  
+  return(p)
+}
+
+# Define plots for each country
+plots <- list(
+  create_coup_plot("Burkina Faso", as.Date("2021-07-01"), as.Date("2024-03-31"), 
+                   data.frame(dates = as.Date(c("2022-01-01", "2022-09-01", "2023-09-01")), labels = c("Coup", "Coup", "Attempt"))),
+  create_coup_plot("DR Congo", as.Date("2023-11-01"), as.Date("2024-11-30"), 
+                   data.frame(dates = as.Date(c("2024-05-01")), labels = c("Attempt"))),
+  create_coup_plot("Ethiopia", as.Date("2018-12-01"), as.Date("2019-12-31"), 
+                   data.frame(dates = as.Date(c("2019-06-01")), labels = c("Attempt"))),
+  create_coup_plot("Mali", as.Date("2020-02-01"), as.Date("2022-11-30"), 
+                   data.frame(dates = as.Date(c("2020-08-01", "2021-05-01", "2022-05-01")), labels = c("Coup", "Coup", "Attempt"))),
+  create_coup_plot("Niger", as.Date("2020-09-01"), as.Date("2024-01-31"), 
+                   data.frame(dates = as.Date(c("2021-03-01", "2023-07-01")), labels = c("Attempt", "Coup"))),
+  create_coup_plot("Peru", as.Date("2022-06-01"), as.Date("2023-06-30"), 
+                   data.frame(dates = as.Date(c("2022-12-01")), labels = c("Self-Coup"))),
+  create_coup_plot("Tunisia", as.Date("2021-01-01"), as.Date("2022-01-31"), 
+                   data.frame(dates = as.Date(c("2021-07-01")), labels = c("Self-Coup"))),
+  create_coup_plot("Turkey", as.Date("2016-01-01"), as.Date("2017-01-31"), 
+                   data.frame(dates = as.Date(c("2016-07-01")), labels = c("Attempt"))),
+  create_coup_plot("Zimbabwe", as.Date("2019-05-01"), as.Date("2020-05-31"), 
+                   data.frame(dates = as.Date(c("2019-11-01")), labels = c("Attempt")))
+)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots, ncol = 2) +
+  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_Coup_Plots.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
 
 
 
