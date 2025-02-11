@@ -15,7 +15,7 @@ library(dplyr)
 library(ggplot2)
 
 # Outupt path
-output_path <- '/Users/diegoromero/Dropbox/ML for Peace/Side Projects/Plots for MLP/PLOTS'
+output_path <- '/Users/diegoromero/Documents/GitHub/mlp-data-intro/PlotsDR'
 
 # Set the path to the folder containing the CSV files
 folder_path <- "/Users/diegoromero/Documents/GitHub/mlp-data-intro/data/shocks"
@@ -430,8 +430,15 @@ for (region_name in regions) {
 ####################################################
 # Merge df_counts and final_data to include the `martiallaw` variable
 df_merged <- df_counts %>%
-  left_join(final_data %>% select(country, date, coup), by = c("country", "date"))
+  left_join(final_data %>% select(country, date, activism, arrest, censor, cooperate, 
+                                  corruption, coup, defamationcase, disaster, electionactivity, 
+                                  electionirregularities, legalaction, legalchange, martiallaw, 
+                                  mobilizesecurity, protest, purge, raid, threaten, violencelethal, 
+                                  violencenonlethal), by = c("country", "date"))
 
+ls(df_merged)
+
+     
 
 ####################################################
 ## Normalized counts & shocks                     ##
@@ -885,12 +892,12 @@ ggsave(filename = png_file, plot = p, device = "png", width = 10, height = 8, dp
 ####################################################
 
 # Define the x-axis range
-min_date <- as.Date("2019-05-01")
-max_date <- as.Date("2020-05-31")
+min_date <- as.Date("2017-05-01")
+max_date <- as.Date("2018-05-31")
 
 # Define the vertical lines and their colors: blue for attempts, red for coups
 vertical_lines <- data.frame(
-  dates = as.Date(c("2019-11-01")),
+  dates = as.Date(c("2017-11-01")),
   labels = c("Attempt") # Labels for the legend
 )
 
@@ -994,8 +1001,8 @@ plots <- list(
                    data.frame(dates = as.Date(c("2021-07-01")), labels = c("Self-Coup"))),
   create_coup_plot("Turkey", as.Date("2016-01-01"), as.Date("2017-01-31"), 
                    data.frame(dates = as.Date(c("2016-07-01")), labels = c("Attempt"))),
-  create_coup_plot("Zimbabwe", as.Date("2019-05-01"), as.Date("2020-05-31"), 
-                   data.frame(dates = as.Date(c("2019-11-01")), labels = c("Attempt")))
+  create_coup_plot("Zimbabwe", as.Date("2017-05-01"), as.Date("2018-05-31"), 
+                   data.frame(dates = as.Date(c("2017-11-01")), labels = c("Attempt")))
 )
 
 # Combine all plots into a single grid and collect the legend
@@ -1004,6 +1011,3011 @@ grid_plot <- wrap_plots(plots, ncol = 2) +
 
 # Save the combined plot as a PNG
 ggsave(filename = paste0(output_path, "/Combined_Coup_Plots.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+
+
+#############################################
+## Code to create a single figure for      ##
+## Guatemala in 2015                       ##
+#############################################
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Guatemala")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-01-01", "2023-06-01", "2023-08-01", "2024-01-01")), 
+  labels = c("Election Announcement", "General Elections", "Run-off Presidential Elections","Inauguration")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Share of Articles about Electoral Activity in Guatemala",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2024-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 14), # Increased X-axis title size
+        axis.title.y = element_text(size = 14), # Increased Y-axis title size
+        plot.title = element_text(size = 18, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+# Election Irregularities
+p2 <- ggplot(country_data, aes(x = date, y = n_electionirregularities * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionirregularities.y == 1),
+             aes(x = date, y = n_electionirregularities * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Share of Articles about Elecion Irregularities in Guatemala",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2024-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 14), # Increased X-axis title size
+        axis.title.y = element_text(size = 14), # Increased Y-axis title size
+        plot.title = element_text(size = 18, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+
+# Coup
+p3 <- ggplot(country_data, aes(x = date, y = n_coup * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(coup.y == 1),
+             aes(x = date, y = n_coup * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Share of Articles about Legal Action in Guatemala",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2024-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 14), # Increased X-axis title size
+        axis.title.y = element_text(size = 14), # Increased Y-axis title size
+        plot.title = element_text(size = 18, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+# Protest
+p4 <- ggplot(country_data, aes(x = date, y = n_protest * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(protest.y == 1),
+             aes(x = date, y = n_protest * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Share of Articles about Protest in Guatemala",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2024-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 14), # Increased X-axis title size
+        axis.title.y = element_text(size = 14), # Increased Y-axis title size
+        plot.title = element_text(size = 18, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+
+
+# Define plots for each country
+plots_GTM <- list(p1, p2, p3, p4)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_GTM, ncol = 2) +
+  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_GTM2023_Plots.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+grid_plot
+
+
+
+
+
+####################
+## ELECTIONS, LAC ##
+####################
+
+#COLOMBIA 2021-2022; "2022-03-01", "2022-05-01", "2022-06-01", congress, presidential
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Colombia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-03-01", "2022-05-01", "2022-06-01")), 
+  labels = c("Congressional Elections", "Presidential Election (1st round)", "Presidential Election (Run-off)")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Colombia (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-01-01"), as.Date("2023-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+
+# DOMINICAN REPUBLIC
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Dominican Republic")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-10-01", "2024-02-01", "2024-05-01")), 
+  labels = c("Primaries", "Municipal Elections", "General Elections")
+)
+
+# Election Activity
+p2 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Dominical Republic (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-07-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+# Ecuador
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Ecuador")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-05-01", "2023-08-01", "2023-10-01")), 
+  labels = c("Extraordinary Election Announcement", "Presidential Election (1st round)", "Presidential Election (Run-off)")
+)
+
+# Election Activity
+p3 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Ecuador (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-01-01"), as.Date("2023-12-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+
+# El Salvador
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "El Salvador")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-07-01", "2023-10-01", "2024-02-01", "2024-03-01")), 
+  labels = c("Primaries", "Campaign Begins", "General Elections", "Municipal Elections")
+)
+
+# Election Activity
+p4 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "El Salvador (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-01-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+# GUATEMALA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Guatemala")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-01-01", "2023-06-01", "2023-08-01")), 
+  labels = c("Election Announcement", "General Elections", "Run-off Presidential Elections")
+)
+
+# Election Activity
+p5 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Guatemala (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2024-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p5
+
+
+
+# HONDURAS
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Honduras")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-03-01","2021-11-01")), 
+  labels = c("Primaries", "General Elections")
+)
+
+# Election Activity
+p6 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Honduras (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-11-01"), as.Date("2022-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p6
+
+
+
+# JAMAICA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Jamaica")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-08-01","2020-09-01")), 
+  labels = c("Parliament Dissolved", "General Elections")
+)
+
+# Election Activity
+p7 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Jamaica (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-06-01"), as.Date("2021-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p7
+
+
+# NICARAGUA (fake elections)
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Nicaragua")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-04-01","2021-11-01")), 
+  labels = c("Formation of New Electoral Body","General Elections")
+)
+
+# Election Activity
+p8 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Nicaragua (2021)*",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-08-01"), as.Date("2022-04-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p8
+
+
+
+# PARAGUAY
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Paraguay")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-12-01","2023-04-01")), 
+  labels = c("Primaries","General Elections")
+)
+
+# Election Activity
+p9 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Paraguay (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2023-11-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p9
+
+
+# PERU
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Peru")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-04-01","2021-06-01")), 
+  labels = c("General Elections","Run-off Election")
+)
+
+# Election Activity
+p10 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Peru (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-06-01"), as.Date("2022-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p10
+
+# Define plots for each country
+plots_elections <- list(p1, p2, p3, p4, p5, p6, p7, p9, p10, p8)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_elections, ncol = 3) 
+grid_plot
+
+#+
+#  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_elections_LAC.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+
+
+####################
+## ELECTIONS, EAP ##
+####################
+
+#CAMBODIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Cambodia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-07-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Cambodia (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-01-01"), as.Date("2024-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+
+#INDONESIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Indonesia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-02-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p2 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Indonesia (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-07-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+# MALAYSIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Malaysia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-11-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p3 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Malaysia (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2023-05-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+
+# Philippines
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Philippines")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-05-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p4 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Philippines (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-12-01"), as.Date("2022-12-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+# Solomon Islands
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Solomon Islands")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-04-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p5 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Solomon Islands (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-11-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p5
+
+
+# Timor Leste
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Timor Leste")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-05-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p6 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Timor Leste (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-12-01"), as.Date("2023-12-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p6
+
+# Define plots for each country
+plots_elections <- list(p1, p2, p3, p4, p5, p6)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_elections, ncol = 3) 
+grid_plot
+
+#+
+#  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_elections_EAP.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+
+
+#####################
+## ELECTIONS, E&CA ##
+#####################
+
+# ALBANIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Albania")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-04-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Albania (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-11-01"), as.Date("2021-11-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+
+# ARMENIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Armenia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-06-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p2 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Armenia (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-12-01"), as.Date("2022-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+# Azerbaijan
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Azerbaijan")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-02-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p3 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Azerbaijan (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-09-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+
+# BELARUS
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Belarus")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-08-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p4 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Belarus (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-02-01"), as.Date("2021-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+
+# GEORGIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Georgia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-11-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p5 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Georgia (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-06-01"), as.Date("2021-06-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p5
+
+
+# Hungary
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Hungary")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-04-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p6 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Hungary (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-11-01"), as.Date("2022-10-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p6
+
+
+# Kazakhstan
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Kazakhstan")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-11-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p7 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Kazakhstan (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2023-05-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p7
+
+
+# Kosovo
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Kosovo")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-02-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p8 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Kosovo (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-09-01"), as.Date("2021-08-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p8
+
+
+# Kyrgyzstan
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Kyrgyzstan")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-01-01","2021-11-01")), 
+  labels = c("Presidential Elections","Parliamentary Elections")
+)
+
+# Election Activity
+p9 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Kyrgyzstan (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-07-01"), as.Date("2022-05-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p9
+
+
+# Macedonia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Macedonia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-04-01","2024-05-01")), 
+  labels = c("Presidential Elections","Parliamentary Elections")
+)
+
+# Election Activity
+p10 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Macedonia (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-12-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p10
+
+
+# Moldova
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Moldova")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-11-01", "2021-07-01")), 
+  labels = c("Presidential Elections", "Parliamentary Elections")
+)
+
+# Election Activity
+p11 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Moldova (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-06-01"), as.Date("2022-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p11
+
+
+# Serbia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Serbia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-12-01","2024-06-01")), 
+  labels = c("Parliamentary Elections","Local Elections")
+)
+
+# Election Activity
+p12 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Serbia (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-06-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p12
+
+
+# Turkey
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Turkey")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-05-01","2024-03-01")), 
+  labels = c("General Elections","Local Elections")
+)
+
+# Election Activity
+p13 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Turkey (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-11-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p13
+
+
+# Ukraine
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Ukraine")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2019-03-01","2019-04-01","2019-07-01")), 
+  labels = c("Presidential Elections (1st. Round)","Presidential Elections (Run-off)", "Parliamentary Elections")
+)
+
+# Election Activity
+p14 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Ukraine (2019)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2018-10-01"), as.Date("2019-12-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p14
+
+# Uzbekistan
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Uzbekistan")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-07-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p15 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Uzbekistan (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-01-01"), as.Date("2024-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p15
+
+
+# Define plots for each country
+plots_elections <- list(p1, p2, p3, p4, p5, p6,
+                        p7, p8, p9, p10, p11, p12,
+                        p13, p14, p15)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_elections, ncol = 4) 
+grid_plot
+
+#+
+#  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_elections_ECA.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+
+
+#####################
+## ELECTIONS, MENA ##
+#####################
+
+# Algeria
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Algeria")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-06-01","2021-11-01")), 
+  labels = c("Parliamentary Elections","Local Elections")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Algeria (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-01-01"), as.Date("2022-04-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+
+# Mauritania
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Mauritania")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-05-01")), 
+  labels = c("Parliamentary & Local Elections")
+)
+
+# Election Activity
+p2 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Mauritania (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-12-01"), as.Date("2023-11-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+
+# Morocco
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Morocco")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-09-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p3 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Morocco (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-03-01"), as.Date("2022-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+
+# Tunisia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Tunisia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-01-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p4 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Tunisia (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-08-01"), as.Date("2023-06-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+# Define plots for each country
+plots_elections <- list(p1, p2, p3, p4)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_elections, ncol = 2) 
+grid_plot
+
+#+
+#  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_elections_MENA.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+
+
+#####################
+## ELECTIONS, SA   ##
+#####################
+
+# BANGLADESH
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Bangladesh")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-01-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Bangladesh (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-07-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+
+# INDIA
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "India")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-03-01","2024-06-01")), 
+  labels = c("General Elections (Start)","General Elections (End)")
+)
+
+# Election Activity
+p2 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "India (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-07-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+
+# Nepal
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Nepal")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-11-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p3 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Nepal (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-06-01"), as.Date("2023-05-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+
+# Pakistan
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Pakistan")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-02-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p4 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Pakistan (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-09-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+
+# Sri Lanka
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Sri Lanka")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-08-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p5 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Sri Lanka (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-02-01"), as.Date("2021-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p5
+
+
+# Define plots for each country
+plots_elections <- list(p1, p2, p3, p4, p5)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_elections, ncol = 3) 
+grid_plot
+
+#+
+#  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_elections_SA.png"), 
+       plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
+
+
+####################################
+## ELECTIONS, Sub-Saharan Africa  ##
+####################################
+
+# Angola
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Angola")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-08-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p1 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Angola (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-02-01"), as.Date("2023-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p1
+
+
+# Benin
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Benin")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-01-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p2 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Benin (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-07-01"), as.Date("2023-06-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p2
+
+
+# Burkina Faso
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Burkina Faso")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-11-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p3 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Burkina Faso (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-05-01"), as.Date("2021-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p3
+
+
+# Cameroon
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Cameroon")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2018-03-01","2018-10-01")), 
+  labels = c("Senatorial Elections","Presidential Elections")
+)
+
+# Election Activity
+p4 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Cameroon (2018)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2017-10-01"), as.Date("2019-01-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p4
+
+
+# DR Congo
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "DR Congo")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-12-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p5 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "DR Congo (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-07-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p5
+
+# Ethiopia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Ethiopia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-06-01","2021-09-01")), 
+  labels = c("General Elections","General Elections")
+)
+
+# Election Activity
+p6 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Ethiopia (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-12-01"), as.Date("2022-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p6
+
+
+# Ghana
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Ghana")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-12-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p7 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Ghana (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-04-01"), as.Date("2021-06-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p7
+
+
+# Kenya
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Kenya")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2022-08-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p8 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Kenya (2022)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-10-01"), as.Date("2023-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p8
+
+
+# Liberia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Liberia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-11-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p9 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Liberia (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-04-01"), as.Date("2024-03-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p9
+
+
+# Malawi
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Malawi")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-06-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p10 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Malawi (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-01-01"), as.Date("2020-12-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p10
+
+
+# Mali
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Mali")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-04-01")), 
+  labels = c("Parliamentary Elections")
+)
+
+# Election Activity
+p11 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Mali (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2019-10-01"), as.Date("2020-10-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p11
+
+# Mozambique
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Mozambique")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2019-10-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p12 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Mozambique (2019)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2019-04-01"), as.Date("2020-04-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p12
+
+
+# Namibia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Namibia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2019-11-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p13 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Namibia (2019)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2019-05-01"), as.Date("2020-05-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p13
+
+
+# Niger
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Niger")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-12-01","2021-02-01")), 
+  labels = c("General Elections (1st Round)","General Elections (2nd Round)")
+)
+
+# Election Activity
+p14 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Niger (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-04-01"), as.Date("2021-08-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p14
+
+
+# Nigeria
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Nigeria")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-02-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p15 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Nigeria (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2022-08-01"), as.Date("2023-08-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p15
+
+
+
+# Rwanda
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Rwanda")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2017-08-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p16 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Rwanda (2017)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2017-02-01"), as.Date("2018-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p16
+
+# SENEGAL
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Senegal")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-03-01")), 
+  labels = c("Presidential Elections")
+)
+
+# Election Activity
+p17 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Senegal (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-10-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p17
+
+
+# South Africa
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "South Africa")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2024-05-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p18 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "South Africa (2024)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-11-01"), as.Date("2024-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p18
+
+
+# Tanzania
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Tanzania")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2020-10-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p19 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Tanzania (2020)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-04-01"), as.Date("2021-04-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p19
+
+
+# Uganda
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Uganda")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-01-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p20 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Uganda (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2020-06-01"), as.Date("2021-07-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p20
+
+
+# Zambia
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Zambia")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2021-08-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p21 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Zambia (2021)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2021-02-01"), as.Date("2022-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p21
+
+
+# Zimbabwe
+
+# Filter data for the country
+country_data <- df_merged %>% filter(country == "Zimbabwe")
+
+# Election timeline
+vertical_lines <- data.frame(
+  dates = as.Date(c("2023-08-01")), 
+  labels = c("General Elections")
+)
+
+# Election Activity
+p22 <- ggplot(country_data, aes(x = date, y = n_electionactivity * 100)) +
+  geom_line() +  # Line plot
+  geom_point(data = country_data %>% filter(electionactivity.y == 1),
+             aes(x = date, y = n_electionactivity * 100),
+             color = "red", size = 2) + # Red dots where shock is 1
+  geom_vline(data = vertical_lines, 
+             aes(xintercept = dates, color = labels), 
+             linetype = "dashed", size = 0.8) + # Vertical lines with legend
+  labs(title = "Zimbabwe (2023)",
+       x = "Date",
+       y = "% of Articles",
+       color = "") + # Legend title
+  theme_minimal() +
+  # Set x-axis to show ticks every 2 months and limit
+  scale_x_date(
+    limits = c(as.Date("2023-02-01"), as.Date("2024-02-01")),
+    date_breaks = "2 months",
+    date_labels = "%b %Y"
+  ) +
+  # Customize text appearance for x-axis labels
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
+        axis.text.y = element_text(size = 10), # Increased Y-axis label size
+        axis.title.x = element_text(size = 10), # Increased X-axis title size
+        axis.title.y = element_text(size = 10), # Increased Y-axis title size
+        plot.title = element_text(size = 14, face = "bold"),
+        legend.position = "bottom") + # Increased title size  
+  # Ensure Y-axis shows percentage values   
+  scale_y_continuous(labels = scales::label_percent(scale = 1))
+
+p22
+
+
+# Define plots for each country
+plots_elections <- list(p1, p2, p3, p4, p5, p6, p7, p8, p9,
+                        p10, p11, p12, p13, p14, p15, p16, p17, p18, p19, p20,
+                        p21, p22)
+
+# Combine all plots into a single grid and collect the legend
+grid_plot <- wrap_plots(plots_elections, ncol = 5) 
+grid_plot
+
+#+
+#  plot_layout(guides = 'collect') & theme(legend.position = "bottom")
+
+# Save the combined plot as a PNG
+ggsave(filename = paste0(output_path, "/Combined_elections_SSA.png"), 
        plot = grid_plot, device = "png", width = 20, height = 16, dpi = 300)
 
 
