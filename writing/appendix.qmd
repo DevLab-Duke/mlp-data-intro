@@ -1,5 +1,5 @@
 ---
-title: "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Large Language Models "
+title: "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models "
 subtitle: "Supplemental Materials"
 
 format: 

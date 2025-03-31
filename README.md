@@ -1,5 +1,5 @@
 # mlp-data-intro
-Repository for: Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Language Models
+Repository for: Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models
 
 Current Overleaf Location: https://www.overleaf.com/9891685827jxbvnrshzxbw#683bc8
 
@@ -14,3 +14,17 @@ There are two subfolders that are relevant:
   + The appendix.pdf lists the sources we have for each country and region. Sometimes, we have sources that enter late in the time-series or drop out before the end. The final columns in the dataset flags the entry/exit for sources that aren't present for the full time-series. This flags major composition changes for each country.
 - `shocks\` contains the results of our event detection algorithm (described in the paper), which detects major jumps in the level of reporting on each event category which should correspond to major events. If you look at any of the recent reports on our website, you can see examples of the shocks we detect. This gives a nice qualitative illustration of the underlying events.
 
+## Count Checking (`count_check`)
+
+- `README.md` contains instructions for checking sources
+
+## Writing (`writing`)
+
+- `PlotsDR` contains Diego's validation plots
+- `shock_detection` contains Donald's code for shock detection figures
+- `languages` contains Notion export for check number of languages
+- `international_vs_national` contains code and output comparing international and national event coverage
+
+## GPT Summarization
+
+## geoparsing_test
