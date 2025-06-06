@@ -25,6 +25,11 @@ There are two subfolders that are relevant:
 - `languages` contains Notion export for check number of languages
 - `international_vs_national` contains code and output comparing international and national event coverage
 
+## Building the source-level and country-month datasets
+
+`build_data.R` calls a series of functions to build the source-level and country-month datasets. `1-source_entries.rds` captures the months covered by each source. 
+
+
 ## GPT Summarization
 
 ## geoparsing_test
