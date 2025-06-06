@@ -202,9 +202,7 @@ extract_civic_counts_by_source <- function(country, date = "latest", quiet = FAL
   date_folder_path <- path_counts_civic(country, date_folder)
   
   # Path routing to accommodate legacy folder structures
-  #
-  # Current: the date folder has Civic_Related, Combined, Non_Civic_Related
-  #          subfolder
+  # The date folder has Civic_Related, Combined, Non_Civic_Related subfolder
   if ("Civic_Related" %in% dir(date_folder_path)) {
     combined <- vet_and_combine_sources(file.path(date_folder_path, "Combined"),
                                         country)
@@ -298,6 +296,13 @@ aggregate_and_merge <- function(country, quiet = TRUE) {
   if (any_na & !quiet) {
     cat(sprintf("Merged data for '%s' has missing values\n", country))
   }
+  
+  # Call country_last_month() from constants.R that lists the last month of good data for each country
+  df <- df %>% dplyr::filter(date <= country_last_month(!!country))
+  
+  # Add normalized variables to the master dataframe
+  df[, paste0(civic , "Norm")] <- as.data.frame(lapply(df[,civic], function(x) x/df[, "total_articles"]))
+  df[, paste0( paste0("ncr_", cr_vars) , "Norm")] <- as.data.frame(lapply(df[, paste0("ncr_", cr_vars) ], function(x) x/df[, "total_articles"]))
   
   out_path <- here("data", "1-civic-aggregate", sprintf("%s.csv", country))
   readr::write_csv(df, out_path)
@@ -519,6 +524,12 @@ aggregate_and_merge_rai <- function(country, quiet = TRUE) {
   if (any_na & !quiet) {
     cat(sprintf("Merged data for '%s' has missing values\n", country))
   }
+  
+  # Call country_last_month() from constants.R that lists the last month of good data for each country
+  df <- df %>% dplyr::filter(date <= country_last_month(!!country))
+  
+  # Add normalized variables to the master dataframe
+  df[, paste0(rai , "Norm")]   <- as.data.frame(lapply(df[,rai], function(x) x/df[, "total_articles"]))
   
   out_path <- here("data", "1-rai-aggregate", sprintf("%s.csv", country))
   readr::write_csv(df, out_path)

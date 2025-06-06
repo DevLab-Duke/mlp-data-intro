@@ -34,6 +34,20 @@ rm(df)
 cat("Source entries\n")
 source_entries <- update_source_entries()
 
+## Create subfolder that houses source-entry files for each country
+
+# for (cc in country_name_list) {
+#   
+#   # read the raw counts file
+#   event <- read_raw_counts(country_name)
+#   
+#   # Identify sources to pull from source-entries file
+#   lsources = local_source_select(country_name)$lsources
+#   sources = tools::file_path_sans_ext(c(lsources)) #only want local sources!
+#   # Select sources from source-entries that are relevant to country_name
+#   entries_local = source_entries[, c("date", sources[sources %in% names(source_entries)] )]
+# 
+# }
 
 ########################
 ## Combine and merge
