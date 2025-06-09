@@ -200,7 +200,6 @@ local_source_select <- function(country){
       state_sources = c("jornaldeangola.ao")
     ),
     "Sri Lanka" = list(
-      #lsources = c("dailymirror.lk.csv","island.lk.csv", "divaina.lk.csv", "adaderana.lk.csv", "lankadeepa.lk.csv") # added 9/26
       lsources = c("dailymirror.lk.csv","island.lk.csv", "divaina.lk.csv", "adaderana.lk.csv", "lankadeepa.lk.csv"),
       ind_sources = c("adaderana.lk"),
       state_sources = c("dailymirror.lk","island.lk", "divaina.lk", "lankadeepa.lk")
