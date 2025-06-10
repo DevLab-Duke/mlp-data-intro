@@ -35,6 +35,16 @@ countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", 
                "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan",
                "Tanzania", "Tunisia", "Uganda", "Zambia", "Zimbabwe") # SSA
 
+## Country-to-region mapping
+#' @export
+country_regions <- list(
+  "EE_CA" = c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic", "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan"),
+  "MENA" = c("Algeria", "Mali", "Morocco", "Niger"),
+  "LAC" = c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Paraguay", "Peru"),
+  "EA" = c("Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste"),
+  "SSA" = c("Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Malawi", "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan", "Tanzania", "Tunisia", "Uganda", "Zambia", "Zimbabwe")
+)
+
 
 ## Usable sources
 
@@ -52,6 +62,42 @@ rsources = c("africanews.com.csv", "asia.nikkei.com.csv","asiatimes.com.csv","ba
              "cnnespanol.cnn.com.csv","euronews.com.csv",
              "indiatimes.com.csv", "iwpr.net.csv", "neweasterneurope.eu.csv", "timesofindia.indiatimes.com.csv",
              "telemundo.com.csv", "theeastafrican.co.ke.csv")
+
+## Region-to-regional-sources mapping
+#' @export
+region_rsources <- list(
+  "EE_CA" = c("balkaninsight.com.csv", "euronews.com.csv", "iwpr.net.csv", "neweasterneurope.eu.csv"),
+  "MENA" = c("africanews.com.csv", "theeastafrican.co.ke.csv"),
+  "LAC" = c("cnnespanol.cnn.com.csv", "telemundo.com.csv"),
+  "EA" = c("asia.nikkei.com.csv", "asiatimes.com.csv", "indiatimes.com.csv", "timesofindia.indiatimes.com.csv"),
+  "SSA" = c("africanews.com.csv", "theeastafrican.co.ke.csv")
+)
+
+#' Get Regional Sources for Country
+#'
+#' Returns appropriate regional sources for a given country based on its region.
+#'
+#' @param country String name of country
+#' @return Vector of regional source filenames
+#' @export
+region_sources <- function(country) {
+  # Find which region the country belongs to
+  country_region <- NULL
+  for (region in names(country_regions)) {
+    if (country %in% country_regions[[region]]) {
+      country_region <- region
+      break
+    }
+  }
+  
+  if (is.null(country_region)) {
+    warning(sprintf("Country '%s' not found in region mappings", country))
+    return(character(0))
+  }
+  
+  # Return regional sources for that region
+  region_rsources[[country_region]] %||% character(0)
+}
 
 #' @describeIn whitelist_sources Function that returns country-specific local sources.
 #' @export

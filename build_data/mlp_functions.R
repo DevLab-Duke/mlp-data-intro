@@ -125,12 +125,13 @@ read_counts_csv <- function(file) {
 
 # this function whitelists and combines all the [source].csv files in a folder.
 # low-level function that is used by the three specific extractors below
-vet_and_combine_sources <- function(path, country) {
+vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   csv_files <- dir(path, full.names = TRUE, pattern = ".csv$")
   
   # White list sources
   valid_sources <- vet_sources(sources = basename(csv_files),
-                               country = country)
+                               country = country,
+                               use_region_filter = use_region_filter)
   not_used_sources <- basename(csv_files)[!basename(csv_files) %in% valid_sources]
   csv_files <- csv_files[basename(csv_files) %in% valid_sources]
   
@@ -190,7 +191,7 @@ db_resolve_date <- function(type = c("rai", "civic"), country, date = "latest") 
 }
 
 
-extract_civic_counts_by_source <- function(country, date = "latest", quiet = FALSE) {
+extract_civic_counts_by_source <- function(country, date = "latest", quiet = FALSE, use_region_filter = FALSE) {
   stopifnot(
     "country must be just 1 country" = length(country)==1
   )
@@ -205,7 +206,7 @@ extract_civic_counts_by_source <- function(country, date = "latest", quiet = FAL
   # The date folder has Civic_Related, Combined, Non_Civic_Related subfolder
   if ("Civic_Related" %in% dir(date_folder_path)) {
     combined <- vet_and_combine_sources(file.path(date_folder_path, "Combined"),
-                                        country)
+                                        country, use_region_filter = use_region_filter)
     combined_not_used_sources <- attr(combined, "not_used_sources")
     # fix -999 name
     names(combined)[names(combined) %in% "-999"] = "cs_999"
@@ -213,12 +214,12 @@ extract_civic_counts_by_source <- function(country, date = "latest", quiet = FAL
     combined <- combined[, setdiff(colnames(combined), cr_vars)]
     
     csr <- vet_and_combine_sources(file.path(date_folder_path, "Civic_Related"),
-                                   country)
+                                   country, use_region_filter = use_region_filter)
     csr_not_used_sources <- attr(csr, "not_used_sources")
     csr <- csr[, c("country", "source", "date", cr_vars)]
     
     ncr <- vet_and_combine_sources(file.path(date_folder_path, "Non_Civic_Related"),
-                                   country)
+                                   country, use_region_filter = use_region_filter)
     ncr_not_used_sources <- attr(ncr, "not_used_sources")
     ncr <- ncr[, c("country", "source", "date", cr_vars)]
     idx <- colnames(ncr) %in% cr_vars
@@ -380,24 +381,37 @@ update_source_entries <- function() {
 #'   local.
 #'
 #' @param country Country
-#' @param sources A list of candidate sources.
+#' @param use_region_filter Logical. If TRUE, only include regional sources 
+#'   relevant to the country's geographic region. If FALSE, include all regional
+#'   sources (legacy behavior). Default is FALSE for backward compatibility.
 #'
 #' @export
-#' @aliases isources rsources local_source_select vet_sources
-whitelist_sources <- function(country) {
+#' @aliases isources rsources local_source_select vet_sources region_sources
+whitelist_sources <- function(country, use_region_filter = FALSE) {
   stopifnot(length(country)==1)
+  
+  # Get regional sources based on filtering preference
+  regional_sources <- if (use_region_filter) {
+    region_sources(country)
+  } else {
+    rsources
+  }
+  
   c(
     isources,
-    rsources,
+    regional_sources,
     local_source_select(country)$lsources
   )
 }
 
 #' @describeIn whitelist_sources Vet a list of sources against whitelist; returns
 #'   subset of valid sources.
+#' @param sources Vector of source names to validate
+#' @param country Country name
+#' @param use_region_filter Logical. Passed to whitelist_sources(). Default FALSE.
 #' @export
-vet_sources <- function(sources, country) {
-  valid <- whitelist_sources(country)
+vet_sources <- function(sources, country, use_region_filter = FALSE) {
+  valid <- whitelist_sources(country, use_region_filter = use_region_filter)
   valid_sources <- intersect(sources, valid)
   valid_sources
 }
@@ -443,7 +457,8 @@ read_rai_by_source_and_influencer <- function(country) {
 #' @seealso [extract_article_total()], [extract_rai_counts_by_source_and_influencer()]
 extract_rai_counts_by_source_and_influencer <- function(country,
                                                         date = "latest",
-                                                        quiet = TRUE) {
+                                                        quiet = TRUE,
+                                                        use_region_filter = FALSE) {
   stopifnot(
     "country must be just 1 country" = length(country)==1
   )
@@ -465,7 +480,7 @@ extract_rai_counts_by_source_and_influencer <- function(country,
     
     path <- path_counts_rai(country, date_folder, influencer_i)
     
-    df <- vet_and_combine_sources(path, country)
+    df <- vet_and_combine_sources(path, country, use_region_filter = use_region_filter)
     
     # fix -999 name
     names(df)[names(df) %in% "-999"] = "rai_999"

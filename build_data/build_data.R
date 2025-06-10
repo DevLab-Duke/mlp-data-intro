@@ -13,13 +13,13 @@ for (cc in country_name_list) {
   ## Civic
   cat("Civic:", cc, "\n")
   cat("Source-level data for", cc, "\n")
-  df <- extract_civic_counts_by_source(cc, date = date_folder(cc, "civic"))
+  df <- extract_civic_counts_by_source(cc, date = date_folder(cc, "civic"), use_region_filter = TRUE)
   cat("Aggregated country-month data for", cc, "\n")
   df <- aggregate_and_merge(cc, quiet = FALSE)
   ## RAI
   cat("RAI:", cc, "\n")
   cat("Source-level data for", cc, "\n")
-  df <- extract_rai_counts_by_source_and_influencer(cc, date = date_folder(cc, "rai"))
+  df <- extract_rai_counts_by_source_and_influencer(cc, date = date_folder(cc, "rai"), use_region_filter = TRUE)
   cat("Aggregated country-month data for", cc, "\n")
   df <- aggregate_and_merge_rai(cc, quiet = FALSE)
   
