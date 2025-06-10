@@ -28,8 +28,8 @@ cr_vars = c("arrest", "cooperate", "corruption", "defamationcase", "legalaction"
 countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic",
                "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan", # EE/CA
                "Algeria", "Mali","Morocco","Niger", # MENA
-               "Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras",
-               "Jamaica", "Nicaragua", "Paraguay", "Peru",  # LAC
+               "Colombia", "Costa Rica", "Ecuador", "El Salvador", "Guatemala", "Honduras",
+               "Jamaica", "Nicaragua", "Paraguay", "Panama", "Peru",  # LAC
                "Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste", #EA
                "Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Malawi",
                "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan",
@@ -40,7 +40,7 @@ countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", 
 country_regions <- list(
   "EE_CA" = c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic", "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan"),
   "MENA" = c("Algeria", "Mali", "Morocco", "Niger"),
-  "LAC" = c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Paraguay", "Peru"),
+  "LAC" = c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Paraguay", "Peru", "Panama", "Costa Rica"),
   "EA" = c("Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste"),
   "SSA" = c("Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Malawi", "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan", "Tanzania", "Tunisia", "Uganda", "Zambia", "Zimbabwe")
 )
@@ -323,9 +323,14 @@ local_source_select <- function(country){
     ),
     "Solomon Islands" = list(
       lsources = c("solomonstarnews.com.csv", "solomontimes.com.csv", "sibconline.com.sb.csv")
+    ),
+    "Costa Rica" = list(
+      lsources = c("larepublica.net.csv", "news.co.cr.csv", "ticotimes.net.csv", "diarioextra.com.csv")
+    ),
+    "Panama" = list(
+      lsources = c("elsiglo.com.pa.csv", "critica.com.pa.csv", "panamaamerica.com.pa.csv", "newsroompanama.com.csv","prensa.com.csv")
     )
-
-
+    
   )
 
   if (!country %in% names(dat)) {
@@ -463,6 +468,10 @@ country_last_month <- function(country){
   } else if(country %in% "Timor Leste"){
     last_month = "2024-12-01"
   } else if(country %in% "Solomon Islands"){
+    last_month = "2024-12-01"
+  } else if(country %in% "Costa Rica"){
+    last_month = "2024-12-01"
+  } else if(country %in% "Panama"){
     last_month = "2024-12-01"
   }
   invisible(last_month)

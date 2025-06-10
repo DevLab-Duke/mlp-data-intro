@@ -8,7 +8,10 @@ source(here("build_data", "constants.R"))
 ########################
 ## Create MLP data using modified mlp package functions
 
-country_name_list = c("Belarus")
+country_name_list = c("Panama", "Costa Rica", "Solomon Islands", "Dominican Republic", 
+                      "Peru", "Nicaragua", "El Salvador", "Honduras", "Jamaica", 
+                      "Paraguay", "Ecuador", "Colombia")
+
 for (cc in country_name_list) {
   ## Civic
   cat("Civic:", cc, "\n")
