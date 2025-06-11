@@ -40,36 +40,31 @@ rm(df)
 
 # Update source_entries and the legacy 1-story_counts.rda (in datastore)
 cat("Source entries\n")
-source_entries <- update_source_entries()
-
-## Create subfolder that houses source-entry files for each country
-
-for (cc in country_name_list) {
-  # read the raw counts file
-  event <- read_raw_counts(country_name)
-
-  # Identify sources to pull from source-entries file
-  lsources = local_source_select(country_name)$lsources
-  sources = tools::file_path_sans_ext(c(lsources)) #only want local sources!
-  # Select sources from source-entries that are relevant to country_name
-  entries_local = source_entries[, c("date", sources[sources %in% names(source_entries)] )]
-
-}
+source_entries <- update_source_entries(use_rai = FALSE)
 
 ########################
 ## Combine and merge
 
+## Civic
 # Get a list of all CSV files
-file_list <- list.files(here("data", "final-counts"), pattern = "\\.csv$", full.names = TRUE)
+file_list <- list.files(here("data", "1-civic-aggregate"), pattern = "\\.csv$", full.names = TRUE)
 
 # Read each file into a list of data frames
 df_list <- lapply(paste0(file_list), read.csv)
-
 cdat <- bind_rows(df_list)
 
-data = merge(dat, cdat)
+write_csv(cdat, here("data", "final-counts", "full-civic-data.csv"))
 
-# rm(list = ls()[ls() != "dat"])
+## RAI
+# Get a list of all CSV files
+file_list <- list.files(here("data", "1-rai-aggregate"), pattern = "\\.csv$", full.names = TRUE)
+
+# Read each file into a list of data frames
+df_list <- lapply(paste0(file_list), read.csv)
+rdat <- bind_rows(df_list)
+
+write_csv(rdat, here("data", "final-counts", "full-rai-data.csv"))
+
 
 
 

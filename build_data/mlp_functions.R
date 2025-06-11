@@ -313,21 +313,28 @@ aggregate_and_merge <- function(country, quiet = TRUE) {
 
 #' @describeIn aggregate_and_merge Mashes together all of the by-source data to
 #' create the source entries matrix.
+#' @param use_rai Logical. If TRUE (default), join civic and RAI data. If FALSE, use only civic data.
 #' @export
-update_source_entries <- function() {
-  # mash everything in 0-...-by-source together (both Cicic and RAI)
+update_source_entries <- function(use_rai = TRUE) {
+  # Load civic data
   files <- dir(here("data","0-civic-by-source"), full.names = TRUE)
   civic <- lapply(files, readr::read_csv, show_col_types = FALSE, progress = FALSE)
   civic <- dplyr::bind_rows(civic)
   
-  files <- dir(here("data","0-rai-by-source-and-influencer"), full.names = TRUE)
-  rai <- lapply(files, readr::read_csv, show_col_types = FALSE)
-  rai <- dplyr::bind_rows(rai)
-  
-  rai <- rai[rai$influencer=="Combined", ]
-  rai$influencer <- NULL
-  
-  raw <- dplyr::inner_join(civic, rai, by = c("country", "date", "source", "total_articles"))
+  if (use_rai) {
+    # Load and join with RAI data
+    files <- dir(here("data","0-rai-by-source-and-influencer"), full.names = TRUE)
+    rai <- lapply(files, readr::read_csv, show_col_types = FALSE)
+    rai <- dplyr::bind_rows(rai)
+    
+    rai <- rai[rai$influencer=="Combined", ]
+    rai$influencer <- NULL
+    
+    raw <- dplyr::inner_join(civic, rai, by = c("country", "date", "source", "total_articles"))
+  } else {
+    # Use only civic data
+    raw <- civic
+  }
   
   # record the full date range here because I'm going to alter raw below
   full_date_range <- sort(unique(raw$date))
