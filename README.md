@@ -65,7 +65,7 @@ Core dependencies include: `tidyverse`, `here`, `psych`, `gt`, `kableExtra`, `gg
 - Path configurations in `data_update.R` handle multiple user environments
 
 
-##Analysis for Manuscript
+## Analysis for Manuscript
 
 ### GPT Summarization
 

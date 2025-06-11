@@ -327,16 +327,10 @@ update_source_entries <- function() {
   rai <- rai[rai$influencer=="Combined", ]
   rai$influencer <- NULL
   
-  raw <- dplyr::inner_join(civic, rai, by = c("country", "date", "source"))
+  raw <- dplyr::inner_join(civic, rai, by = c("country", "date", "source", "total_articles"))
   
   # record the full date range here because I'm going to alter raw below
   full_date_range <- sort(unique(raw$date))
-  
-  # Identify new sources that enter mid-time-series and store the last zero month
-  # We want the last non-zero month instead of the first non-zero month because
-  # most of our sources come online intermittently and have an article or two before
-  # they really start publishing. This flag is to identify when we expect the source
-  # to really affect the composition of counts, rather than first publication date
   
   # Remove international and regional sources from list of all sources, we're only
   # interested in local sources (keep regional sources that double as local)
@@ -345,20 +339,11 @@ update_source_entries <- function() {
   lsources_all <- setdiff(unique(raw$source), remove_sources)
   raw <- raw[raw$source %in% lsources_all, ]
   
-  # Calculate total articles per month. Once all countries have the total_articles variable, we can remove this and use that variable
-  sum_cols <- names(raw)[!names(raw) %in% c("country", "source", "date", "rai_999")]
-  raw$total <- rowSums(raw[, sum_cols], na.rm = TRUE)
-  
-  # Changed 5/26/2023:
-  # New method: We now create binary indicators for each source that turn-on
+  # We create binary indicators for each source that turn-on
   # in all months where the source has volume > 0
-  # Old method: We want to find the last date a source had a total of 0,
-  # and then create a new date x source matrix that has values of 0 before that
-  # last date, and values of 1 after it (indicating good coverage).
-  
   last0 <- raw |>
-    dplyr::select(country, source, date, total) |>
-    dplyr::mutate(total =  dplyr::case_when(total > 0 ~ 1, TRUE ~ 0) ) |>
+    dplyr::select(country, source, date, total_articles) |>
+    dplyr::mutate(total =  dplyr::case_when(total_articles > 0 ~ 1, TRUE ~ 0) ) |>
     dplyr::select(source, date, total)
   
   # Make a matrix of date x source, where values are total
@@ -499,6 +484,7 @@ extract_rai_counts_by_source_and_influencer <- function(country,
   # Retrieve `total_articles` from civic counts
   dft = read_csv(here("data", "0-civic-by-source", sprintf("%s.csv", country)), show_col_types = FALSE) %>%
     dplyr::select(country, source, date, total_articles)
+  # RAI and civic should be the same length
   stopifnot(
     "rai and civic row numbers are not equal" = nrow(dft)==(nrow(df_by_influencer)/3)
   )
