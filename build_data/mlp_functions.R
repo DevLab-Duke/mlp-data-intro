@@ -18,7 +18,7 @@ date_folder <- function(country, type = c("civic", "rai")) {
   # the second list key must always be either "civic" or "rai"
   override <- list()
   
-  # Example:
+  # Override list:
   override[["Belarus"]][["civic"]] <- "2025_1_8"
   override[["Belarus"]][["rai"]] <- "2025_1_8"
   

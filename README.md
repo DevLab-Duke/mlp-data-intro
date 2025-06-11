@@ -45,6 +45,18 @@ This binary activity matrix is essential for tracking source entry/exit patterns
 - **`build_data/constants.R`**: List of event categories, countries, local/regional/international sources
 - **`build_data/mlp_functions.R`**: Custom functions for data extraction and aggregation
 
+## Shock Detection
+
+`Surge.py` is a python notebook with a data pipeline that is used to systematically call functions to fetch the data, train the model to predict future surges in civic space and store the results.This notebook contains function that fetches the folder containing the most recent datasets for each country from the `Data` folder. Following that,the train function performs data preprocessing and model training. The obtained predictions and other results are stored in the `Result` folder.
+
+`data.py` is a python script with functions that help in preliminary data processing of the dataset for each country which involves dropping raw versions of varibales, removing highly correlated variables etc. It also contains a list of target variables for which the future forecasts are made. The functions from this file are called in the `call_train` function of the Surge_Pipeline.ipynb.
+
+`training.py` is a python script with functions that convert the preprocessed data into training data and has the main train function.The model used here is the AdaBoostClassifier with GridSearchCV. The scoring metrics considered to judge the model's performance are f1 score, precision and recall.
+
+### Result
+
+This folder contains the predicted results from the model. The Result folder has subfolders which are named in the YYYY-MM-DD format with the date of when the model was run and the predictions were made. This folder again has other subfolders for storing predictions and metrics results. The `predictions` subfolder has the country wise predictions per lag stored in .csv files. The `metrics` subfolder consitst of the files that have the values of different metrics obtained from the model such as f1,precision,recall,etc. The `final_metrics` and `final_predictions` subfolders has the averaged results over a range of lag for all metrics and all predictions for all countries, respectively. The `inverse_query` subfolder has the inverse_query results stored country-wise for all lags.
+
 
 ## Common Development Tasks
 
