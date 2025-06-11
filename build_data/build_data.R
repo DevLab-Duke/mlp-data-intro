@@ -12,14 +12,18 @@ country_name_list = c("Panama", "Costa Rica", "Solomon Islands", "Dominican Repu
                       "Peru", "Nicaragua", "El Salvador", "Honduras", "Jamaica", 
                       "Paraguay", "Ecuador", "Colombia")
 
+## Civic
 for (cc in country_name_list) {
-  ## Civic
   cat("Civic:", cc, "\n")
   cat("Source-level data for", cc, "\n")
   df <- extract_civic_counts_by_source(cc, date = date_folder(cc, "civic"), use_region_filter = TRUE)
   cat("Aggregated country-month data for", cc, "\n")
   df <- aggregate_and_merge(cc, quiet = FALSE)
-  ## RAI
+
+}
+
+## RAI
+for (cc in country_name_list) {
   cat("RAI:", cc, "\n")
   cat("Source-level data for", cc, "\n")
   df <- extract_rai_counts_by_source_and_influencer(cc, date = date_folder(cc, "rai"), use_region_filter = TRUE)
@@ -27,6 +31,7 @@ for (cc in country_name_list) {
   df <- aggregate_and_merge_rai(cc, quiet = FALSE)
   
 }
+
 
 rm(df)
 
@@ -39,24 +44,23 @@ source_entries <- update_source_entries()
 
 ## Create subfolder that houses source-entry files for each country
 
-# for (cc in country_name_list) {
-#   
-#   # read the raw counts file
-#   event <- read_raw_counts(country_name)
-#   
-#   # Identify sources to pull from source-entries file
-#   lsources = local_source_select(country_name)$lsources
-#   sources = tools::file_path_sans_ext(c(lsources)) #only want local sources!
-#   # Select sources from source-entries that are relevant to country_name
-#   entries_local = source_entries[, c("date", sources[sources %in% names(source_entries)] )]
-# 
-# }
+for (cc in country_name_list) {
+  # read the raw counts file
+  event <- read_raw_counts(country_name)
+
+  # Identify sources to pull from source-entries file
+  lsources = local_source_select(country_name)$lsources
+  sources = tools::file_path_sans_ext(c(lsources)) #only want local sources!
+  # Select sources from source-entries that are relevant to country_name
+  entries_local = source_entries[, c("date", sources[sources %in% names(source_entries)] )]
+
+}
 
 ########################
 ## Combine and merge
 
 # Get a list of all CSV files
-file_list <- list.files(here("data", "0-civic-by-source"), pattern = "\\.csv$", full.names = TRUE)
+file_list <- list.files(here("data", "final-counts"), pattern = "\\.csv$", full.names = TRUE)
 
 # Read each file into a list of data frames
 df_list <- lapply(paste0(file_list), read.csv)

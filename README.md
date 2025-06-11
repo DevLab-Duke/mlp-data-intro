@@ -1,35 +1,87 @@
 # mlp-data-intro
-Repository for: Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models
+
+## Project Overview
+
+This repository contains the academic paper data and code for "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models". It hosts everything associated with the MLP (Machine Learning for Peace) data introduction paper. The dataset covers 65 developing countries across regions: Eastern Europe/Central Asia, MENA, Latin America & Caribbean, East Asia, Sub-Saharan Africa.
 
 Current Overleaf Location: https://www.overleaf.com/9891685827jxbvnrshzxbw#683bc8
 
-This repo hosts everything associated with the academic paper introducing the MLP data.
+### Event Categories
+- **Civic events**: 20 categories including arrest, censor, protest, activism, coup, etc.
+  - **CR variables**: Subset of civic events that are considered civil rights related
+- **RAI events**: 22 categories of international influence including arms transfers, diplomatic activities, economic aid
 
-There are two subfolders that are relevant:
-- `counts\` contains the raw count of articles in each category and the normalized counts. The data is both provided in total (full-data.RDS and full-data.csv) and on a per country basis ([countryname].csv).
-  + Articles with the `Norm` suffix are the raw counts divided by the `article_total`, which counts the number of articles published about that country per country-month. These variables are all normalized by total article production in each country-month.
-  + For some event categories, we also have variables with an "_ncr" suffix; these are the result of models identifying events that fall under a given event category (i.e. arrest) but are not politically relevant events (i.e. arrest of a petty criminal).
-  + There's a lookup table `cs_vars.csv` linking the variable names to their substantive label (used in the paper)
-  + There are also measures separating overall Russian and Chinese influence across the 22 event categories (`rus_influence` and `chn_influence`)
-  + The appendix.pdf lists the sources we have for each country and region. Sometimes, we have sources that enter late in the time-series or drop out before the end. The final columns in the dataset flags the entry/exit for sources that aren't present for the full time-series. This flags major composition changes for each country.
-- `shocks\` contains the results of our event detection algorithm (described in the paper), which detects major jumps in the level of reporting on each event category which should correspond to major events. If you look at any of the recent reports on our website, you can see examples of the shocks we detect. This gives a nice qualitative illustration of the underlying events.
-
-## Count Checking (`count_check`)
-
-- `README.md` contains instructions for checking sources
-
-## Writing (`writing`)
-
-- `PlotsDR` contains Diego's validation plots
-- `shock_detection` contains Donald's code for shock detection figures
-- `languages` contains Notion export for check number of languages
-- `international_vs_national` contains code and output comparing international and national event coverage
-
-## Building the source-level and country-month datasets
-
-`build_data.R` calls a series of functions to build the source-level and country-month datasets. `1-source_entries.rds` captures the months covered by each source. 
+## Source Management
+- **International sources**: 16 major outlets (BBC, Reuters, NYT, etc.)
+- **Regional sources**: 12 regional outlets
+- **Local sources**: Country-specific outlets
+- Source entry/exit tracking in final dataset columns for composition change detection
 
 
-## GPT Summarization
+## Key Architecture
 
-## geoparsing_test
+### Data Structure
+- **`data/0-civic-by-source/`** and **`data/0-rai-by-source-and-influencer/`**: Source-level data
+  - `[countryname].csv`: Per-country data files
+  - Variables with `Norm` suffix: Raw counts normalized by `article_total`, which counts the number of articles published about that country per country-month.
+  - Variables with `_ncr` suffix: Non-politically relevant events filtered out
+- **`data/1-civic-aggregate/`** and **`data/1-rai-aggregate/`**: Aggregated country-month data
+  - `[countryname].csv`: Per-country data files
+  - Variables with `Norm` suffix: Raw counts normalized by `article_total`, which counts the number of articles published about that country per country-month.
+  - Variables with `_ncr` suffix: Non-politically relevant events filtered out
+- **`data/final-counts/`**: Raw and normalized article counts by country-month
+  - `full-data.rds` and `full-data.csv`: Complete dataset across all countries
+- **`data/shocks/`**: Event detection algorithm results showing major jumps in reporting (event salience) 
+
+### Source Coverage
+`data/1-source_entries.rds` captures the temporal coverage patterns of local news sources across the full time series. Generated by the `update_source_entries()` function, it creates a date × source matrix where each cell contains:
+- **1** if the source published articles in that month (total article count > 0)  
+- **0** if the source was inactive in that month
+
+This binary activity matrix is essential for tracking source entry/exit patterns over time and understanding changes in media landscape composition that could affect trend interpretation in civic space monitoring. 
+
+### Core Scripts
+- **`build_data/build_data.R`**: Main data construction pipeline to generate contents of `/data/`
+- **`build_data/constants.R`**: List of event categories, countries, local/regional/international sources
+- **`build_data/mlp_functions.R`**: Custom functions for data extraction and aggregation
+
+
+## Common Development Tasks
+
+### Data Processing
+```r
+# Run main data construction pipeline
+source("build_data/build_data.R")
+
+```
+
+### Key R Libraries
+Core dependencies include: `tidyverse`, `here`, `psych`, `gt`, `kableExtra`, `ggplot2`, `changepoint`
+
+
+## Important Notes
+- All countries have data through 2024-12-01
+- Date folder overrides can be specified in `date_folder()` function
+- Path configurations in `data_update.R` handle multiple user environments
+
+
+##Analysis for Manuscript
+
+### GPT Summarization
+
+This folder contains GPT-powered event summarization tools for the MLP project:
+
+- **`GPT code.ipynb`**: Jupyter notebook implementing automated event summarization using OpenAI's GPT models. The script processes civic events detected by the ML4P forecasting system, retrieving relevant news articles from MongoDB and generating human-readable summaries for each event category by country-month. Includes functions for country/source mapping, text preprocessing, and two-stage summarization (event listing + final synthesis).
+
+- **`event_prompts.csv`**: Contains templated prompts for 20 different civic event types (arrest, protest, corruption, etc.) with both detailed and concise prompt variations. Each prompt guides GPT to extract, rank, and summarize the most significant events while filtering out irrelevant or misplaced content.
+
+### geoparsing_test
+
+This folder evaluates geographic location extraction performance comparing CLIFF and GPT-4 systems:
+
+- **`GPT Geoparsing.py`**: Python script using OpenAI's GPT-4 to extract geographic locations from news articles. Processes article text to identify the most specific location mentioned and complete the administrative hierarchy (country, admin1, admin2 levels) based on global administrative division knowledge.
+
+- **`Geoparsing_report.Rmd`**: R Markdown analysis comparing CLIFF vs GPT performance on geographic entity extraction from 250 Colombian news articles. Evaluates accuracy across different administrative levels, categorizes errors by type (ambiguity, hierarchical misclassification, context disambiguation), and provides comprehensive performance metrics.
+
+- **`Geoparsing_GPT_CLIFF.xlsx`**: Dataset containing results from both CLIFF and GPT geoparsing systems with human-coded ground truth for validation.
+
