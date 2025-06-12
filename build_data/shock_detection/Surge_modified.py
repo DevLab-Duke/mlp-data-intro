@@ -29,7 +29,7 @@ cutoff = 0.2
 lag = 7
 mode = 'top'
 cv = 10
-country_list = []
+country_list = ["Belarus"]
 
 #Function to get files from static folder
 def get_updated_files(path='.'):
