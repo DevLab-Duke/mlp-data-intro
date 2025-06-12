@@ -2,8 +2,8 @@
 
 This folder contains metadata about the media sources in the MLP dataset. It includes:
 
-- **Ownership details** — source ownership, changes over time, ideological alignment, government ties, references
-- **Bias assessments** — country-level RSF scores and political shifts; source-level political bias, regime support, monthly volume, and more
+- **Ownership details** — source ownership, ownership changes over time, left-right ideological alignment, government ties, references
+- **Bias assessments** — country-level RSF scores and government changes; source-level political bias, regime support, monthly volume, and more
 
 ---
 
