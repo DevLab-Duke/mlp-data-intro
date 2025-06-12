@@ -2,30 +2,16 @@ import numpy as np
 import os
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-from sklearn.model_selection import train_test_split
-from sklearn import tree,ensemble, neighbors
-from sklearn import linear_model, svm
-from sklearn import metrics,model_selection
-from sklearn import decomposition
-from sklearn.ensemble import AdaBoostClassifier
-import xgboost as xgb
-from IPython.display import display, Markdown
 from sklearn import tree
-import json
 from sklearn import tree as tr
-import data,visualization,training
-from toolz.functoolz import pipe,compose
+import data
 from datetime import datetime,date
 import warnings
 warnings.filterwarnings('ignore')
 from peak_detector import PeakDetector
-from tensorflow.keras.models import load_model
 import matplotlib.dates as mdates
-import tensorflow as tf
 from keras import Input, Model
 from keras.layers import TFSMLayer
-import re
 
 # Global Variables Inputs
 today = date.today()
@@ -35,42 +21,32 @@ month = today.strftime("%m")
 year = today.strftime("%Y")
 
 # Filesystem env variables
-data_folder = '../data'
-result_folder = '../result'
+civic_data_folder = '../../data/1-civic-aggregate'
+rai_data_folder = '../../data/1-rai-aggregate'
+civic_result_folder = '../../data/2-civic-shock'
+rai_result_folder = '../../data/2-rai-shock'
 cutoff = 0.2 
 lag = 7
 mode = 'top'
 cv = 10
-country_list = ["Belarus"]
+country_list = []
 
-#Function to get most recent folders and files
+#Function to get files from static folder
 def get_updated_files(path='.'):
-    #path = "/Users/mahda.soltani/forecast-surges-pipeline/data"
-    dirs = [d for d in os.listdir(path) if os.path.isdir(os.path.join(path, d))]
-
-    # Parse folder names as dates and sort
-    date_dirs = []
-    for d in dirs:
-        try:
-            parsed_date = datetime.strptime(d, "%Y-%m-%d")
-            date_dirs.append((d, parsed_date))
-        except ValueError:
-            pass  # Ignore directories that don't have a date format
-
-    if not date_dirs:
+    if not os.path.exists(path):
         return None, []
-
-    # Get the latest directory based on date
-    latest_dir = max(date_dirs, key=lambda x: x[1])[0]
-    latest_subdir = os.path.join(path, latest_dir)
-    files = os.listdir(latest_subdir)
-
+    
+    files = os.listdir(path)
+    
+    # Filter to only CSV files
+    csv_files = [f for f in files if f.endswith('.csv')]
+    
     remove_files = ['.ipynb_checkpoints', 'full-data.csv', 'full-data.rds']
     for file in remove_files:        
-        if file in files:
-            files.remove(file)
+        if file in csv_files:
+            csv_files.remove(file)
  
-    return latest_subdir + '/', files
+    return path + '/', csv_files
 
 def add_RAI_cat_norms(raw_data: pd.DataFrame) -> pd.DataFrame:
     # Find which columns are available for each category
@@ -182,8 +158,10 @@ def convert_to_training_data_2(X, Y, country, event, peak_detector, mode='cutoff
 def detect_peaks(folder, countries, date):
     # match = re.search(r'\d{4}-\d{2}-\d{2}', folder)
     # date = match.group(0)
-    plot_dir = f'../plots2/{date}'
-    os.makedirs(plot_dir, exist_ok=True)
+    civic_plot_dir = f'../../data/2-civic-shock'
+    rai_plot_dir = f'../../data/2-rai-shock'
+    os.makedirs(civic_plot_dir, exist_ok=True)
+    os.makedirs(rai_plot_dir, exist_ok=True)
     
     lookaround = 12
     std_dev = 0.88
@@ -196,28 +174,24 @@ def detect_peaks(folder, countries, date):
     for country in country_list:
         if country in countries:
             file = country + '.csv'
-            pre_data = pd.read_csv(folder+file)
-            raw_data = add_RAI_cat_norms(pre_data)
+            civic_data = pd.read_csv(folder+file)
             
             cols = data.targets[:]
             cols.append('date')
             cols = [cols[-1]] + cols[:-1]
             
             peaks_df = pd.DataFrame(columns=cols)
-            peaks_df['date'] = raw_data['date'].tolist()
+            peaks_df['date'] = civic_data['date'].tolist()
             
-        
-        
+            # Process civic events
             for event in data.targetsNew: 
-                if event in raw_data.columns:
-                    X, Y = data.prep_data(raw_data, event, encode_date=True, lag=1)
+                if event in civic_data.columns:
+                    X, Y = data.prep_data(civic_data, event, encode_date=True, lag=1)
                     peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event, peak_detector)
                     peaks_df[event] =  peaks_detected
-                    data_for_plotting = raw_data.copy()
+                    data_for_plotting = civic_data.copy()
                     data_for_plotting[event + '_peaks'] = peaks_detected
                     
-                    
-                    # if event in data.targets:
                     peak_results[(country, event)] = peaks_detected
                     
                     data_for_plotting['date'] = pd.to_datetime(data_for_plotting['date'])
@@ -243,62 +217,59 @@ def detect_peaks(folder, countries, date):
                     plt.title(f'Peak Detection for {country} - {event}')
                     
                     # Save the plot
-                    plt.savefig(os.path.join(plot_dir, f'{country}_{event}_peaks2.png'))
+                    plt.savefig(os.path.join(civic_plot_dir, f'{country}_{event}_peaks.png'))
                     plt.close()
 
+            # Process RAI events if RAI data exists
+            rai_file_path = rai_data_folder + '/' + file
+            if os.path.exists(rai_file_path):
+                rai_data = pd.read_csv(rai_file_path)
+                rai_data = add_RAI_cat_norms(rai_data)
+                
+                for event2 in data.targetsRAI:
+                    if event2 in rai_data.columns:
+                        X, Y = data.prep_data(rai_data, event2, encode_date=True, lag=1)
+                        peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event2, peak_detector)
+                        peaks_df[event2] =  peaks_detected
                         
-                    
-            for event2 in data.targetsRAI:
-                if event2 in raw_data.columns:
-                    # print('hi')
-                    # print(event2)
-                    X, Y = data.prep_data(raw_data, event2, encode_date=True, lag=1)
-                    peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event2, peak_detector)
-                    peaks_df[event2] =  peaks_detected
-                    
-                    # Create plot of these peaks
-                    data_for_plotting = raw_data.copy()
-                    data_for_plotting[event2 + '_peaks'] = peaks_detected
-                    
-                    # if event2 in data.targets:
-                    peak_results[(country, event2)] = peaks_detected
-                    
-                    data_for_plotting['date'] = pd.to_datetime(data_for_plotting['date'])
-    
-                    # Create the plot
-                    fig, ax2 = plt.subplots(figsize=(15, 12))
-                    
-                    # Plot normalized counts on ax2
-                    ax2.plot(data_for_plotting['date'], data_for_plotting[event2], label='Normalized Number of Articles', color='green')
-                    ax2.scatter(data_for_plotting['date'][data_for_plotting[event2 + '_peaks'] == 1], 
-                                data_for_plotting[event2][data_for_plotting[event2 + '_peaks'] == 1], 
-                                color='red', label='Detected Peaks', zorder=5)
-                    ax2.set_xlabel('Date')
-                    ax2.set_ylabel('Normalized Number of Articles')
-                    ax2.legend(loc='upper right')
-                    
-                    # Format x-axis for dates
-                    ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=5))
-                    ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-                    plt.xticks(rotation=45)
-                    
-                    # Set title
-                    plt.title(f'RAI peak Detection for {country} - {event2}')
-                    
-                    # Save the plot
-                    plt.savefig(os.path.join(plot_dir, f'{country}_{event2}_peaks2.png'))
-                    plt.close()
+                        # Create plot of these peaks
+                        data_for_plotting = rai_data.copy()
+                        data_for_plotting[event2 + '_peaks'] = peaks_detected
+                        
+                        peak_results[(country, event2)] = peaks_detected
+                        
+                        data_for_plotting['date'] = pd.to_datetime(data_for_plotting['date'])
+        
+                        # Create the plot
+                        fig, ax2 = plt.subplots(figsize=(15, 12))
+                        
+                        # Plot normalized counts on ax2
+                        ax2.plot(data_for_plotting['date'], data_for_plotting[event2], label='Normalized Number of Articles', color='green')
+                        ax2.scatter(data_for_plotting['date'][data_for_plotting[event2 + '_peaks'] == 1], 
+                                    data_for_plotting[event2][data_for_plotting[event2 + '_peaks'] == 1], 
+                                    color='red', label='Detected Peaks', zorder=5)
+                        ax2.set_xlabel('Date')
+                        ax2.set_ylabel('Normalized Number of Articles')
+                        ax2.legend(loc='upper right')
+                        
+                        # Format x-axis for dates
+                        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=5))
+                        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                        plt.xticks(rotation=45)
+                        
+                        # Set title
+                        plt.title(f'RAI peak Detection for {country} - {event2}')
+                        
+                        # Save the plot
+                        plt.savefig(os.path.join(rai_plot_dir, f'{country}_{event2}_peaks.png'))
+                        plt.close()
             
-            if not os.path.exists(f'../result/{year}-{month}-{day}/peaks'):
-                        os.makedirs(f'../result/{year}-{month}-{day}/peaks') 
-
-            
+            # Save civic peaks to civic folder
             peaks_df.to_csv(
-                f'../result/{year}-{month}-{day}/peaks/{country}.csv',
+                f'{civic_result_folder}/{country}.csv',
                 index = False
             )
             
-            #peaks_df.to_csv(f'/Users/mahda.soltani/Desktop/MLP/Peaks/{country}.csv')
             
             
     return peak_results
@@ -313,4 +284,4 @@ def run_peak_detection(path):
     detect_peaks(folder, countries, f'{year}-{month}-{day}')
     print("Peak detection completed.")
     
-run_peak_detection(data_folder)    
+run_peak_detection(civic_data_folder)    
