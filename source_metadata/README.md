@@ -19,7 +19,7 @@ This folder contains metadata about the media sources in the MLP dataset. It inc
 
 ---
 
-## Google Drive Versions (Editable)
+## Google Drive Versions
 
 For collaboration and editable formats:
 
