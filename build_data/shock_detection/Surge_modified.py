@@ -45,7 +45,7 @@ def get_updated_files(path='.'):
     return path + '/', csv_files
 
 
-def convert_to_training_data_2(X, Y, country, event, peak_detector, mode='cutoff'):
+def convert_to_training_data_2(Y, country, event, peak_detector, mode='cutoff'):
     # plot_dir='/Users/mahda.soltani/forecast-surges-pipeline/plots'
     script_dir = os.path.dirname(__file__)
     model_path = os.path.join(script_dir, 'content', 'model_version1')
@@ -113,7 +113,7 @@ def detect_peaks(folder, countries, date):
             file = country + '.csv'
             civic_data = pd.read_csv(folder+file)
             
-            cols = data.targets[:]
+            cols = data.civic[:]
             cols.append('date')
             cols = [cols[-1]] + cols[:-1]
             
@@ -121,10 +121,10 @@ def detect_peaks(folder, countries, date):
             peaks_df['date'] = civic_data['date'].tolist()
             
             # Process civic events
-            for event in data.targetsNew: 
+            for event in data.civic: 
                 if event in civic_data.columns:
-                    X, Y = data.prep_data(civic_data, event, encode_date=True, lag=1)
-                    peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event, peak_detector)
+                    Y = civic_data[event]
+                    peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(Y, country, event, peak_detector)
                     peaks_df[event] =  peaks_detected
                     data_for_plotting = civic_data.copy()
                     data_for_plotting[event + '_peaks'] = peaks_detected
@@ -137,9 +137,9 @@ def detect_peaks(folder, countries, date):
                     fig, ax2 = plt.subplots(figsize=(15, 12))
                     
                     # Plot normalized counts on ax2
-                    ax2.plot(data_for_plotting['date'], data_for_plotting[event + 'Norm'], label='Normalized Number of Articles', color='green')
+                    ax2.plot(data_for_plotting['date'], data_for_plotting[event], label='Normalized Number of Articles', color='green')
                     ax2.scatter(data_for_plotting['date'][data_for_plotting[event + '_peaks'] == 1], 
-                                data_for_plotting[event + 'Norm'][data_for_plotting[event + '_peaks'] == 1], 
+                                data_for_plotting[event][data_for_plotting[event + '_peaks'] == 1], 
                                 color='red', label='Detected Peaks', zorder=5)
                     ax2.set_xlabel('Date')
                     ax2.set_ylabel('Normalized Number of Articles')
@@ -204,7 +204,7 @@ def detect_rai_peaks_by_influencer(folder, countries, date):
         # RAI themes are now pre-calculated in the data pipeline
         
         # Create peaks dataframe for this influencer
-        cols = data.targetsRAI[:]
+        cols = data.rai[:]
         cols.append('date')
         cols = [cols[-1]] + cols[:-1]
         
@@ -212,10 +212,10 @@ def detect_rai_peaks_by_influencer(folder, countries, date):
         peaks_df['date'] = rai_data['date'].tolist()
         
         # Process RAI events
-        for event in data.targetsRAI:
+        for event in data.rai:
             if event in rai_data.columns:
-                X, Y = data.prep_data(rai_data, event, encode_date=True, lag=1)
-                peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event, peak_detector)
+                Y = rai_data[event]
+                peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(Y, country, event, peak_detector)
                 peaks_df[event] = peaks_detected
                 
                 # Create plot
