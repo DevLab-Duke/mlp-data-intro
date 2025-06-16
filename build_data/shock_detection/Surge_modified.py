@@ -220,60 +220,106 @@ def detect_peaks(folder, countries, date):
                     plt.savefig(os.path.join(civic_plot_dir, f'{country}_{event}_peaks.png'))
                     plt.close()
 
-            # Process RAI events if RAI data exists
-            rai_file_path = rai_data_folder + '/' + file
-            if os.path.exists(rai_file_path):
-                rai_data = pd.read_csv(rai_file_path)
-                rai_data = add_RAI_cat_norms(rai_data)
-                
-                for event2 in data.targetsRAI:
-                    if event2 in rai_data.columns:
-                        X, Y = data.prep_data(rai_data, event2, encode_date=True, lag=1)
-                        peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event2, peak_detector)
-                        peaks_df[event2] =  peaks_detected
-                        
-                        # Create plot of these peaks
-                        data_for_plotting = rai_data.copy()
-                        data_for_plotting[event2 + '_peaks'] = peaks_detected
-                        
-                        peak_results[(country, event2)] = peaks_detected
-                        
-                        data_for_plotting['date'] = pd.to_datetime(data_for_plotting['date'])
-        
-                        # Create the plot
-                        fig, ax2 = plt.subplots(figsize=(15, 12))
-                        
-                        # Plot normalized counts on ax2
-                        ax2.plot(data_for_plotting['date'], data_for_plotting[event2], label='Normalized Number of Articles', color='green')
-                        ax2.scatter(data_for_plotting['date'][data_for_plotting[event2 + '_peaks'] == 1], 
-                                    data_for_plotting[event2][data_for_plotting[event2 + '_peaks'] == 1], 
-                                    color='red', label='Detected Peaks', zorder=5)
-                        ax2.set_xlabel('Date')
-                        ax2.set_ylabel('Normalized Number of Articles')
-                        ax2.legend(loc='upper right')
-                        
-                        # Format x-axis for dates
-                        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=5))
-                        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
-                        plt.xticks(rotation=45)
-                        
-                        # Set title
-                        plt.title(f'RAI peak Detection for {country} - {event2}')
-                        
-                        # Save the plot
-                        plt.savefig(os.path.join(rai_plot_dir, f'{country}_{event2}_peaks.png'))
-                        plt.close()
-            
             # Save civic peaks to civic folder
             peaks_df.to_csv(
                 f'{civic_result_folder}/{country}.csv',
                 index = False
             )
             
-            
-            
     return peak_results
-                    
+
+def detect_rai_peaks_by_influencer(folder, countries, date):
+    """Process RAI shock detection for each influencer CSV file separately."""
+    rai_plot_dir = f'../../data/2-rai-shock'
+    os.makedirs(rai_plot_dir, exist_ok=True)
+    
+    lookaround = 12
+    std_dev = 0.88
+    normalise = 1
+    alpha = 0.05
+    beta = 0.2
+    peak_detector = PeakDetector(lookaround, std_dev, normalise, alpha, beta)
+    
+    peak_results = {}
+    
+    # Get all RAI files in the directory
+    _, rai_files = get_updated_files(folder)
+    
+    # Process each influencer file
+    for rai_file in rai_files:
+        # Parse filename to get country and influencer (e.g., "Belarus_russia.csv")
+        if '_' not in rai_file or not rai_file.endswith('.csv'):
+            continue
+            
+        filename_parts = rai_file[:-4].split('_', 1)  # Remove .csv and split on first underscore
+        if len(filename_parts) != 2:
+            continue
+            
+        country, influencer = filename_parts
+        
+        # Only process countries in our list
+        if country not in country_list:
+            continue
+            
+        print(f"Processing RAI peaks for {country} - {influencer}")
+        
+        rai_data = pd.read_csv(os.path.join(folder, rai_file))
+        rai_data = add_RAI_cat_norms(rai_data)
+        
+        # Create peaks dataframe for this influencer
+        cols = data.targetsRAI[:]
+        cols.append('date')
+        cols = [cols[-1]] + cols[:-1]
+        
+        peaks_df = pd.DataFrame(columns=cols)
+        peaks_df['date'] = rai_data['date'].tolist()
+        
+        # Process RAI events
+        for event in data.targetsRAI:
+            if event in rai_data.columns:
+                X, Y = data.prep_data(rai_data, event, encode_date=True, lag=1)
+                peaks, peaks_conservative, peaks_detected = convert_to_training_data_2(X, Y, country, event, peak_detector)
+                peaks_df[event] = peaks_detected
+                
+                # Create plot
+                data_for_plotting = rai_data.copy()
+                data_for_plotting[event + '_peaks'] = peaks_detected
+                
+                peak_results[(country, influencer, event)] = peaks_detected
+                
+                data_for_plotting['date'] = pd.to_datetime(data_for_plotting['date'])
+
+                # Create the plot
+                fig, ax2 = plt.subplots(figsize=(15, 12))
+                
+                # Plot normalized counts
+                ax2.plot(data_for_plotting['date'], data_for_plotting[event], label='Normalized Number of Articles', color='green')
+                ax2.scatter(data_for_plotting['date'][data_for_plotting[event + '_peaks'] == 1], 
+                            data_for_plotting[event][data_for_plotting[event + '_peaks'] == 1], 
+                            color='red', label='Detected Peaks', zorder=5)
+                ax2.set_xlabel('Date')
+                ax2.set_ylabel('Normalized Number of Articles')
+                ax2.legend(loc='upper right')
+                
+                # Format x-axis for dates
+                ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=5))
+                ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+                plt.xticks(rotation=45)
+                
+                # Set title with influencer info
+                plt.title(f'RAI Peak Detection for {country} ({influencer}) - {event}')
+                
+                # Save the plot with influencer in filename
+                plt.savefig(os.path.join(rai_plot_dir, f'{country}_{influencer}_{event}_peaks.png'))
+                plt.close()
+        
+        # Save peaks to RAI folder with influencer in filename
+        peaks_df.to_csv(
+            f'../../data/2-rai-shock/{country}_{influencer}.csv',
+            index=False
+        )
+        
+    return peak_results
 
 def run_peak_detection(path):
     folder, files = get_updated_files(path)
@@ -282,6 +328,16 @@ def run_peak_detection(path):
         return
     countries = [file[:-4] for file in files]  
     detect_peaks(folder, countries, f'{year}-{month}-{day}')
-    print("Peak detection completed.")
+    print("Civic peak detection completed.")
+
+def run_rai_peak_detection(path):
+    folder, files = get_updated_files(path)
+    if folder is None or len(files) == 0:
+        print("No recent RAI data folders found.")
+        return
+    detect_rai_peaks_by_influencer(folder, [], f'{year}-{month}-{day}')
+    print("RAI peak detection completed.")
     
+# Run both civic and RAI peak detection
 run_peak_detection(civic_data_folder)    
+run_rai_peak_detection(rai_data_folder)    

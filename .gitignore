@@ -2,4 +2,21 @@
 .Rhistory
 .RData
 .Ruserdata
-build_data/shock_detection/venv/
+
+# Virtual environments
+**/.venv/
+**/env/
+**/venv/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.so
+
+# Dependencies
+*.egg-info/
+dist/
+build/
+
+# VSCode
+.vscode/
