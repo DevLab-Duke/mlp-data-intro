@@ -3,6 +3,9 @@
 .RData
 .Ruserdata
 
+Claude.md
+.claude
+
 # Virtual environments
 **/.venv/
 **/env/
