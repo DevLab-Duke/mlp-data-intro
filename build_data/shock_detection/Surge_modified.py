@@ -25,10 +25,6 @@ civic_data_folder = '../../data/1-civic-aggregate'
 rai_data_folder = '../../data/1-rai-aggregate'
 civic_result_folder = '../../data/2-civic-shock'
 rai_result_folder = '../../data/2-rai-shock'
-cutoff = 0.2 
-lag = 7
-mode = 'top'
-cv = 10
 country_list = ["Belarus"]
 
 #Function to get files from static folder
