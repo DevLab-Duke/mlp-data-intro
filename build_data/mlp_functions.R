@@ -539,8 +539,19 @@ aggregate_and_merge_rai <- function(country, quiet = TRUE) {
   # Add normalized variables to the master dataframe
   df[, paste0(rai , "Norm")]   <- as.data.frame(lapply(df[,rai], function(x) x/df[, "total_articles"]))
   
-  out_path <- here("data", "1-rai-aggregate", sprintf("%s.csv", country))
-  readr::write_csv(df, out_path)
+  # Write separate CSV files for each influencer
+  for (influencer_name in unique(df$influencer)) {
+    influencer_data <- df[df$influencer == influencer_name, ]
+
+    # Create filename: country_influencer.csv (e.g., Belarus_russia.csv)
+    filename <- sprintf("%s_%s.csv", country, tolower(influencer_name))
+    out_path <- here("data", "1-rai-aggregate", filename)
+    readr::write_csv(influencer_data, out_path)
+    
+    if (!quiet) {
+      cat(sprintf("Written RAI data for %s-%s to %s\n", country, influencer_name, filename))
+    }
+  }
   
   invisible(df)
 }
