@@ -44,65 +44,6 @@ def get_updated_files(path='.'):
  
     return path + '/', csv_files
 
-def add_RAI_cat_norms(raw_data: pd.DataFrame) -> pd.DataFrame:
-    # Find which columns are available for each category
-    backlash_cols = [
-        'bribery_economic_corruptionNorm',
-        'transnational_organization_crimeNorm'
-    ]
-    backlash_avail = [
-        col for col in backlash_cols if col in raw_data.columns
-    ]
-    diplomacy_cols = [
-        'diplomatic_recognitionNorm', 'diplomatic_sanctionNorm',
-        'diplomatic_statementNorm', 'diplomatic_visitNorm'
-    ]
-    diplomacy_avail = [
-        col for col in diplomacy_cols if col in raw_data.columns
-    ]
-    domestic_interference_cols = [
-        'intelligence_counterintelligenceNorm',
-        'political_process_policy_interventionNorm', 'surveillanceNorm'
-    ]
-    domestic_interference_avail = [
-        col for col in domestic_interference_cols if col in raw_data.columns
-    ]
-    economic_power_cols = [
-        'economic_aid_assistanceNorm', 'investmentNorm',
-        'tech_transfer_investmentNorm',
-        'trade_agreement_exchangeNorm', 'trade_financial_sanctionNorm'
-    ]
-    economic_power_avail = [
-        col for col in economic_power_cols if col in raw_data.columns
-    ]
-    hard_power_cols = [
-        'arms_transfer_security_aid_assistanceNorm',
-        'security_cooperationNorm', 'joint_security_force_exerciseNorm',
-        'security_force_facility_presenceNorm'
-    ]
-    hard_power_avail = [
-        col for col in hard_power_cols if col in raw_data.columns
-    ]
-    soft_power_cols = [
-        'diaspora_activationNorm', 'media_campaign_interventionNorm',
-        'professional_cultural_exchangeNorm'
-    ]
-    soft_power_avail = [
-        col for col in soft_power_cols if col in raw_data.columns
-    ]
-    
-    # Calculate norm sums for each category
-    raw_data['backlash_sumNorm'] = raw_data[backlash_avail].sum(axis=1)
-    raw_data['diplomacy_sumNorm'] = raw_data[diplomacy_avail].sum(axis=1)
-    raw_data['domestic_interference_sumNorm'] = \
-        raw_data[domestic_interference_avail].sum(axis=1)
-    raw_data['economic_power_sumNorm'] = \
-        raw_data[economic_power_avail].sum(axis=1)
-    raw_data['hard_power_sumNorm'] = raw_data[hard_power_avail].sum(axis=1)
-    raw_data['soft_power_sumNorm'] = raw_data[soft_power_avail].sum(axis=1)
-    
-    return raw_data
-
 
 def convert_to_training_data_2(X, Y, country, event, peak_detector, mode='cutoff'):
     # plot_dir='/Users/mahda.soltani/forecast-surges-pipeline/plots'
@@ -260,7 +201,7 @@ def detect_rai_peaks_by_influencer(folder, countries, date):
         print(f"Processing RAI peaks for {country} - {influencer}")
         
         rai_data = pd.read_csv(os.path.join(folder, rai_file))
-        rai_data = add_RAI_cat_norms(rai_data)
+        # RAI themes are now pre-calculated in the data pipeline
         
         # Create peaks dataframe for this influencer
         cols = data.targetsRAI[:]

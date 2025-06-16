@@ -539,6 +539,35 @@ aggregate_and_merge_rai <- function(country, quiet = TRUE) {
   # Add normalized variables to the master dataframe
   df[, paste0(rai , "Norm")]   <- as.data.frame(lapply(df[,rai], function(x) x/df[, "total_articles"]))
   
+  # Add RAI theme calculations based on data/rai_vars.csv
+  rai_vars <- readr::read_csv(here("data", "rai_vars.csv"), show_col_types = FALSE)
+  
+  # Get unique themes
+  unique_themes <- unique(rai_vars$theme)
+  
+  # Calculate sum for each theme
+  for (theme_code in unique_themes) {
+    # Get variables for this theme
+    theme_vars <- rai_vars$variable[rai_vars$theme == theme_code]
+    # Add "Norm" suffix to match column names
+    theme_vars_norm <- paste0(theme_vars, "Norm")
+    # Keep only variables that exist in the data
+    theme_vars_avail <- theme_vars_norm[theme_vars_norm %in% names(df)]
+    
+    if (length(theme_vars_avail) > 0) {
+      # Create theme sum column name
+      theme_name <- unique(rai_vars$theme_name[rai_vars$theme == theme_code])[1]
+      theme_col_name <- paste0(tolower(gsub(" ", "_", theme_name)), "_sumNorm")
+      
+      # Calculate sum
+      df[[theme_col_name]] <- rowSums(df[, theme_vars_avail, drop = FALSE])
+      
+      if (!quiet) {
+        cat(sprintf("Added theme '%s' with %d variables\n", theme_name, length(theme_vars_avail)))
+      }
+    }
+  }
+  
   # Write separate CSV files for each influencer
   for (influencer_name in unique(df$influencer)) {
     influencer_data <- df[df$influencer == influencer_name, ]
