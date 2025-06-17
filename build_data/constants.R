@@ -29,7 +29,7 @@ countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", 
                "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan", # EE/CA
                "Algeria", "Mali","Morocco","Niger", # MENA
                "Colombia", "Costa Rica", "Ecuador", "El Salvador", "Guatemala", "Honduras",
-               "Jamaica", "Nicaragua", "Paraguay", "Panama", "Peru",  # LAC
+               "Jamaica", "Mexico", "Nicaragua", "Paraguay", "Panama", "Peru",  # LAC
                "Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste", #EA
                "Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Malawi",
                "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan",
@@ -40,7 +40,7 @@ countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", 
 country_regions <- list(
   "EE_CA" = c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic", "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan"),
   "MENA" = c("Algeria", "Mali", "Morocco", "Niger"),
-  "LAC" = c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Paraguay", "Peru", "Panama", "Costa Rica"),
+  "LAC" = c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Mexico", "Nicaragua", "Paraguay", "Peru", "Panama", "Costa Rica"),
   "EA" = c("Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste"),
   "SSA" = c("Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Malawi", "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan", "Tanzania", "Tunisia", "Uganda", "Zambia", "Zimbabwe")
 )
@@ -99,12 +99,14 @@ region_sources <- function(country) {
   region_rsources[[country_region]] %||% character(0)
 }
 
-#' @describeIn whitelist_sources Function that returns country-specific local sources.
+#' @describeIn whitelist_sources Function that returns country-specific local sources. Countries where
+#' more than 50% of volume came from non-independent sources & RSF >=100 have sources differentiated 
+#' by independence (ind_sources and state_sources). These countries used to have weighting.
 #' @export
 local_source_select <- function(country){
   dat <- list(
     "Kenya" = list(
-      lsources = c("kbc.co.ke.csv", "citizen.digital.csv", "nation.africa.csv", "theeastafrican.co.ke.csv") #"businessdailyafrica.com.csv", "nation.co.ke.csv","citizentv.co.ke.csv"
+      lsources = c("kbc.co.ke.csv", "citizen.digital.csv", "nation.africa.csv", "theeastafrican.co.ke.csv") 
     ),
     "Nigeria" = list(
       lsources = c("guardian.ng.csv", "thenewsnigeria.com.ng.csv", "vanguardngr.com.csv", "thenationonlineng.net.csv")
@@ -117,10 +119,10 @@ local_source_select <- function(country){
 
     ),
     "Albania" = list(
-      lsources = c("gazetatema.net.csv", "panorama.com.al.csv", "telegraf.al.csv") # Telegraf used to be out, but I added it back 9/26/22
+      lsources = c("gazetatema.net.csv", "panorama.com.al.csv", "telegraf.al.csv") 
     ),
     "Colombia" = list(
-      lsources = c("elcolombiano.com.csv", "elespectador.com.csv", "elheraldo.co.csv", "eltiempo.com.csv")#, "portafolio.co.csv"
+      lsources = c("elcolombiano.com.csv", "elespectador.com.csv", "elheraldo.co.csv", "eltiempo.com.csv")
     ),
     "Ukraine" = list(
       lsources = c("delo.ua.csv", "interfax.com.ua.csv", "kp.ua.csv", "pravda.com.ua.csv", "kyivpost.com.csv", "kyivindependent.com.csv") # Kyiv post only old data
@@ -129,23 +131,23 @@ local_source_select <- function(country){
       lsources = c("rs.n1info.com.csv", "juznevesti.com.csv", "insajder.net.csv", "danas.rs.csv", "balkaninsight.com.csv")
     ),
     "Uganda" = list(
-      lsources = c("monitor.co.ug.csv", "observer.ug.csv", "newvision.co.ug.csv", "nilepost.co.ug.csv", "sunrise.ug.csv", "eagle.co.ug.csv") #  removed 9/26
+      lsources = c("monitor.co.ug.csv", "observer.ug.csv", "newvision.co.ug.csv", "nilepost.co.ug.csv", "sunrise.ug.csv", "eagle.co.ug.csv")
     ),
     "Benin" = list(
-      lsources = c("lanouvelletribune.info.csv", "news.acotonou.com.csv", "lematinal.media.csv", "levenementprecis.com.csv") #"leprogresinfo.net.csv", "beninwebtv.com.csv"
+      lsources = c("lanouvelletribune.info.csv", "news.acotonou.com.csv", "lematinal.media.csv", "levenementprecis.com.csv") 
     ),
     "Morocco" = list(
       lsources = c("leconomiste.com.csv","lematin.ma.csv", "assabah.ma.csv")
     ),
     "Ethiopia" = list(
       lsources = c("addisfortune.news.csv", "addisstandard.com.csv", "capitalethiopia.com.csv", "thereporterethiopia.com.csv", "ethiopianmonitor.com.csv",
-                   "addisadmassnews.com.csv") #, "yeroo.org.csv")
+                   "addisadmassnews.com.csv")
     ),
     "Georgia" = list(
-      lsources = c("ambebi.ge.csv", "georgiatoday.ge.csv")#, "interpressnews.ge.csv")
+      lsources = c("ambebi.ge.csv", "georgiatoday.ge.csv")
     ),
     "Senegal" = list(
-      lsources = c( "xalimasn.com.csv", "lesoleil.sn.csv", "enqueteplus.com.csv", "lasnews.sn.csv", "ferloo.com.csv", "nouvelobs.com.csv", "sudquotidien.sn.csv") #
+      lsources = c( "xalimasn.com.csv", "lesoleil.sn.csv", "enqueteplus.com.csv", "lasnews.sn.csv", "ferloo.com.csv", "nouvelobs.com.csv", "sudquotidien.sn.csv")
     ),
     "Tanzania" = list(
       lsources = c("ippmedia.com.csv", "dailynews.co.tz.csv","habarileo.co.tz.csv","thecitizen.co.tz.csv", "mtanzania.co.tz.csv", "jamhurimedia.co.tz.csv",
@@ -155,12 +157,10 @@ local_source_select <- function(country){
       lsources = c("elcomercio.com.csv", "eldiario.ec.csv", "elnorte.ec.csv", "eluniverso.com.csv", "metroecuador.com.ec.csv")
     ),
     "Mali" = list(
-      lsources = c("maliweb.net.csv", "malijet.com.csv", "news.abamako.com.csv") #"lessor.site.csv", "malijet.com.csv"; "news.abamako.com.csv" added 9/26
+      lsources = c("maliweb.net.csv", "malijet.com.csv", "news.abamako.com.csv") 
     ),
     "Zambia" = list(
       lsources = c("lusakatimes.com.csv","mwebantu.com.csv", "diggers.news.csv", "openzambia.com.csv", "lusakavoice.com.csv", "dailynationzambia.com.csv", "zambianewsnetwork.com.csv", "zambianobserver.com.csv")
-      # ind_sources = c("mwebantu.com"),
-      # state_sources = c("lusakatimes.com")
     ),
     "Kosovo" = list(
       lsources = c("kosova-sot.info.csv", "balkaninsight.com.csv", "prishtinainsight.com.csv", "botasot.info.csv")
@@ -176,7 +176,7 @@ local_source_select <- function(country){
     ),
     "Niger" = list(
       lsources = c("actuniger.com.csv","nigerinter.com.csv","lesahel.org.csv", "tamtaminfo.com.csv", "airinfoagadez.com.csv",
-                   "nigerexpress.info.csv", "journalduniger.com.csv") #"iciniger.com.csv",
+                   "nigerexpress.info.csv", "journalduniger.com.csv") 
     ),
     "Jamaica" = list(
       lsources = c("jamaica-gleaner.com.csv","jamaicaobserver.com.csv")
@@ -191,7 +191,6 @@ local_source_select <- function(country){
       lsources = c( "dailyguidenetwork.com.csv", "ghanaweb.com.csv", "graphic.com.gh.csv", "newsghana.com.gh.csv")
     ),
     "Philippines" = list(
-      #lsources = c("mb.com.ph.csv","manilastandard.net.csv", "inquirer.net.csv", "manilatimes.net.csv")
       lsources = c("mb.com.ph.csv","manilastandard.net.csv", "inquirer.net.csv", "manilatimes.net.csv"),
       ind_sources = c("inquirer.net"),
       state_sources = c("mb.com.ph","manilastandard.net", "manilatimes.net")
@@ -201,15 +200,12 @@ local_source_select <- function(country){
     ),
     "Belarus" = list(
       lsources = c("nashaniva.by.csv", "novychas.by.csv", "nv-online.info.csv", "belgazeta.by.csv", "zviazda.by.csv", "sb.by.csv"),
-      #lsources = c("nashaniva.by.csv", "novychas.by.csv", "zviazda.by.csv", "sb.by.csv") # "nv-online.info.csv", "belgazeta.by.csv" removed 9/26
       ind_sources = c("nashaniva.by", "novychas.by", "nv-online.info", "belgazeta.by"),
       state_sources = c("zviazda.by", "sb.by")
     ),
     "DR Congo" = list(
       lsources = c("radiookapi.net.csv", "lesoftonline.net.csv","acpcongo.com.csv", "lephareonline.net.csv", "groupelavenir.org.csv", "matininfos.net.csv",
                    "cas-info.ca.csv", "actualite.cd.csv", "7sur7.cd.csv")
-      # ind_sources = c("radiookapi.net"),
-      # state_sources = c("lesoftonline.net","acpcongo.com", "lephareonline.net", "groupelavenir.org") # groupelavenir.org is only old data
     ),
     "Cambodia" = list(
       lsources = c("kohsantepheapdaily.com.kh.csv","moneaksekar.com.csv", "phnompenhpost.com.csv", "cambodiadaily.com.csv")
@@ -251,10 +247,10 @@ local_source_select <- function(country){
       state_sources = c("dailymirror.lk","island.lk", "divaina.lk", "lankadeepa.lk")
     ),
     "Hungary" = list(
-      lsources = c("index.hu.csv", "24.hu.csv", "168.hu.csv", "hvg.hu.csv", "demokrata.hu.csv") # added 10/25
+      lsources = c("index.hu.csv", "24.hu.csv", "168.hu.csv", "hvg.hu.csv", "demokrata.hu.csv") 
     ),
     "Cameroon" = list(
-      lsources = c("journalducameroun.com.csv", "camerounweb.com.csv", "237actu.com.csv", "237online.com.csv", "cameroonvoice.com.csv", "lebledparle.com.csv", "thesunnewspaper.cm.csv") # added 10/25
+      lsources = c("journalducameroun.com.csv", "camerounweb.com.csv", "237actu.com.csv", "237online.com.csv", "cameroonvoice.com.csv", "lebledparle.com.csv", "thesunnewspaper.cm.csv") 
     ),
     "Malaysia" = list(
       lsources = c("malaymail.com.csv", "nst.com.my.csv", "thestar.com.my.csv", "utusan.com.my.csv", "thesun.my.csv", "malaysiakini.com.csv"),
@@ -262,13 +258,13 @@ local_source_select <- function(country){
       state_sources = c("thestar.com.my", "utusan.com.my", "thesun.my")
     ),
     "Malawi" = list(
-      lsources = c("mwnation.com.csv", "nyasatimes.com.csv", "times.mw.csv", "faceofmalawi.com.csv", "malawivoice.com.csv") # added 10/25
+      lsources = c("mwnation.com.csv", "nyasatimes.com.csv", "times.mw.csv", "faceofmalawi.com.csv", "malawivoice.com.csv") 
     ),
     "Uzbekistan" = list(
-      lsources = c("fergana.ru.csv", "kun.uz.csv", "gazeta.uz.csv","podrobno.uz.csv","batafsil.uz.csv","sof.uz.csv","anhor.uz.csv","asiaterra.info.csv","daryo.uz.csv") # added 11/21
+      lsources = c("fergana.ru.csv", "kun.uz.csv", "gazeta.uz.csv","podrobno.uz.csv","batafsil.uz.csv","sof.uz.csv","anhor.uz.csv","asiaterra.info.csv","daryo.uz.csv") 
     ),
     "Mozambique" = list(
-      lsources = c("correiodabeiraserra.com.csv", "canal.co.mz.csv", "mmo.co.mz.csv", "cartamz.com.csv", "verdade.co.mz.csv", "clubofmozambique.com.csv", "portalmoznews.com.csv", "jornaldomingo.co.mz.csv", "tvm.co.mz.csv") # added 1/24
+      lsources = c("correiodabeiraserra.com.csv", "canal.co.mz.csv", "mmo.co.mz.csv", "cartamz.com.csv", "verdade.co.mz.csv", "clubofmozambique.com.csv", "portalmoznews.com.csv", "jornaldomingo.co.mz.csv", "tvm.co.mz.csv") 
     ),
     "India" = list(
       lsources = c("amarujala.com.csv", "indianexpress.com.csv", "thehindu.com.csv", "hindustantimes.com.csv", "deccanherald.com.csv", "firstpost.com.csv", "indiatimes.com.csv", "timesofindia.indiatimes.com.csv"),
@@ -277,19 +273,19 @@ local_source_select <- function(country){
     ),
     "Azerbaijan" = list(
       lsources = c("azeritimes.com.csv", "azadliq.info.csv", "abzas.org.csv", "turan.az.csv", "zerkalo.az.csv",
-                   "mikroskopmedia.com.csv", "xalqcebhesi.az.csv", "musavat.com.csv", "ru.echo.az.csv") # added 3/15 #"ru.echo.az.csv",
+                   "mikroskopmedia.com.csv", "xalqcebhesi.az.csv", "musavat.com.csv", "ru.echo.az.csv") 
     ),
     "Kyrgyzstan" = list(
-      lsources = c("akipress.com.csv", "24.kg.csv", "kloop.kg.csv", "super.kg.csv", "vb.kg.csv", "kaktus.kg.csv", "kaktus.media.csv") # added 4/10
+      lsources = c("akipress.com.csv", "24.kg.csv", "kloop.kg.csv", "super.kg.csv", "vb.kg.csv", "kaktus.kg.csv", "kaktus.media.csv") 
     ),
     "Kazakhstan" = list(
-      lsources = c("caravan.kz.csv", "diapazon.kz.csv", "kaztag.kz.csv", "rus.azattyq.org.csv") # added 5/19
+      lsources = c("caravan.kz.csv", "diapazon.kz.csv", "kaztag.kz.csv", "rus.azattyq.org.csv") 
     ),
     "Peru" = list(
-      lsources = c("elcomercio.pe.csv", "gestion.pe.csv", "larepublica.pe.csv", "ojo-publico.com.csv", "idl-reporteros.pe.csv") # added 5/19
+      lsources = c("elcomercio.pe.csv", "gestion.pe.csv", "larepublica.pe.csv", "ojo-publico.com.csv", "idl-reporteros.pe.csv") 
     ),
     "Moldova" = list(
-      lsources = c("timpul.md.csv", "tribuna.md.csv", "unimedia.info.csv", "voceabasarabiei.md.csv", "publika.md.csv", "ipn.md.csv", "zdg.md.csv") # added 5/19
+      lsources = c("timpul.md.csv", "tribuna.md.csv", "unimedia.info.csv", "voceabasarabiei.md.csv", "publika.md.csv", "ipn.md.csv", "zdg.md.csv") 
     ),
     "Macedonia" = list(
       lsources = c("koha.mk.csv", "slobodenpecat.mk.csv", "makfax.com.mk.csv", "skopjediem.com.csv", "novamakedonija.com.mk.csv")
@@ -301,7 +297,7 @@ local_source_select <- function(country){
       lsources = c("twala.info.csv", "24hdz.com.csv", "echoroukonline.com.csv", "elkhabar.com.csv", "el-massa.com.csv", "elwatan-dz.com.csv", "echaab.dz.csv")
     ),
     "South Sudan" = list(
-      lsources = c("radiotamazuj.org.csv", "sudantribune.com.csv", "paanluelwel.com.csv", "onecitizendaily.com.csv", "eyeradio.org.csv") #, "southsudanliberty.com.csv", "cityreviewss.com.csv"
+      lsources = c("radiotamazuj.org.csv", "sudantribune.com.csv", "paanluelwel.com.csv", "onecitizendaily.com.csv", "eyeradio.org.csv") 
     ),
     "Liberia" = list(
       lsources = c("thenewdawnliberia.com.csv", "liberianobserver.com.csv", "analystliberiaonline.com.csv", "frontpageafricaonline.com.csv", "inquirernewspaper.com.csv", "thenewsnewspaper.online.csv")
@@ -329,6 +325,11 @@ local_source_select <- function(country){
     ),
     "Panama" = list(
       lsources = c("elsiglo.com.pa.csv", "critica.com.pa.csv", "panamaamerica.com.pa.csv", "newsroompanama.com.csv","prensa.com.csv")
+    ),
+    "Mexico" = list(
+      lsources = c("proceso.com.mx.csv")
+      # https://www.eluniversal.com.mx/
+      # https://www.proceso.com.mx/
     )
     
   )
@@ -473,6 +474,8 @@ country_last_month <- function(country){
     last_month = "2024-12-01"
   } else if(country %in% "Panama"){
     last_month = "2024-12-01"
+  }else if(country %in% "Mexico"){
+     last_month = "2024-12-01"
   }
   invisible(last_month)
 }
