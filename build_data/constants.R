@@ -54,7 +54,7 @@ isources = c("aljazeera.com.csv", "bbc.com.csv", "csmonitor.com.csv", "france24.
              "nytimes.com.csv", "reuters.com.csv", "scmp.com.csv", "theguardian.com.csv",
              "themoscowtimes.com.csv", "washingtonpost.com.csv", "wsj.com.csv",
              "lemonde.fr.csv", "liberation.fr.csv", "elpais.com.csv",
-             "lefigaro.fr.csv", "xinhuanet.com.csv")
+             "lefigaro.fr.csv", "sapo.pt.csv")
 
 #' @describeIn whitelist_sources Vector of usable regional sources.
 #' @export

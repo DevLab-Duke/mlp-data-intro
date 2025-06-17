@@ -138,22 +138,31 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   not_used_sources <- basename(csv_files)[!basename(csv_files) %in% valid_sources]
   csv_files <- csv_files[basename(csv_files) %in% valid_sources]
   
-  # Check for source discrepancies and generate warnings
+  # Check for source discrepancies and generate warnings (only for local sources)
   sources_in_folder <- basename(dir(path, pattern = ".csv$"))
-  missing_sources <- setdiff(expected_sources, sources_in_folder)
-  unexpected_sources <- setdiff(sources_in_folder, expected_sources)
   
-  # Warn about sources expected but missing
-  if (length(missing_sources) > 0) {
-    warning(sprintf("Country '%s': %d source(s) defined in constants.R but missing from dropbox folder:\n  %s", 
-                   country, length(missing_sources), paste(missing_sources, collapse = ", ")), 
+  # Get local sources only for warning checks
+  local_sources_expected <- local_source_select(country)$lsources
+  local_sources_in_folder <- intersect(sources_in_folder, local_sources_expected)
+  
+  # Filter to only check local sources for discrepancies
+  missing_local_sources <- setdiff(local_sources_expected, sources_in_folder)
+  unexpected_local_sources <- setdiff(sources_in_folder, expected_sources)
+  # Remove international and regional sources from unexpected list
+  international_and_regional <- c(isources, rsources)
+  unexpected_local_sources <- setdiff(unexpected_local_sources, international_and_regional)
+  
+  # Warn about local sources expected but missing
+  if (length(missing_local_sources) > 0) {
+    warning(sprintf("Country '%s': %d local source(s) defined in constants.R but missing from dropbox folder:\n  %s", 
+                   country, length(missing_local_sources), paste(missing_local_sources, collapse = ", ")), 
            call. = FALSE)
   }
   
-  # Warn about sources present but not expected
-  if (length(unexpected_sources) > 0) {
-    warning(sprintf("Country '%s': %d source(s) present in dropbox folder but not defined in constants.R:\n  %s", 
-                   country, length(unexpected_sources), paste(unexpected_sources, collapse = ", ")), 
+  # Warn about local sources present but not expected
+  if (length(unexpected_local_sources) > 0) {
+    warning(sprintf("Country '%s': %d local source(s) present in dropbox folder but not defined in constants.R:\n  %s", 
+                   country, length(unexpected_local_sources), paste(unexpected_local_sources, collapse = ", ")), 
            call. = FALSE)
   }
   
@@ -164,8 +173,8 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   df <- cbind(country = country, df)
   attr(df, "used_sources") <- valid_sources
   attr(df, "not_used_sources") <- not_used_sources
-  attr(df, "missing_sources") <- missing_sources
-  attr(df, "unexpected_sources") <- unexpected_sources
+  attr(df, "missing_sources") <- missing_local_sources
+  attr(df, "unexpected_sources") <- unexpected_local_sources
   df
 }
 
