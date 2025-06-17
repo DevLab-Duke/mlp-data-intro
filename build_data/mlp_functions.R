@@ -128,12 +128,34 @@ read_counts_csv <- function(file) {
 vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   csv_files <- dir(path, full.names = TRUE, pattern = ".csv$")
   
+  # Get expected sources from constants.R
+  expected_sources <- whitelist_sources(country, use_region_filter = use_region_filter)
+  
   # White list sources
   valid_sources <- vet_sources(sources = basename(csv_files),
                                country = country,
                                use_region_filter = use_region_filter)
   not_used_sources <- basename(csv_files)[!basename(csv_files) %in% valid_sources]
   csv_files <- csv_files[basename(csv_files) %in% valid_sources]
+  
+  # Check for source discrepancies and generate warnings
+  sources_in_folder <- basename(dir(path, pattern = ".csv$"))
+  missing_sources <- setdiff(expected_sources, sources_in_folder)
+  unexpected_sources <- setdiff(sources_in_folder, expected_sources)
+  
+  # Warn about sources expected but missing
+  if (length(missing_sources) > 0) {
+    warning(sprintf("Country '%s': %d source(s) defined in constants.R but missing from dropbox folder:\n  %s", 
+                   country, length(missing_sources), paste(missing_sources, collapse = ", ")), 
+           call. = FALSE)
+  }
+  
+  # Warn about sources present but not expected
+  if (length(unexpected_sources) > 0) {
+    warning(sprintf("Country '%s': %d source(s) present in dropbox folder but not defined in constants.R:\n  %s", 
+                   country, length(unexpected_sources), paste(unexpected_sources, collapse = ", ")), 
+           call. = FALSE)
+  }
   
   df_list <- lapply(csv_files, read_counts_csv)
   df <- do.call(rbind, df_list)
@@ -142,6 +164,8 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   df <- cbind(country = country, df)
   attr(df, "used_sources") <- valid_sources
   attr(df, "not_used_sources") <- not_used_sources
+  attr(df, "missing_sources") <- missing_sources
+  attr(df, "unexpected_sources") <- unexpected_sources
   df
 }
 
