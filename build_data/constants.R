@@ -210,7 +210,7 @@ local_source_select <- function(country){
     ),
     "El Salvador" = list(
       lsources = c("laprensagrafica.com.csv","elfaro.net.csv", "elsalvador.com.csv", "diario.elmundo.sv.csv", "diarioelsalvador.com.csv", "revistafactum.com.csv",
-                   "gatoencerrado.news.csv")
+                   "gatoencerrado.news.csv") #, "mala-yerba.com.csv"
     ),
     "South Africa" = list(
       lsources = c("timeslive.co.za.csv","news24.com.csv", "dailysun.co.za.csv", "sowetanlive.co.za.csv", "isolezwe.co.za.csv", "iol.co.za.csv", "son.co.za.csv")

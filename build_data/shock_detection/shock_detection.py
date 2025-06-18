@@ -25,7 +25,9 @@ civic_data_folder = '../../data/1-civic-aggregate'
 rai_data_folder = '../../data/1-rai-aggregate'
 civic_result_folder = '../../data/2-civic-shock'
 rai_result_folder = '../../data/2-rai-shock'
-country_list = ["Belarus"]
+country_list = ["Panama", "Costa Rica", "Solomon Islands", "Dominican Republic",
+                      "Peru", "Nicaragua", "El Salvador", "Honduras", "Jamaica",
+                      "Paraguay", "Ecuador", "Colombia"]
 
 #Function to get files from static folder
 def get_updated_files(path='.'):
