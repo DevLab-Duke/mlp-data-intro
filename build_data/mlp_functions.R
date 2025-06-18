@@ -160,6 +160,9 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   }
   
   # Warn about local sources present but not expected
+  # Filter out sapo.pt.csv from unexpected sources before warning
+  unexpected_local_sources <- setdiff(unexpected_local_sources, "sapo.pt.csv")
+  
   if (length(unexpected_local_sources) > 0) {
     warning(sprintf("Country '%s': %d local source(s) present in dropbox folder but not defined in constants.R:\n  %s", 
                    country, length(unexpected_local_sources), paste(unexpected_local_sources, collapse = ", ")), 
