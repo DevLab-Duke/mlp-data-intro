@@ -8,7 +8,7 @@ source(here("build_data", "constants.R"))
 ########################
 ## Create MLP data using modified mlp package functions
 
-country_name_list = c("Belarus")
+country_name_list = c("Bangladesh", "Colombia", "Costa Rica", "Dominican Republic", "Ecuador", "El Salvador", "Honduras", "Jamaica", "Nicaragua", "Nigeria", "Panama", "Paraguay", "Peru", "Solomon Islands", "Uganda")
 
 # "Panama", "Costa Rica", "Solomon Islands", "Dominican Republic", 
 #                       "Peru", "Nicaragua", "El Salvador", "Honduras", "Jamaica", 

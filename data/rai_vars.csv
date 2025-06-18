@@ -1,22 +1,21 @@
 variable,name,theme,theme_name
 arms_transfer_security_aid_assistance,Security Aid,hp,Hard Power
 bribery_economic_corruption,Bribery/Economic Corruption,bal,Backlash
-diaspora_activation,Diaspora Activation,sp,Soft Power
 diplomatic_mediation,Diplomatic Mediation,dip,Diplomacy
-diplomatic_recognition,Diplomatic Recognition,dip,Diplomacy
-diplomatic_sanction,Diplomatic Sanction,dip,Diplomacy
+diplomatic_ties,Diplomatic Recognition,dip,Diplomacy
+diplomatic_action,Diplomatic Sanction,dip,Diplomacy
 diplomatic_statement,Diplomatic Statement,dip,Diplomacy
-diplomatic_visit,Diplomatic Visit,dip,Diplomacy
-economic_aid_assistance,Economic Aid/Assistance,ep,Economic Power
+diplomatic_meeting,Diplomatic Visit,dip,Diplomacy
+foreign_aid_assistance,Economic Aid/Assistance,ep,Economic Power
 intelligence_counterintelligence,Intelligence/Counterintelligence,di,Domestic Interference
-investment,Investment Action,ep,Economic Power
+foreign_investment,Investment Action,ep,Economic Power
 joint_security_force_exercise,Security Force Exercise,hp,Hard Power
 media_campaign_intervention,Media Campaign/Intervention,sp,Soft Power
 political_process_policy_intervention,Political Process and Policy Intervention,di,Domestic Interference
-professional_cultural_exchange,Professional/Cultural Exchange,sp,Soft Power
-security_cooperation,Security Cooperation,hp,Hard Power
-security_force_facility_presence,Security Force Presence,hp,Hard Power
-surveillance,Surveillance,di,Domestic Interference
+social_academic_cultural_activity,Professional/Cultural Exchange,sp,Soft Power
+security_engagement,Security Cooperation,hp,Hard Power
+military_activity,Security Force Presence,hp,Hard Power
+cyber_attack,Surveillance,di,Domestic Interference
 tech_transfer_investment,Technology Transfer/Investment,ep,Economic Power
 trade_agreement_exchange,Trade Agreement/Exchange,ep,Economic Power
 trade_financial_sanction,Trade/Financial Sanction,ep,Economic Power

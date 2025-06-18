@@ -10,15 +10,10 @@ civic <- c("arrest", "censor", "electionactivity", "electionirregularities", "co
            "raid", "threaten", "violencelethal", "violencenonlethal")
 
 #' @export
-rai <- c("arms_transfer_security_aid_assistance", "bribery_economic_corruption",
-         "diaspora_activation", "diplomatic_mediation", "diplomatic_recognition",
-         "diplomatic_sanction", "diplomatic_statement", "diplomatic_visit",
-         "economic_aid_assistance", "intelligence_counterintelligence",
-         "investment", "joint_security_force_exercise", "media_campaign_intervention",
-         "political_process_policy_intervention", "professional_cultural_exchange",
-         "security_cooperation", "security_force_facility_presence",
-         "surveillance", "tech_transfer_investment", "trade_agreement_exchange",
-         "trade_financial_sanction", "transnational_organization_crime")
+rai <- c("arms_transfer_security_aid_assistance", "bribery_economic_corruption", "cyber_attack", "diplomatic_action", "diplomatic_mediation", "diplomatic_meeting",
+         "diplomatic_statement", "diplomatic_ties", "foreign_aid_assistance", "foreign_investment", "intelligence_counterintelligence", "joint_security_force_exercise",
+         "media_campaign_intervention", "military_activity", "political_process_policy_intervention", "security_engagement", "social_academic_cultural_activity",
+         "tech_transfer_investment", "trade_agreement_exchange", "trade_financial_sanction", "transnational_organization_crime")
 
 #' @export
 cr_vars = c("arrest", "cooperate", "corruption", "defamationcase", "legalaction", "legalchange", "purge", "raid", "threaten", "violencelethal", "violencenonlethal")
@@ -54,7 +49,7 @@ isources = c("aljazeera.com.csv", "bbc.com.csv", "csmonitor.com.csv", "france24.
              "nytimes.com.csv", "reuters.com.csv", "scmp.com.csv", "theguardian.com.csv",
              "themoscowtimes.com.csv", "washingtonpost.com.csv", "wsj.com.csv",
              "lemonde.fr.csv", "liberation.fr.csv", "elpais.com.csv",
-             "lefigaro.fr.csv", "sapo.pt.csv")
+             "lefigaro.fr.csv")
 
 #' @describeIn whitelist_sources Vector of usable regional sources.
 #' @export

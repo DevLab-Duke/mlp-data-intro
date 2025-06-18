@@ -448,7 +448,7 @@ vet_sources <- function(sources, country, use_region_filter = FALSE) {
 #' @describeIn path Path to the RAI counts folder
 #' @export
 path_counts_rai <- function(...) {
-  path_dropbox("Counts_RAI", ...)
+  path_dropbox("Counts_RAI_New", ...)
 }
 
 #' Read un-aggregated RAI counts
