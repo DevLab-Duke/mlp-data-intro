@@ -86,7 +86,7 @@ a
 
 library(ISOcodes)
 
-lan = read_csv(here::here("languages", "Scraping Process List.csv")) %>%
+lan = read_csv(here::here("writing","languages", "Scraping Process List bbcfde3f5f5b4a80a3a0375e5c07f939.csv")) %>%
   filter(! Name %in% c("Roya’s project")) %>%
   filter(!is.na(Language))
 
