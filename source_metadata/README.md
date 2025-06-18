@@ -15,7 +15,7 @@ This folder contains metadata about the media sources in the MLP dataset. It inc
 | `ownership_and_bias_codebook.pdf` | Codebook definitions for variables used in the ownership and bias tracker |
 | `ownership_and_bias_tracker.xlsx` | Tracker for ownership change and bias at the ownership-change-level |
 | `source_bias_codebook.pdf` | RA instructions specifically for coding political bias |
-| `source_bias_by_country.xlsx` | Matrix of source-level information related to pro-regime and ideology bias, government ownership, and monthly volume scraped by country with press freedom indeces and government changes|
+| `source_bias_by_country.xlsx` | Matrix of source-level information related to pro-regime and ideology bias, ownership, and monthly volume scraped by country with press freedom indeces and government changes|
 
 ---
 
