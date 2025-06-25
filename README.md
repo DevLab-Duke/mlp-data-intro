@@ -37,6 +37,8 @@ Current Overleaf Location: https://www.overleaf.com/9891685827jxbvnrshzxbw#683bc
   - Variables with `_ncr` suffix: Non-politically relevant events filtered out
 - **`data/final-counts/`**: Raw and normalized article counts by country-month
   - `full-data.rds` and `full-data.csv`: Complete dataset across all countries
+  - `shock-civic-data.csv`: Combined civic shock detection results across all countries
+  - `shock-rai-data.csv`: Combined RAI shock detection results across all countries and influencers
 - **`data/2-civic-shock/`** and **`data/2-rai-shock/`**: Shock detection results
   - `[countryname].csv`: Civic event shock detection results
   - `[countryname]_[influencer].csv`: RAI event shock detection results by influencer 

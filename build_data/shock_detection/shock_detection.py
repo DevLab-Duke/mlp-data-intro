@@ -279,4 +279,80 @@ def run_rai_peak_detection(path):
     
 # Run both civic and RAI peak detection
 run_peak_detection(civic_data_folder)    
-run_rai_peak_detection(rai_data_folder)    
+run_rai_peak_detection(rai_data_folder)
+
+# Combine all CSV files into single files
+def combine_civic_shock_files():
+    """Combine all civic shock detection CSV files into a single CSV file."""
+    civic_files = []
+    
+    # Get all CSV files from civic shock folder
+    for filename in os.listdir(civic_result_folder):
+        if filename.endswith('.csv'):
+            file_path = os.path.join(civic_result_folder, filename)
+            country = filename[:-4]  # Remove .csv extension
+            
+            # Read the CSV file
+            df = pd.read_csv(file_path)
+            df['country'] = country  # Add country column
+            civic_files.append(df)
+    
+    if civic_files:
+        # Combine all dataframes
+        combined_civic = pd.concat(civic_files, ignore_index=True)
+        
+        # Reorder columns to put country first, then date
+        cols = ['country', 'date'] + [col for col in combined_civic.columns 
+                                      if col not in ['country', 'date']]
+        combined_civic = combined_civic[cols]
+        
+        # Save combined file to final-counts folder
+        final_counts_folder = '../../data/final-counts'
+        output_path = os.path.join(final_counts_folder, 'shock-civic-data.csv')
+        combined_civic.to_csv(output_path, index=False)
+        print(f"Combined civic shock data saved to: {output_path}")
+    else:
+        print("No civic shock CSV files found to combine.")
+
+def combine_rai_shock_files():
+    """Combine all RAI shock detection CSV files into a single file."""
+    rai_files = []
+    
+    # Get all CSV files from RAI shock folder
+    for filename in os.listdir(rai_result_folder):
+        if filename.endswith('.csv') and '_' in filename:
+            file_path = os.path.join(rai_result_folder, filename)
+            
+            # Parse filename to get country and influencer
+            filename_parts = filename[:-4].split('_', 1)  # Remove .csv and split on first underscore
+            if len(filename_parts) == 2:
+                country, influencer = filename_parts
+                
+                # Read the CSV file
+                df = pd.read_csv(file_path)
+                df['country'] = country  # Add country column
+                df['influencer'] = influencer  # Add influencer column
+                rai_files.append(df)
+    
+    if rai_files:
+        # Combine all dataframes
+        combined_rai = pd.concat(rai_files, ignore_index=True)
+        
+        # Reorder columns to put country and influencer first, then date
+        cols = ['country', 'influencer', 'date'] + [col for col in combined_rai.columns 
+                                                    if col not in ['country', 'influencer', 'date']]
+        combined_rai = combined_rai[cols]
+        
+        # Save combined file to final-counts folder
+        final_counts_folder = '../../data/final-counts'
+        output_path = os.path.join(final_counts_folder, 'shock-rai-data.csv')
+        combined_rai.to_csv(output_path, index=False)
+        print(f"Combined RAI shock data saved to: {output_path}")
+    else:
+        print("No RAI shock CSV files found to combine.")
+
+# Run the combination functions
+print("Combining shock detection files...")
+combine_civic_shock_files()
+combine_rai_shock_files()
+print("File combination completed.")    

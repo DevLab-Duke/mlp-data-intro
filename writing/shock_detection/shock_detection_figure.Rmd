@@ -13,46 +13,7 @@ library(ggplot2)
 library(tidyverse)
 ```
 
-```{r, include=FALSE, echo = FALSE}
-#Load Permanent versions of the data
-wd = here::here()
 
-path_dropbox <- function(...) {
-  # default guess
-  base <- "~/Dropbox/ML for Peace/"
-
-  # user/computer-specific alternatives
-  if (Sys.info()["user"]=="andybega") {
-    base <- "~/Dropbox/Work/ML for Peace/"
-  }
-  # jeremy: office windows
-  if (Sys.info()["user"]=="jerem") {
-    base <- "C:/Users/jerem/Dropbox/ML for Peace/"
-  }
-  # jeremy: home linux
-  if (Sys.info()["user"]=="jerem") {
-    base <- "/home/jeremy/Dropbox/ML for Peace/"
-  }
-  # donald
-  if(Sys.info()["user"] == "skybl") {
-    if(Sys.info()["nodename"] == "DONALDS_DESKTOP"){
-      base <- "C:/Users/skybl/Dropbox/ML for Peace/"
-    } else{
-     base <- "D:/Dropbox/ML for Peace/" 
-    }
-  }
-  # Check to make sure the directory exists and is correct
-  if (!dir.exists(base)) {
-    stop("Go edit path_dropbox in the code chunk and add your path to the Dropbox folder")
-  }
-
-  file.path(base, ...)
-}
-
-dropbox <- path_dropbox()
-
-github <- here() %>% str_remove("mlp-data-intro")
-```
 
 
 ```{r}
