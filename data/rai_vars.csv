@@ -1,4 +1,4 @@
-variable,name,theme,theme_name
+id,name,theme,theme_name
 arms_transfer_security_aid_assistance,Security Aid,hp,Hard Power
 bribery_economic_corruption,Bribery/Economic Corruption,bal,Backlash
 diplomatic_mediation,Diplomatic Mediation,dip,Diplomacy

@@ -1,21 +1,21 @@
-"","id","names"
-"1","arrestNorm","Arrests"
-"2","censorNorm","Censorship"
-"3","activismNorm","Civic Activism"
-"4","corruptionNorm","Corruption"
-"5","defamationcaseNorm","Defamation Cases"
-"6","electionactivityNorm","Election Activity"
-"7","electionirregularitiesNorm","Election Irregularities"
-"8","coupNorm","Irregular Transitions"
-"9","legalactionNorm","Legal Actions"
-"10","legalchangeNorm","Legal Changes"
-"11","violencelethalNorm","Lethal Violence"
-"12","disasterNorm","Natural Disasters"
-"13","violencenonlethalNorm","Non-lethal Violence"
-"14","cooperateNorm","Political Cooperation"
-"15","threatenNorm","Political Threats"
-"16","protestNorm","Protests"
-"17","purgeNorm","Purge/Replace"
-"18","raidNorm","Raids"
-"19","martiallawNorm","State of Emergency"
-"20","mobilizesecurityNorm","Troop Mobilization"
+id,name
+arrest,Arrests
+censor,Censorship
+activism,Civic Activism
+corruption,Corruption
+defamationcase,Defamation Cases
+electionactivity,Election Activity
+electionirregularities,Election Irregularities
+coup,Irregular Transitions
+legalaction,Legal Actions
+legalchange,Legal Changes
+violencelethal,Lethal Violence
+disaster,Natural Disasters
+violencenonlethal,Non-lethal Violence
+cooperate,Political Cooperation
+threaten,Political Threats
+protest,Protests
+purge,Purge/Replace
+raid,Raids
+martiallaw,State of Emergency
+mobilizesecurity,Troop Mobilization

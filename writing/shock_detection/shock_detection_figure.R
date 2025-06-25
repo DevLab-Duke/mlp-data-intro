@@ -16,7 +16,8 @@ plot_civic_shock = function(country, event) {
   
   # Setup label mapping for civic events from cs_vars.csv
   choices_df = cs_vars %>%
-    select(id, names)
+    select(id, name) %>%
+    mutate(id = paste0(id, "Norm"))
   
   # Read combined civic data
   civic_data = readr::read_csv(here::here("data", "final-counts", "full-civic-data.csv"))
@@ -49,7 +50,7 @@ plot_civic_shock = function(country, event) {
   pred_data = as.data.frame(pred_data)
   
   # Get title
-  title = choices_df[choices_df$id == var,]$names
+  title = choices_df[choices_df$id == var,]$name
   if(length(title) == 0) title = var  # fallback if not found
   
   if(title %in% c("Civic Space Index")){
@@ -86,16 +87,15 @@ plot_civic_shock = function(country, event) {
 plot_rai_shock = function(country, influencer, event) {
   
   # Define variable
-  var = paste0(event, "Norm")  # RAI events have Norm suffix
-  var_shk = event  # RAI shock columns don't have Norm suffix
-  
+  var = event  
+
   # Read RAI variable mapping from rai_vars.csv
   rai_vars = readr::read_csv(here::here("data", "rai_vars.csv"))
   
   # Setup label mapping for RAI events from rai_vars.csv
   rai_choices_df = rai_vars %>%
-    mutate(id = paste0(var, "Norm")) %>%
-    select(id, names = name)
+    select(id, name) %>%
+    mutate(id = paste0(var, "Norm")) 
   
   # Read combined RAI data  
   rai_data = readr::read_csv(here::here("data", "final-counts", "full-rai-data.csv"))
@@ -103,14 +103,15 @@ plot_rai_shock = function(country, influencer, event) {
   
   # Filter for specific country and influencer
   rai_country = rai_data %>% 
-    filter(country == !!country, influencer == !!influencer) %>%
+    filter(country == !!country & influencer == !!influencer) %>%
     select(date, all_of(var)) %>%
     mutate(date_my = ymd(date))
   
   shock_country = shock_data %>% 
-    filter(country == !!country, influencer == !!influencer) %>%
-    select(date, all_of(var_shk)) %>%
-    mutate(date_my = ymd(date))
+    filter(country == !!country, influencer == !!tolower(influencer)) %>%
+    select(date, all_of(var)) %>%
+    mutate(date_my = ymd(date)) %>%
+    rename_with(~ str_replace(.x, "Norm$", "Shock"), ends_with("Norm"))
   
   # Join data
   combined_data = rai_country %>%
@@ -127,7 +128,7 @@ plot_rai_shock = function(country, influencer, event) {
   pred_data = as.data.frame(pred_data)
   
   # Get title
-  title = rai_choices_df[rai_choices_df$id == var,]$names
+  title = rai_choices_df[rai_choices_df$id == var,]$name
   if(length(title) == 0) title = event  # fallback if not found
   
   graph_y_lab = paste("% of Articles on", title)
@@ -136,7 +137,7 @@ plot_rai_shock = function(country, influencer, event) {
   # Create plot
   a = ggplot(pred_data, aes(x = date_my, y = get(var))) +
     geom_line(linewidth = 1, color = "black", linetype=1) +
-    geom_point(data = subset(pred_data, get(var_shk) == 1), 
+    geom_point(data = subset(pred_data, get(str_replace(var, "Norm", "Shock")) == 1), 
                aes(x = date_my, y = get(var)), color = "red", size = 2.5) +
     theme_bw() +
     scale_x_date(breaks = des_break, date_labels = "%b %y", 
@@ -157,11 +158,7 @@ plot_rai_shock = function(country, influencer, event) {
 
 # Example usage:
 # Generate Indonesia arrest shocks visualization
-shock_plot <- plot_civic_shock("Columbia", "arrestNorm")
+plot_civic_shock("Colombia", "arrestNorm")
 
-# Display plot
-print(shock_plot)
+plot_rai_shock("Colombia", "Russia", "arms_transfer_security_aid_assistanceNorm")
 
-# Example RAI plot (uncomment to use):
-# russia_arms_indonesia <- plot_rai_shock("Indonesia", "russia", "arms_transfer_security_aid_assistance")
-# print(russia_arms_indonesia)
