@@ -32,7 +32,10 @@ This repository contains the academic paper data and code for "Tracking Civic Sp
   - Variables with `Norm` suffix: Raw counts normalized by `article_total`, which counts the number of articles published about that country per country-month.
   - Variables with `_ncr` suffix: Non-politically relevant events filtered out
 - **`data/final-counts/`**: Raw and normalized article counts by country-month
-  - `full-data.rds` and `full-data.csv`: Complete dataset across all countries
+  - `full-civic-data.csv`: Complete civic dataset across all countries
+  - `full-rai-data.csv`: Complete RAI dataset across all countries and influencers
+  - `shock-civic-data.csv`: Combined civic shock detection results across all countries
+  - `shock-rai-data.csv`: Combined RAI shock detection results across all countries and influencers
 - **`data/shocks/`**: Event detection algorithm results showing major jumps in reporting (event salience)
 - **RAI theme aggregation**: Automated calculation of theme sums (Hard Power, Soft Power, Economic Power, Diplomacy, Domestic Interference, Backlash) in RAI data using `data/rai_vars.csv` mapping 
 

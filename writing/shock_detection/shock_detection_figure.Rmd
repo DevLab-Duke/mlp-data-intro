@@ -25,14 +25,13 @@ plot_variable = function(country, event){
   
   # Setup label mapping dataframe
   choices_df = data.frame(
-    id = c("f1", "arrestNorm", "censorNorm", "corruptionNorm", "activismNorm", "cooperateNorm", "defamationcaseNorm", "legalactionNorm", "legalchangeNorm", "protestNorm", "purgeNorm", "raidNorm", "threatenNorm", "violencelethalNorm", "violencenonlethalNorm", "mobilizesecurityNorm"),
-    names = c("Civic Space Index", "Arrests", "Censorship", "Corruption", "Civic Activism", "Political Cooperation", "Defamation Cases", "Legal Actions","Legal Changes",  "Protests", "Purges", "Raids", "Political Threats","Lethal Violence", "Non-lethal Violence", "Mobilize Troops") 
+    id = c("arrestNorm", "censorNorm", "corruptionNorm", "activismNorm", "cooperateNorm", "defamationcaseNorm", "legalactionNorm", "legalchangeNorm", "protestNorm", "purgeNorm", "raidNorm", "threatenNorm", "violencelethalNorm", "violencenonlethalNorm", "mobilizesecurityNorm"),
+    names = c("Arrests", "Censorship", "Corruption", "Civic Activism", "Political Cooperation", "Defamation Cases", "Legal Actions","Legal Changes",  "Protests", "Purges", "Raids", "Political Threats","Lethal Violence", "Non-lethal Violence", "Mobilize Troops") 
   )
   
   # Read-in data
   # categories = dat
-  #categories = read_csv(here("forecast/data", paste0(country, "-indicators.csv")))
-  categories = readr::read_csv(here::here("data", "counts", paste0(country,".csv")))
+  categories = readr::read_csv(here::here("data", "final-counts", paste0(country,".csv")))
   
   categories = categories[, c("date", var)]
   categories$date_my = parse_date_time(categories$date, "ymd")
