@@ -8,11 +8,15 @@ source(here("build_data", "constants.R"))
 ########################
 ## Create MLP data using modified mlp package functions
 
-country_name_list = c("Panama", "Costa Rica", "Solomon Islands", "Dominican Republic",
-                      "Peru", "Nicaragua", "El Salvador", "Honduras", "Jamaica",
-                      "Paraguay", "Ecuador", "Colombia")
-
-#"Bangladesh", "Nigeria",    "Uganda"
+country_name_list = c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic",
+               "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan", # EE/CA
+               "Algeria", "Mali","Morocco","Niger", # MENA
+               "Colombia", "Costa Rica", "Ecuador", "El Salvador", "Guatemala", "Honduras",
+               "Jamaica", "Nicaragua", "Paraguay", "Panama", "Peru",  # LAC "Mexico", 
+               "Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste", #EA
+               "Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Malawi",
+               "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan",
+               "Tanzania", "Tunisia", "Uganda", "Zambia", "Zimbabwe") # SSA
 
 ## Civic
 for (cc in country_name_list) {
@@ -23,6 +27,9 @@ for (cc in country_name_list) {
   df <- aggregate_and_merge(cc, quiet = FALSE)
 
 }
+
+
+country_name_list = c("Niger", "Zimbabwe", "Zambia", "Ukraine", "Tanzania", "Serbia", "Senegal", "Morocco", "Mauritania", "Mali", "Kosovo", "Kenya", "Georgia", "Ethiopia", "Benin", "Albania", "Panama", "Costa Rica", "Solomon Islands", "Dominican Republic", "Honduras", "Bangladesh", "Uganda", "Peru", "Nicaragua", "Jamaica", "El Salvador", "Nigeria", "Paraguay", "Ecuador", "Colombia")
 
 ## RAI
 for (cc in country_name_list) {

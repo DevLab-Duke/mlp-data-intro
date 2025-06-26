@@ -319,7 +319,7 @@ local_source_select <- function(country){
       lsources = c("larepublica.net.csv", "news.co.cr.csv", "ticotimes.net.csv", "diarioextra.com.csv")
     ),
     "Panama" = list(
-      lsources = c("elsiglo.com.pa.csv", "critica.com.pa.csv", "panamaamerica.com.pa.csv", "newsroompanama.com.csv","prensa.com.csv")
+      lsources = c("elsiglo.com.pa.csv", "critica.com.pa.csv", "panamaamerica.com.pa.csv", "newsroompanama.com.csv")
     ),
     "Mexico" = list(
       lsources = c("proceso.com.mx.csv")

@@ -584,7 +584,7 @@ aggregate_and_merge_rai <- function(country, quiet = TRUE) {
   # Calculate sum for each theme
   for (theme_code in unique_themes) {
     # Get variables for this theme
-    theme_vars <- rai_vars$variable[rai_vars$theme == theme_code]
+    theme_vars <- rai_vars$id[rai_vars$theme == theme_code]
     # Add "Norm" suffix to match column names
     theme_vars_norm <- paste0(theme_vars, "Norm")
     # Keep only variables that exist in the data
