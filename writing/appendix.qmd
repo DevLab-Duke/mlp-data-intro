@@ -257,7 +257,7 @@ for (region_code in names(region_names)) {
 
 ## Section 4: Assessing Outlet Independence
 
-MLP collects extensive news data from various national news sources across countries. Bias is checked for all our sources at a three-month frequency due to:
+For countries with restrictive media environments, we aim to source at least half of the articles for each country from outlets that are politically independent. For all countries that are not in the most 100 according to RSF, we collect metadata that about each source that we collect data from. Bias is checked for all our sources at a three-month frequency due to:
 
 -   **Frequent changes** in coverage of sources.
 -   **Changes in ownership** of sources.
