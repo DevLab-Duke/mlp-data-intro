@@ -160,5 +160,5 @@ plot_rai_shock = function(country, influencer, event) {
 # Generate Indonesia arrest shocks visualization
 plot_civic_shock("Colombia", "arrestNorm")
 
-plot_rai_shock("Colombia", "Russia", "arms_transfer_security_aid_assistanceNorm")
+plot_rai_shock("Niger", "Russia", "arms_transfer_security_aid_assistanceNorm")
 
