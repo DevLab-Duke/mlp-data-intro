@@ -29,9 +29,9 @@ library(kableExtra)
 library(ggplot2)
 library(changepoint)
 library(cowplot)
-library(ml4p.forecast)
 library(here)
-
+library(tidyr)
+source(here("build_data", "constants.R"))
 ```
 
 # Appendix A: Data in HQMARC
@@ -42,39 +42,82 @@ library(here)
 #| echo: false
 #| warning: false
 #| label: source-distribution
-#| fig-cap: "The number of domestic media outlets included in the HQMARC corpus by country."
+#| fig-cap: "Number of domestic and regional media outlets in the HQMARC corpus by country."
+#| fig-height: 6.5
 
 library(ISOcodes)
 
-civic = readr::read_csv(here::here("data", "counts", "full-data.csv"))
+civic = readr::read_csv(here::here("data", "final-counts", "full-civic-data.csv"))
 
 # Initialize an empty dataframe to store the results
-result_df <- data.frame(country = character(), lsources_len = integer(), stringsAsFactors = FALSE)
+result_df <- data.frame(country = character(), lsources_len = integer(), rsources_len = integer(), total_sources = integer(), region = character(), stringsAsFactors = FALSE)
 
 sum_lengths <- 0
 for (i in unique(civic$country)) {
-  lsources_len = ml4p.forecast::local_source_select(i)$lsources
-  len = length(lsources_len)
+  lsources_len = local_source_select(i)$lsources
+  local_len = length(lsources_len)
   
-  # Append the country and the length to the dataframe
-  result_df <- rbind(result_df, data.frame(country = i, lsources_len = len))
+  # Find region for this country
+  country_region <- NA
+  for (region in names(country_regions)) {
+    if (i %in% country_regions[[region]]) {
+      country_region <- region
+      break
+    }
+  }
+  
+  # Get regional sources for this country's region
+  rsources_len = region_sources(i)
+  regional_len = length(rsources_len)
+  total_len = local_len + regional_len
+  
+  # Append the country and the lengths to the dataframe
+  result_df <- rbind(result_df, data.frame(country = i, lsources_len = local_len, rsources_len = regional_len, total_sources = total_len, region = country_region))
   
   # Update sum_lengths
-  sum_lengths <- sum_lengths + len
+  sum_lengths <- sum_lengths + total_len
 }
 
-# Create a bar plot to visualize the length of lsources by country
-a = ggplot(result_df, aes(x = reorder(country, -lsources_len), y = lsources_len)) +
-  geom_bar(stat = "identity", fill = "darkgrey") +
-  labs(title = "Number of Domestic Sources by Country", 
+# Reshape data for stacked bar chart
+result_df_long <- result_df %>%
+  mutate(region = case_when(
+    region == "EE_CA" ~ "Eastern Europe\n& Central Asia",
+    region == "MENA" ~ "Middle East\n& North Africa", 
+    region == "LAC" ~ "Latin America\n & Caribbean",
+    region == "EA" ~ "East Asia",
+    region == "SSA" ~ "Sub-Saharan\n Africa",
+    TRUE ~ region
+  )) %>%
+  pivot_longer(cols = c(lsources_len, rsources_len), 
+               names_to = "source_type", 
+               values_to = "count") %>%
+  mutate(source_type = case_when(
+    source_type == "lsources_len" ~ "Local",
+    source_type == "rsources_len" ~ "Regional"
+  ))
+
+# Create a stacked horizontal bar plot grouped by region
+a = ggplot(result_df_long, aes(x = count, y = reorder(country, total_sources), fill = source_type)) +
+  geom_bar(stat = "identity") +
+  facet_grid(region ~ ., scales = "free_y", space = "free_y") +
+  labs(title = "Number of Domestic and Regional Sources by Country", 
        x = NULL, 
-       y = NULL) +
+       y = NULL,
+       fill = "Source Type") +
   theme_bw() +
-  scale_y_continuous(breaks = 0:max(result_df$lsources_len)) +  # Set the y-axis to display numbers from 0 to 5
-  theme(axis.text.x = element_text(angle = 45, hjust = 1, size = 6),
-        title = element_text(size = 10))
+  scale_fill_manual(values = c("Local" = "darkblue", "Regional" = "lightblue")) +
+  scale_x_continuous(breaks = 0:max(result_df$total_sources)) +
+  theme(axis.text.y = element_text(size = 6),
+        title = element_text(size = 10),
+        strip.text = element_text(size = 8),
+        strip.text.y = element_text(angle = 0),
+        legend.position = "bottom")
 
 a
+
+# Save the plot
+ggsave(here("writing", "sources_by_region.png"), plot = a, 
+       width = 8, height = 10, dpi = 300)
 
 ```
 
@@ -88,7 +131,8 @@ library(ISOcodes)
 
 lan = read_csv(here::here("writing","languages", "Scraping Process List bbcfde3f5f5b4a80a3a0375e5c07f939.csv")) %>%
   filter(! Name %in% c("Roya’s project")) %>%
-  filter(!is.na(Language))
+  filter(!is.na(Language)) %>%
+  mutate(Name = gsub(".*: ", "", Name))
 
 # Remove parentheses and all characters between them
 lan$Language <- gsub("\\(.*?\\)", "", lan$Language)
@@ -103,228 +147,112 @@ nl = length(langs)
 
 ```
 
-The *HQMARC* corpus currently includes domestic media outlets publishing in `r nl` languages. This number will increase as we add new countries and media sources to the corpus. These languages include `r unlist(ISO_639_2[ISO_639_2$Alpha_2 %in% langs, ]$Name)`. Below, we provide the languages associated with media outlets in each country using the language ISO codes.
+The *HQMARC* corpus includes domestic media outlets publishing in `r nl` languages. These languages include `r unlist(gsub(";.*", "", ISO_639_2[ISO_639_2$Alpha_2 %in% langs, ]$Name))`. Below, we provide the languages associated with media outlets in each country using the language ISO codes.
 
 ```{r}
 #| echo: false
 #| warning: false
+#| results: asis
 
-# Loop over the dataframe and print each country with its languages
-for(i in 1:nrow(lan)) {
-  cat("**", lan$Name[i], "**: ", lan$Language[i], "\n\n", sep = "")
+# Add region information to language data
+language_data <- lan %>%
+  select(Country = Name, Languages = Language) %>%
+  mutate(Region = NA,
+         Country = case_when(Country == "Congo" ~ "DR Congo",
+                     TRUE ~ Country))
+
+# Add region for each country
+for (region in names(country_regions)) {
+  language_data$Region[language_data$Country %in% country_regions[[region]]] <- region
+}
+
+# Define region names
+region_names <- list(
+  "EE_CA" = "Eastern Europe & Central Asia",
+  "MENA" = "Middle East & North Africa", 
+  "LAC" = "Latin America & Caribbean",
+  "EA" = "East Asia",
+  "SSA" = "Sub-Saharan Africa"
+)
+
+# Create separate tables for each region
+for (region_code in names(region_names)) {
+  region_data <- language_data %>%
+    filter(Region == region_code) %>%
+    arrange(Country) %>%
+    select(Country, Languages)
+  
+  if (nrow(region_data) > 0) {
+    region_table <- kable(region_data, 
+          format = "latex", 
+          linesep = "",
+          row.names = FALSE,
+          longtable = FALSE,
+          caption = paste( gsub("&", "\\\\&", region_names[[region_code]]))) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                    full_width = FALSE,
+                    font_size = 10,
+                    latex_options = c("hold_position"))
+    
+    print(region_table)
+    cat("\n\n")
+  }
 }
 
 ```
+
+\clearpage
 
 ## Section 3: Digital News Sources
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, results='asis'}
 library(knitr)
-library(ml4p.forecast)
-opts_chunk$set(tidy.opts=list(width.cutoff=80),tidy=TRUE)
-#isources
-cat("  -  International Sources:")
 
-counter <- 0  # Initialize counter
-for (country in isources) {
-    country <- sub("\\.csv$", "", country)
-    cat(paste0(country, ", "))
-    counter <- counter + 1
-    if (counter %% 6 == 0) {  # Check if counter is divisible by 5
-        cat("\n")  # Print newline after every 5 countries
-    }
-}
-```
+# International Sources as a formatted list
+cat("### International Sources\n\n")
+international_sources <- gsub("\\.csv$", "", isources)
+cat(paste("- ", international_sources, collapse = "\n"))
+cat("\n\n")
 
-**Sub-Saharan Africa**:
+# Regional Sources by region
+region_names <- list(
+  "EE_CA" = "Eastern Europe & Central Asia",
+  "MENA" = "Middle East & North Africa", 
+  "LAC" = "Latin America & Caribbean",
+  "EA" = "East Asia",
+  "SSA" = "Sub-Saharan Africa"
+)
 
-```{r, echo=FALSE}
-countries_afr <- c("Angola", "Benin", "Cameroon", "DR Congo", "Ethiopia", "Ghana", "Kenya", "Liberia", "Mali", "Malawi", "Mauritania", "Mozambique", "Niger", "Nigeria", "Rwanda", "Senegal", "South Africa", "Tanzania", "Uganda", "Zambia", "Zimbabwe")
-
-cat("  -   Africa Regional Sources:", "\n")
-cat("africanews.com", "theeastafrican.co.ke", "iwpr.net\n\n")
-
-# Loop through countries
-for (country in countries_afr) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  sources = local_source_select(country)$lsources
-  sources = gsub("\\.csv$", "", sources)
-  
-  # Determine the number of columns based on the country
-  num_columns <- ifelse(country == "Liberia", 3, 5)
-  
-  counter <- 0  # Reset the counter for each country
-  
-  # Loop through sources
-  for (source in sources) {
-    counter <- counter + 1
-    cat(paste0( source))
-    
-    # Check if the counter reaches the specified number of columns
-    if (counter %% num_columns == 0) {
-      cat("\n")
-    } else {
-      cat(", ")
-    }
+for (region_code in names(region_names)) {
+  regional_sources <- region_rsources[[region_code]]
+  if (length(regional_sources) > 0) {
+    cat("### ", region_names[[region_code]], " Regional Sources\n\n")
+    regional_sources_clean <- gsub("\\.csv$", "", regional_sources)
+    cat(paste("- ", regional_sources_clean, collapse = "\n"))
+    cat("\n\n")
   }
-  
-  cat("\n\n")
 }
 
-```
-
-**Middle East and North Africa**
-
-```{r, echo=FALSE}
-# Define the MENA countries
-countries_mena <- c("Morocco", "Tunisia", "Turkey")
-
-# Loop through MENA countries
-for (country in countries_mena) {
-  cat(paste0("  -  ", country, ":\n"))
+# Local Sources by country and region
+for (region_code in names(region_names)) {
+  countries_in_region <- country_regions[[region_code]]
   
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
+  cat("### ", region_names[[region_code]], " Local Sources\n\n")
   
-  # Print the sources with bullet points
-  for (i in seq_along(sources)) {
-    cat(paste0( sources[i]))
-    
-    # Check if it's not the last source for the country
-    if (i < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 3 sources
-      if (i %% 5 == 0) {
-        cat("\n")
+  for (country in countries_in_region) {
+    tryCatch({
+      sources <- local_source_select(country)$lsources
+      if (length(sources) > 0) {
+        sources_clean <- gsub("\\.csv$", "", sources)
+        cat(country, ":\n\n")
+        cat(paste("  - ", sources_clean, collapse = "\n"))
+        cat("\n\n")
       }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
+    }, error = function(e) {
+      # Skip countries without local sources
+    })
   }
 }
-```
-
-**Eastern Europe**
-
-```{r, echo=FALSE}
-# Define the Eastern European regional sources
-cat("  -   Eastern Europe Regional Sources:\n")
-cat("euronews.com/tag/eastern-europe", "neweasterneurope.edu", "balkaninsight.com", "iwpr.net\n\n")
-
-# Define the Eastern European countries
-countries_est_eu <- c("Albania", "Armenia", "Azerbaijan", "Belarus", "Georgia", "Hungary", "Macedonia", "Moldova", "Kosovo", "Ukraine", "Serbia")
-
-# Loop through Eastern European countries
-for (country in countries_est_eu) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  # Print the sources with bullet points
-  for (i in seq_along(sources)) {
-    cat(paste0(sources[i]))
-    
-    # Check if it's not the last source for the country
-    if (i < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 3 sources
-      if (i %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
-
-```
-
-**Latin America and the Caribbean**:
-
-```{r, echo=FALSE}
-# Define the Latin America regional sources
-cat("  -   Latin America Regional Sources:\n")
-cat("elpais.com", "cnnespanol.cnn.com", "iwpr.net\n\n")
-
-# Define the Latin American countries
-countries_lacar <- c("Colombia", "Ecuador", "El Salvador", "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Paraguay", "Peru")
-
-# Loop through Latin American countries
-for (country in countries_lacar) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  counter <- 0  # Reset the counter for each country
-  
-  # Loop through sources
-  for (source in sources) {
-    cat(paste0(source))
-    counter <- counter + 1
-    
-    # Check if it's not the last source for the country
-    if (counter < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 5 sources
-      if (counter %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
-
-```
-
-**Asia**:
-
-```{r, echo=FALSE}
-# Define the Asia regional sources
-cat("  -   Asia Regional Sources:\n")
-cat("asiatimes.com", "asia.nikkei.com", "iwpr.net\n\n")
-
-# Define the Asian countries
-countries_asia <- c("Bangladesh", "Cambodia", "Indonesia", "India", "Kazakhstan", "Kyrgyzstan", "Malaysia", "Philippines", "Sri Lanka", "Uzbekistan")
-
-# Loop through Asian countries
-for (country in countries_asia) {
-  cat(paste0("  -  ", country, ":\n"))
-  
-  # Get the sources for the current country
-  sources <- local_source_select(country)$lsources
-  sources <- gsub("\\.csv$", "", sources)
-  
-  counter <- 0  # Reset the counter for each country
-  
-  # Loop through sources
-  for (source in sources) {
-    cat(paste0(source))
-    counter <- counter + 1
-    
-    # Check if it's not the last source for the country
-    if (counter < length(sources)) {
-      cat(", ")
-      
-      # Print newline after listing 5 sources
-      if (counter %% 5 == 0) {
-        cat("\n")
-      }
-    } else {
-      cat("\n\n")  # Add an extra newline after listing all sources for the country
-    }
-  }
-}
-
 ```
 
 ## Section 4: Assessing Outlet Independence
@@ -334,7 +262,7 @@ MLP collects extensive news data from various national news sources across count
 -   **Frequent changes** in coverage of sources.
 -   **Changes in ownership** of sources.
 
-When we forecast, tracking our accuracy is essential for reporting purposes. Weighting helps enhance the accuracy of MLP civic space forecasting. The bias check exercise assists in assigning weights during the forecasting stage of the MLP pipeline. This is achieved by evaluating the level of independence of all media sources for a country and their respective volumes. If the majority of articles for a country originate from independent sources, no weighting is required.
+The bias check exercise assists in assigning weights during the forecasting stage of the MLP pipeline. This is achieved by evaluating the level of independence of all media sources for a country and their respective volumes. If the majority of articles for a country originate from independent sources, no weighting is required.
 
 ### Section 4.1: Task
 
@@ -376,17 +304,11 @@ When we forecast, tracking our accuracy is essential for reporting purposes. Wei
 -   World Newspapers country profile: [World Newspapers Country Profiles](https://www.world-newspapers.com/countries)
 -   Freedom House: [Freedom House Country Profiles](https://freedomhouse.org/countries/freedom-world/scores)
 
-## Section 5: Source Weighting
-
-The weighting process adjusts article counts from state-owned and independent sources when aggregating civic space data at the country-month level. In countries where more than 50% of articles come from state-owned sources, the code increases the influence of independent sources by applying a weight based on the ratio of state-owned to independent articles. This ensures that independent media retains influence when state-owned coverage dominates. The weighting is recalculated each month, meaning that the balance of influence can shift over time depending on the mix of articles from state-owned and independent sources in any given month. We impose equal weighting on independent and non-independent sources by multiplying the count of articles for each *RAI* event by a weight calculated by subtracting the number of articles from non-independent sources from the result of dividing the number of non-independent articles by 0.5 and dividing this value by the number of articles from independent sources for each month. Weighting is currently applied to India, Malaysia, Sri Lanka, Angola, DR Congo, Belarus, Philippines, Paraguay, Zambia, and Zimbabwe.
-
-\newpage
-
 # Appendix B: Civic Space Definitions and Keywords
 
 ## Section 1: Event Definitions
 
--   Activisim
+-   Activism
 
     -   Any activity by individuals, community organizations, or NGOs that involve some amount of lobbying, raising awareness, or collective action beyond just the donation of money. Importantly, this does not include protests or activities related to election campaigns.
     -   **Example:** “Retired soldiers make up subsidiary of Just Cause.A group of retired soldiers met yesterday morning in a restaurant in the city of San Miguel to learn about the work of the Association Causa Justa, in order to organize a branch in the eastern part of the country.Jaime García, vice president of Causa Justa, explained that this association has been working for a couple of years to defend the interests of retired soldiers, and since then they have organized a branch in San Ana and now they intend to have another group.”
