@@ -25,15 +25,14 @@ civic_data_folder = '../../data/1-civic-aggregate'
 rai_data_folder = '../../data/1-rai-aggregate'
 civic_result_folder = '../../data/2-civic-shock'
 rai_result_folder = '../../data/2-rai-shock'
-country_list = ['Albania', 'Armenia', 'Belarus', 'Georgia', 'Hungary', 'Kosovo', 'Serbia', 
-                'Azerbaijan', 'Moldova', 'Macedonia', 'Turkey', 'Ukraine', 'Uzbekistan', 
-                'Kyrgyzstan', 'Kazakhstan', 'Algeria', 'Mali', 'Morocco', 'Niger', 
-                'Guatemala', 'Bangladesh', 'Cambodia', 'India', 'Indonesia', 'Malaysia', 
-                'Nepal', 'Pakistan', 'Philippines', 'Sri Lanka', 'Timor Leste', 'Angola', 
-                'Benin', 'Burkina Faso', 'Cameroon', 'DR Congo', 'Ethiopia', 'Ghana', 
-                'Kenya', 'Liberia', 'Malawi', 'Mauritania', 'Mozambique', 'Namibia', 
-                'Nigeria', 'Rwanda', 'Senegal', 'South Africa', 'South Sudan', 'Tanzania', 
-                'Tunisia', 'Uganda', 'Zambia', 'Zimbabwe']
+
+# Stage remaining countries (New Civic but no New RAI as of 6/26)
+country_list = ['Armenia', 'Belarus', 'Hungary', 'Azerbaijan', 'Moldova', 'Macedonia', 'Turkey', 
+                'Uzbekistan', 'Kyrgyzstan', 'Kazakhstan', 'Algeria', 'Guatemala', 'Bangladesh', 
+                'Cambodia', 'India', 'Indonesia', 'Malaysia', 'Nepal', 'Pakistan', 'Philippines', 
+                'Sri Lanka', 'Timor Leste', 'Angola', 'Burkina Faso', 'Cameroon', 'DR Congo', 'Ghana', 
+                'Liberia', 'Malawi', 'Mozambique', 'Namibia', 'Nigeria', 'Rwanda', 'South Africa', 
+                'South Sudan', 'Tunisia', 'Uganda']
 
 #Function to get files from static folder
 def get_updated_files(path='.'):
