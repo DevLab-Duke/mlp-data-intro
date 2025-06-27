@@ -12,16 +12,16 @@ cat("Looking for constants.R at:", here("build_data", "constants.R"), "\n")
 cat("constants.R exists:", file.exists(here("build_data", "constants.R")), "\n")
 
 # Source all modules
-source(here("writing", "PlotsDR", "01_data_loading.R"))
-source(here("writing", "PlotsDR", "02_plotting_functions.R"))
-source(here("writing", "PlotsDR", "03_regional_plots.R"))
-source(here("writing", "PlotsDR", "04_country_plots.R"))
+source(here("writing", "event_validation", "01_data_loading.R"))
+source(here("writing", "event_validation", "02_plotting_functions.R"))
+source(here("writing", "event_validation", "03_regional_plots.R"))
+source(here("writing", "event_validation", "04_country_plots.R"))
 
 #' Main function to generate all plots
 #' @param output_path directory to save all plots
 #' @param generate_regional logical, whether to generate regional plots
 #' @param generate_country logical, whether to generate country-specific plots
-main <- function(output_path = here("writing", "PlotsDR"),
+main <- function(output_path = here("writing", "event_validation"),
                 generate_regional = TRUE,
                 generate_country = TRUE) {
   

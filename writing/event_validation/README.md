@@ -1,4 +1,4 @@
-# PlotsDR - Refactored Plot Generation
+# Event Validation - Refactored Plot Generation
 
 This directory contains the refactored and modularized version of the original `plots.R` script. The code has been broken down into logical modules that are easier to maintain and understand.
 
@@ -6,9 +6,9 @@ This directory contains the refactored and modularized version of the original `
 
 ### Core Modules
 - **`01_data_loading.R`** - Data loading and preparation functions
-- **`02_plotting_functions.R`** - Reusable plotting functions
-- **`03_regional_plots.R`** - Regional plot generation
-- **`04_country_plots.R`** - Country-specific plot generation
+- **`02_plotting_functions.R`** - Reusable plotting functions with shock point overlays
+- **`03_regional_plots.R`** - Regional plot generation (normalized counts with shock points)
+- **`04_country_plots.R`** - Country-specific plot generation (coups, elections, Guatemala analysis)
 
 ### Execution
 - **`generate_all_plots.R`** - Main script to generate all plots
@@ -39,47 +39,53 @@ This directory contains the refactored and modularized version of the original `
 - **Identical output** to original script
 - Properly structured coup plots (line + points + vertical lines)
 - Country-specific date ranges and coup/attempt distinctions
-- Standardized plot styling
+- Standardized plot styling with bold titles
 - Error handling and progress reporting
 - Flexible execution options
 
 ### 5. Plot Structure Accuracy
-- **Regional plots**: Use shock data normalized values
-- **Coup plots**: Civic data as line, shock points overlaid, event-specific vertical lines
+- **Regional plots**: Normalized counts with red shock points overlaid
+- **Coup plots**: Civic data as line, shock points overlaid, event-specific vertical lines with colors
+- **Election plots**: Individual plots with legends, combined regional plots by specific countries
 - **Date ranges**: Match original script exactly for each country
-- **Event distinctions**: Coup vs attempt with different colors
+- **Event distinctions**: Coup vs attempt vs self-coup with different colors (red/blue/orange)
 
 ## Usage
 
 ### Generate All Plots
 ```r
-source("writing/PlotsDR/generate_all_plots.R")
+source("writing/event_validation/generate_all_plots.R")
 ```
 
 ### Generate Specific Plot Types
 ```r
 # Load modules
-source("writing/PlotsDR/01_data_loading.R")
-source("writing/PlotsDR/03_regional_plots.R")
+source("writing/event_validation/01_data_loading.R")
+source("writing/event_validation/03_regional_plots.R")
 
-# Generate only regional plots
+# Generate only regional plots with shock points
 generate_all_regional_plots("output/directory")
 ```
 
 ### Custom Plot Generation
 ```r
 # Load required modules
-source("writing/PlotsDR/01_data_loading.R")
-source("writing/PlotsDR/02_plotting_functions.R")
+source("writing/event_validation/01_data_loading.R")
+source("writing/event_validation/02_plotting_functions.R")
 
 # Load data
 data_list <- load_all_data()
 
-# Create custom plot
-plot <- create_regional_shock_plot(
-  data = data_list$shock_data,
-  event_var = "coup",
-  region_name = "Sub-Saharan Africa"
+# Create custom election plot
+plot <- create_election_plot(
+  shock_data = data_list$shock_data,
+  civic_data = data_list$civic_data,
+  country_name = "Colombia",
+  date_range = c("2021-01-01", "2023-01-01"),
+  election_events = data.frame(
+    dates = as.Date(c("2022-03-01", "2022-05-01")),
+    labels = c("Congressional Elections", "Presidential Election")
+  )
 )
 ```
 
@@ -88,17 +94,18 @@ plot <- create_regional_shock_plot(
 The scripts generate the same plots as the original:
 
 ### Regional Plots
-- Martial law shock plots by region
-- Normalized count plots by region and event type
+- `Normalized_Martiallaw_[Region].png` - Normalized martial law counts with shock points
+- `Normalized_Activism_[Region].png` - Normalized activism counts with shock points
 
 ### Country-Specific Plots  
-- Coup analysis plots for countries with coups since 2017
-- Election activity plots by region
-- Guatemala 2015 specific analysis
+- Individual coup plots: `Coup_[Country].png` for countries with coups since 2017
+- `Combined_Coup_Plots.png` - Grid of all coup analysis plots
+- Election plots: `Election_[Country].png` for countries with detailed election data
+- `Combined_elections_LAC.png` / `Combined_elections_EAP.png` - Regional election grids
 
-### Combined Plots
-- Grid plots combining multiple countries by region
-- Comparative visualizations
+### Special Analysis
+- `Combined_GTM2023_Plots.png` - Guatemala 2023 4-panel analysis
+- `Guatemala_2015_Analysis.png` - Guatemala 2015 specific analysis
 
 ## Dependencies
 

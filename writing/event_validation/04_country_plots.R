@@ -9,8 +9,8 @@ library(dplyr)
 library(purrr)
 
 # Source required modules
-source(here("writing", "PlotsDR", "01_data_loading.R"))
-source(here("writing", "PlotsDR", "02_plotting_functions.R"))
+source(here("writing", "event_validation", "01_data_loading.R"))
+source(here("writing", "event_validation", "02_plotting_functions.R"))
 
 # Define countries with coups, their events, and specific date ranges (from original script)
 COUP_COUNTRIES <- list(
@@ -204,7 +204,7 @@ ELECTION_REGIONS <- list(
 #' Generate coup analysis plots for specified countries
 #' @param output_path directory to save plots
 #' @param countries list of countries with coup dates (uses COUP_COUNTRIES by default)
-generate_coup_plots <- function(output_path = here("writing", "PlotsDR"),
+generate_coup_plots <- function(output_path = here("writing", "event_validation"),
                                countries = COUP_COUNTRIES) {
   
   # Load data
@@ -253,7 +253,7 @@ generate_coup_plots <- function(output_path = here("writing", "PlotsDR"),
 #' Generate combined coup plot (all countries in one grid)
 #' @param output_path directory to save plots
 #' @param countries list of countries with coup configurations
-generate_combined_coup_plot <- function(output_path = here("writing", "PlotsDR"),
+generate_combined_coup_plot <- function(output_path = here("writing", "event_validation"),
                                        countries = COUP_COUNTRIES) {
   
   # Load data
@@ -307,7 +307,7 @@ generate_combined_coup_plot <- function(output_path = here("writing", "PlotsDR")
 #' Generate election plots for countries with specific election data
 #' @param output_path directory to save plots
 #' @param election_regions list of regions with their country election configurations
-generate_election_plots <- function(output_path = here("writing", "PlotsDR"),
+generate_election_plots <- function(output_path = here("writing", "event_validation"),
                                    election_regions = ELECTION_REGIONS) {
   
   # Load data
@@ -385,7 +385,7 @@ generate_election_plots <- function(output_path = here("writing", "PlotsDR"),
 
 #' Generate Guatemala 2015 specific analysis (from original script)
 #' @param output_path directory to save plots
-generate_guatemala_2015_plot <- function(output_path = here("writing", "PlotsDR")) {
+generate_guatemala_2015_plot <- function(output_path = here("writing", "event_validation")) {
   
   # Load data
   data_list <- load_all_data()
@@ -432,7 +432,7 @@ generate_guatemala_2015_plot <- function(output_path = here("writing", "PlotsDR"
 
 #' Generate Guatemala 2023 combined plots (4 event types: election activity, election irregularities, legal action, protest)
 #' @param output_path directory to save plots
-generate_guatemala_2023_plots <- function(output_path = here("writing", "PlotsDR")) {
+generate_guatemala_2023_plots <- function(output_path = here("writing", "event_validation")) {
   
   # Load data
   data_list <- load_all_data()
@@ -589,7 +589,7 @@ generate_guatemala_2023_plots <- function(output_path = here("writing", "PlotsDR
 
 #' Generate all country-specific plots
 #' @param output_path directory to save plots
-generate_all_country_plots <- function(output_path = here("writing", "PlotsDR")) {
+generate_all_country_plots <- function(output_path = here("writing", "event_validation")) {
   
   message("=== Starting Country-Specific Plot Generation ===")
   

@@ -7,15 +7,15 @@
 library(here)
 
 # Source required modules
-source(here("writing", "PlotsDR", "01_data_loading.R"))
-source(here("writing", "PlotsDR", "02_plotting_functions.R"))
+source(here("writing", "event_validation", "01_data_loading.R"))
+source(here("writing", "event_validation", "02_plotting_functions.R"))
 
 # Martial law shock plots removed - no longer needed
 
 #' Generate normalized count plots with shock points for all regions and specified events
 #' @param output_path directory to save plots
 #' @param event_vars vector of event variables to plot
-generate_regional_count_plots <- function(output_path = here("writing", "PlotsDR"),
+generate_regional_count_plots <- function(output_path = here("writing", "event_validation"),
                                          event_vars = c("martiallaw", "activism")) {
   
   # Load data
@@ -55,7 +55,7 @@ generate_regional_count_plots <- function(output_path = here("writing", "PlotsDR
 
 #' Generate all regional plots
 #' @param output_path directory to save plots
-generate_all_regional_plots <- function(output_path = here("writing", "PlotsDR")) {
+generate_all_regional_plots <- function(output_path = here("writing", "event_validation")) {
   
   message("=== Starting Regional Plot Generation ===")
   
