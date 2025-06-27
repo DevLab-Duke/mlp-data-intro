@@ -459,8 +459,8 @@ generate_guatemala_2023_plots <- function(output_path = here("writing", "PlotsDR
   
   # Define election timeline for 2023
   vertical_lines <- data.frame(
-    dates = as.Date(c("2023-01-01", "2023-06-01", "2023-08-01")),
-    labels = c("Election Announcement", "General Elections", "Run-off Presidential Elections")
+    dates = as.Date(c("2023-01-01", "2023-06-01", "2023-08-01", "2024-01-01")),
+    labels = c("Election Announcement", "General Elections", "Run-off Presidential Elections", "Inauguration")
   )
   
   # Date range for Guatemala 2023 analysis
@@ -545,7 +545,7 @@ generate_guatemala_2023_plots <- function(output_path = here("writing", "PlotsDR
           axis.title.y = element_text(size = 14),
           plot.title = element_text(size = 18, face = "bold"),
           legend.position = "bottom") +
-    scale_y_continuous(labels = scales::label_percent(scale = 1))
+    scale_y_continuous(labels = scales::label_percent(scale = 1), limits = c(0, 1))
   
   # Plot 4: Protest
   p4 <- ggplot(guatemala_merged, aes(x = date, y = protestNorm * 100)) +
