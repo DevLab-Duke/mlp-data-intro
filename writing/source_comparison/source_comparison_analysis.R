@@ -11,9 +11,7 @@ library(lubridate)
 library(scales)
 library(ggpubr)
 library(here)
-library(readr)
 library(dplyr)
-library(cowplot)
 library(grid)
 library(gridExtra)
 library(tidyr)
@@ -63,7 +61,7 @@ load_source_data <- function() {
     as.data.frame()
   
   # Calculate true article totals by country-month
-  counts_combined_clean$true_article_total <- 0
+  counts_combined_clean$total_articles_country <- 0
   
   for(i in unique(counts_combined_clean$country)) {
     for(j in unique(counts_combined_clean$date)) {
@@ -73,28 +71,25 @@ load_source_data <- function() {
       ])
       counts_combined_clean[
         counts_combined_clean$country == i & counts_combined_clean$date == j,
-        "true_article_total"
+        "total_articles_country"
       ] <- total_articles
     }
   }
-  
-  # Clean country names
-  counts_combined_clean$country <- gsub(".csv", "", counts_combined_clean$country)
   
   # Normalize counts by article total
   # Find civic variable columns (excluding metadata columns)
   civic_cols <- which(names(counts_combined_clean) %in% civic)
   if(length(civic_cols) > 0) {
-    counts_combined_clean[, civic_cols] <- counts_combined_clean[, civic_cols] / counts_combined_clean$true_article_total
+    counts_combined_clean[, civic_cols] <- counts_combined_clean[, civic_cols] / counts_combined_clean$total_articles_country
   }
   
   # Also normalize other numeric columns that aren't metadata
   other_numeric_cols <- which(sapply(counts_combined_clean, is.numeric) & 
-                             !names(counts_combined_clean) %in% c("international", "regional", "true_article_total"))
+                             !names(counts_combined_clean) %in% c("international", "regional", "total_articles_country"))
   other_numeric_cols <- setdiff(other_numeric_cols, civic_cols)
   
   if(length(other_numeric_cols) > 0) {
-    counts_combined_clean[, other_numeric_cols] <- counts_combined_clean[, other_numeric_cols] / counts_combined_clean$true_article_total
+    counts_combined_clean[, other_numeric_cols] <- counts_combined_clean[, other_numeric_cols] / counts_combined_clean$total_articles_country
   }
   
   # Replace NAs with 0
@@ -125,7 +120,7 @@ generate_spike_comparison <- function(data, output_path) {
     filter(country == "Ghana" & international == 0 & regional == 0) %>%
     filter(date < "2023-10-01")
   
-  true_spike_plot <- ggplot(ghana_spike, aes(x = date, y = true_article_total)) +
+  true_spike_plot <- ggplot(ghana_spike, aes(x = date, y = total_articles_country)) +
     geom_line(color = "blue") +
     labs(x = "Date", y = "Article Totals", title = "Ghana - A True Spike") +
     theme_bw() +
@@ -241,7 +236,7 @@ generate_international_share_analysis <- function(data, output_path) {
                                    electionirregularities, activism, martiallaw, cooperate, coup, 
                                    violencenonlethal, violencelethal, corruption, legalchange, 
                                    mobilizesecurity, purge, threaten, raid, defamationcase, 
-                                   total_articles, true_article_total, civic) ~ non_local, 
+                                   total_articles, total_articles_country, civic) ~ non_local, 
                               data = data, FUN = sum)
   
   # Calculate correlations between international and local coverage by country
@@ -481,9 +476,9 @@ generate_country_correlation_analysis <- function(data, output_path) {
       # Adjust for double counting (divide by 2)
       cs_999_col <- ifelse("cs_999" %in% names(intl_data), "cs_999", "total_articles")
       if(cs_999_col == "cs_999") {
-        int_count <- sum(intl_data$true_article_total * (intl_data$total_articles - intl_data$cs_999), na.rm = TRUE) / 2
+        int_count <- sum(intl_data$total_articles_country * (intl_data$total_articles - intl_data$cs_999), na.rm = TRUE) / 2
       } else {
-        int_count <- sum(intl_data$true_article_total * intl_data$total_articles, na.rm = TRUE) / 2
+        int_count <- sum(intl_data$total_articles_country * intl_data$total_articles, na.rm = TRUE) / 2
       }
       country_stats$int_articles[i] <- int_count
       country_stats$log_int_articles[i] <- log(max(int_count, 1))  # Avoid log(0)
