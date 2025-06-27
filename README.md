@@ -127,8 +127,23 @@ Core dependencies include: `tidyverse`, `here`, `psych`, `gt`, `kableExtra`, `gg
 - Date folder overrides can be specified in `date_folder()` function
 - Path configurations in `data_update.R` handle multiple user environments
 
-
 ## Analysis for Manuscript
+
+### Event Validation
+
+The `writing/event_validation/` folder contains refactored plotting scripts for generating validation visualizations of select civic events:
+
+#### Input Data
+- **`data/final-counts/shock-civic-data.csv`**: Combined shock detection results across all countries
+- **`data/final-counts/full-civic-data.csv`**: Complete civic event dataset with normalized counts
+- **`build_data/constants.R`**: Country lists, regional mappings, and event categories
+
+#### Generated Outputs
+- **Regional plots**: `Normalized_[Event]_[Region].png` - Normalized event counts with shock points overlaid
+- **Country coup analysis**: `Coup_[Country].png` and `Combined_Coup_Plots.png` - Individual and combined coup analysis
+- **Election validation**: `Election_[Country].png` and `Combined_elections_[Region].png` - Election activity with event timelines
+- **Special analysis**: `Combined_GTM2023_Plots.png` - Guatemala 2023 4-panel electoral analysis
+
 
 ### GPT Summarization
 
