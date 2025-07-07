@@ -268,16 +268,12 @@ for (region_code in names(region_names)) {
 ```
 
 ## Section 4: Assessing Outlet Independence
-<!-- When we forecast, it's essential to track our accuracy for reporting purposes. Weighting helps to enhance the accuracy of MLP civic space forecasting. The bias check exercise primarily assists in assigning weights during the forecasting stage of the MLP pipeline. This is achieved by evaluating the level of independence of all media sources for a country and their respective volumes. If the majority of articles for a country originate from independent sources, then there is no need to assign weight. -->
 
 To ensure data quality, *HQMARC* aims to capture news from the most trustworthy media outlets available for each country. During the construction of *HQMARC*, our team scraped each source every three months to capture new articles published since the last scrape. For countries ranked outside of the top 100 for media freedom by Reporters Without Borders, we consider their media environments restrictive. For all sources in countries with restrictive media environments, we investigate potential sources of bias for all our sources at a three-month frequency. These frequent bias checks are due to changes in coverage of sources and changes in ownership of sources over times.
 
 For countries with restrictive media environments, we aim to source at least half of the articles from sources that are coded politically independent. For countries where less than half of the articles are collected from independent sources, we encourage users to apply weighting. 
 
-
-We describe the process in more detail on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
-
-Below, we describe our process to assess bias.
+Below, we provide the instructions followed by human coders to assess the bias of each source. We describe the source coding process in more detail on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
 
 ### Section 4.2: Bias Categories and Coding Guide
 
