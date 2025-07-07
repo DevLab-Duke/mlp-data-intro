@@ -22,32 +22,65 @@ header-includes:
 ```{r}
 #| label: load-packages
 #| include: false
+#| echo: false
+#| warning: false
 
 library(tidyverse)
 library(gt)
 library(kableExtra)
 library(ggplot2)
-library(changepoint)
-library(cowplot)
 library(here)
 library(tidyr)
+library(ISOcodes)
 source(here("build_data", "constants.R"))
+
+civic = readr::read_csv(here::here("data", "final-counts", "full-civic-data.csv"))
+
+num_countries = length(unique(civic$country))
+
+sum_lengths <- 0
+for (i in unique(civic$country)) {
+  lsources_len = local_source_select(i)$lsources
+  sum_lengths <- sum_lengths + length(lsources_len)
+}
+
+lan = read_csv(here::here("writing","languages", "Scraping Process List bbcfde3f5f5b4a80a3a0375e5c07f939.csv")) %>%
+  filter(! Name %in% c("Roya’s project")) %>%
+  filter(!is.na(Language)) %>%
+  mutate(Name = gsub(".*: ", "", Name))
+
+# Remove parentheses and all characters between them
+lan$Language <- gsub("\\(.*?\\)", "", lan$Language)
+
+# Trim any leading or trailing spaces left after removing the parentheses
+lan$Language <- trimws(lan$Language)
+
+# Calculate number of languages
+langs = unique(unlist(strsplit(lan$Language, ", ")))
+
+nl = length(langs)
+
 ```
 
 # Appendix A: Data in HQMARC
 
-## Section 1: Distribution of Domestic Sources in HQMARC
+The High-Quality Media from Aid Receiving Countries (*HQMARC*) corpus contains articles scraped from `r sum_lengths` prominent domestic media outlets based across our sample of `r num_countries` countries and publishing in `r nl` languages. We supplement these domestic outlets with content scraped from `r length(rsources)` regional and `r length(isources)` international outlets. Using a customized harvesting workflow for each source domain, we achieve comprehensive of near-comprehensive capture of all relevant articles published by each source from 2012 through 2024 (or the earliest/latest publication date).
+
+Most big data corpora run a blind, domain-wide crawler that follows every hyperlink in sight. Instead, we build a small, customized harvesting workflow for each source domain. The first step is URL discovery: we look for a structured entry-point, usually a public sitemap. If the sitemap is incomplete or missing, we switch to site-specific search strategies (pagination through section indexes, keyword queries, RSS feeds, etc.). Only when those programmatic methods fail do we fall back on heavier tools such as Selenium, and even then the goal is to retrieve clean article links, not to crawl arbitrary pages. Once a domain’s URL list is assembled, we scrape those URLs directly. The scraper for each source knows exactly where the title, date, main text and other structured elements live in that site’s HTML, so the resulting data land in a uniform, column-ready format. If a field doesn’t parse correctly on the first pass (e.g., a date embedded in a non-standard tag, the parser not able to extract the correct text), we apply a post-scrape fixer for that column; we do not launch another crawl. Because the URLs are pre-vetted and the parsers are domain-specific, the pipeline yields cleaner, more consistent articles than a generic crawler would. 
+
+
+## Section 1: Domestic and Regional Sources in HQMARC
+
+We divide our countries into five geographic regions. Each region has dedicated regional sources that cover all countries within that geographic region. @fig-source-distribution shows the number of domestic and regional sources for each country.
+
 
 ```{r}
 #| echo: false
 #| warning: false
-#| label: source-distribution
+#| label: fig-source-distribution
 #| fig-cap: "Number of domestic and regional media outlets in the HQMARC corpus by country."
 #| fig-height: 6.5
-
-library(ISOcodes)
-
-civic = readr::read_csv(here::here("data", "final-counts", "full-civic-data.csv"))
+#| fig-pos: "H"
 
 # Initialize an empty dataframe to store the results
 result_df <- data.frame(country = character(), lsources_len = integer(), rsources_len = integer(), total_sources = integer(), region = character(), stringsAsFactors = FALSE)
@@ -100,7 +133,7 @@ result_df_long <- result_df %>%
 a = ggplot(result_df_long, aes(x = count, y = reorder(country, total_sources), fill = source_type)) +
   geom_bar(stat = "identity") +
   facet_grid(region ~ ., scales = "free_y", space = "free_y") +
-  labs(title = "Number of Domestic and Regional Sources by Country", 
+  labs(title = NULL, 
        x = NULL, 
        y = NULL,
        fill = "Source Type") +
@@ -111,7 +144,7 @@ a = ggplot(result_df_long, aes(x = count, y = reorder(country, total_sources), f
         title = element_text(size = 10),
         strip.text = element_text(size = 8),
         strip.text.y = element_text(angle = 0),
-        legend.position = "bottom")
+        legend.position = c(0.85, 0.08))
 
 a
 
@@ -123,29 +156,6 @@ ggsave(here("writing", "sources_by_region.png"), plot = a,
 
 ## Section 2: Languages in HQMARC
 
-```{r}
-#| echo: false
-#| warning: false
-
-library(ISOcodes)
-
-lan = read_csv(here::here("writing","languages", "Scraping Process List bbcfde3f5f5b4a80a3a0375e5c07f939.csv")) %>%
-  filter(! Name %in% c("Roya’s project")) %>%
-  filter(!is.na(Language)) %>%
-  mutate(Name = gsub(".*: ", "", Name))
-
-# Remove parentheses and all characters between them
-lan$Language <- gsub("\\(.*?\\)", "", lan$Language)
-
-# Trim any leading or trailing spaces left after removing the parentheses
-lan$Language <- trimws(lan$Language)
-
-# Calculate number of languages
-langs = unique(unlist(strsplit(lan$Language, ", ")))
-
-nl = length(langs)
-
-```
 
 The *HQMARC* corpus includes domestic media outlets publishing in `r nl` languages. These languages include `r unlist(gsub(";.*", "", ISO_639_2[ISO_639_2$Alpha_2 %in% langs, ]$Name))`. Below, we provide the languages associated with media outlets in each country using the language ISO codes.
 
@@ -205,6 +215,8 @@ for (region_code in names(region_names)) {
 
 ## Section 3: Digital News Sources
 
+In this section, we list the individual sources included in *HQMARC*. First, we list our international sources and regional sources. Second, we list the sources associated with each country, organized by region.
+
 ```{r, echo=FALSE, results='asis'}
 library(knitr)
 
@@ -256,18 +268,16 @@ for (region_code in names(region_names)) {
 ```
 
 ## Section 4: Assessing Outlet Independence
+<!-- When we forecast, it's essential to track our accuracy for reporting purposes. Weighting helps to enhance the accuracy of MLP civic space forecasting. The bias check exercise primarily assists in assigning weights during the forecasting stage of the MLP pipeline. This is achieved by evaluating the level of independence of all media sources for a country and their respective volumes. If the majority of articles for a country originate from independent sources, then there is no need to assign weight. -->
 
-For countries with restrictive media environments, we aim to source at least half of the articles for each country from outlets that are politically independent. For all countries that are not in the most 100 according to RSF, we collect metadata that about each source that we collect data from. Bias is checked for all our sources at a three-month frequency due to:
+To ensure data quality, *HQMARC* aims to capture news from the most trustworthy media outlets available for each country. During the construction of *HQMARC*, our team scraped each source every three months to capture new articles published since the last scrape. For countries ranked outside of the top 100 for media freedom by Reporters Without Borders, we consider their media environments restrictive. For all sources in countries with restrictive media environments, we investigate potential sources of bias for all our sources at a three-month frequency. These frequent bias checks are due to changes in coverage of sources and changes in ownership of sources over times.
 
--   **Frequent changes** in coverage of sources.
--   **Changes in ownership** of sources.
+For countries with restrictive media environments, we aim to source at least half of the articles from sources that are coded politically independent. For countries where less than half of the articles are collected from independent sources, we encourage users to apply weighting. 
 
-The bias check exercise assists in assigning weights during the forecasting stage of the MLP pipeline. This is achieved by evaluating the level of independence of all media sources for a country and their respective volumes. If the majority of articles for a country originate from independent sources, no weighting is required.
 
-### Section 4.1: Task
+We describe the process in more detail on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
 
--   **Assess** and **report** the bias of the media sources we are currently scraping.
--   **Formulate** a standardized and formal process to assess bias.
+Below, we describe our process to assess bias.
 
 ### Section 4.2: Bias Categories and Coding Guide
 
