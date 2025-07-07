@@ -273,42 +273,7 @@ To ensure data quality, *HQMARC* aims to capture news from the most trustworthy 
 
 For countries with restrictive media environments, we aim to source at least half of the articles from sources that are coded politically independent. For countries where less than half of the articles are collected from independent sources, we encourage users to apply weighting. 
 
-Below, we provide the instructions followed by human coders to assess the bias of each source. We describe the source coding process in more detail on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
-
-### Section 4.2: Bias Categories and Coding Guide
-
-**1. Ideology** Political ideology of the source is coded as follows:
-
--   1 = Right
--   2 = Right-centre
--   3 = Centre
--   4 = Left-centre
--   5 = Left
-
-**2. Independence vs Pro-regime** Determine whether the source operates as a regime mouthpiece, exhibits a bias in favor of political actors, or maintains independence (whether investigative or neutral). It is possible for a source to align with a certain ideology without being influenced by political parties, government, or oligarchs.
-
--   1 = Pro-regime
--   2 = Opposition
--   3 = Independent
-
-**3. Government Owned** Indicate if the source is partially or completely owned by the country's government.
-
--   1 = Government-owned
--   0 = Not government-owned
-
-**Process**
-
-1.  Start by checking the information about a country’s newspapers provided in the sources listed in the appendix (e.g., BBC or RSF) to assess and record the bias of each newspaper.
-2.  If step 1 does not provide enough information, dive deeper into country-specific analyses of the local media, reports on media ownership, etc.
-3.  If steps 1 and 2 are not sufficient, perform a subjective review of the news reported on the website to get a sense of bias.
-4.  If steps 1, 2, and 3 are not successful, report as unable to assess independence.
-
-**Helpful sources:**
-
--   BBC Media Guide country profile: search the web for *Country Name BBC Media Guide*
--   RSF- Reporters Without Borders country profile: [RSF Country Profiles](https://rsf.org/en)
--   World Newspapers country profile: [World Newspapers Country Profiles](https://www.world-newspapers.com/countries)
--   Freedom House: [Freedom House Country Profiles](https://freedomhouse.org/countries/freedom-world/scores)
+Human coders follow detailed coding instructions to assess each outlet according to Ideology (5-point scale from Right to Left),  Independence from the regime or opposition (Pro-regime, Opposition, or Independent), and Ownership (Government owned or non-government owned). Coders begin by consulting a list of public resources and performing a subjective review of a sample of published articles. Coding instructions and source-level bias data are available on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
 
 # Appendix B: Civic Space Definitions and Keywords
 
