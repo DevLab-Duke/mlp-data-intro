@@ -184,7 +184,7 @@ data_aggregated <- aggregate(cbind(arrest, protest, legalaction, disaster, censo
                                  electionirregularities, activism, martiallaw, cooperate, coup, 
                                  violencenonlethal, violencelethal, corruption, legalchange, 
                                  mobilizesecurity, purge, threaten, raid, defamationcase, 
-                                 total_articles, total_articles_country, counts_combinedtotal_articles_civic) ~ non_local, 
+                                 total_articles, total_articles_country, total_articles_civic) ~ non_local, 
                             data = data, FUN = sum)
 
 # Calculate correlations between international and local coverage by country
@@ -309,10 +309,7 @@ int_share_plot <- ggplot(plot_data_long, aes(x = variable)) +
 ggsave(file.path(output_path, "int_share_norm.jpg"), 
        plot = int_share_plot, height = 5, width = 7)
 
-message("Saved: int_share_norm.jpg")
-
 # === GENERATE EVENT SHARE ANALYSIS ===
-message("Generating event share analysis...")
 
 # Calculate mean shares by source type
 data_temp <- data
@@ -384,10 +381,9 @@ event_share_plot <- ggplot(plot_data, aes(x = variable)) +
 ggsave(file.path(output_path, "event_share_total.jpg"), 
        plot = event_share_plot, height = 5, width = 7)
 
-message("Saved: event_share_total.jpg")
 
 # === GENERATE CORRELATION BY COUNTRY ANALYSIS ===
-message("Generating country correlation analysis...")
+
 
 # Calculate country-level correlations and international article counts
 countries_unique <- unique(data$country)
@@ -448,7 +444,3 @@ if(nrow(highlight_data) > 0) {
 ggsave(file.path(output_path, "int_nat_corr_by_country.jpg"), 
        plot = country_plot, height = 5, width = 7)
 
-message("Saved: int_nat_corr_by_country.jpg")
-
-# === ANALYSIS COMPLETE ===
-message("=== Source Comparison Analysis Complete ===")
