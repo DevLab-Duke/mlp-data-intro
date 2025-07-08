@@ -124,70 +124,57 @@ ggsave(file.path(output_path, "true_false_spike.jpg"),
   
 
 # === GENERATE INDONESIA CASE STUDY PLOTS ===
-message("Generating Indonesia case study...")
 
 # Filter Indonesia data for 2024
 indonesia <- data %>%
   filter(country == "Indonesia") %>%
-  select(date, international, regional, corruption, arrest, legalaction) %>%
+  select(date, international, regional, corruption, arrest) %>%
   filter(date > "2023-12-01" & date < "2024-07-01")
 
 # Create source type labels
 indonesia$source_type <- case_when(
   indonesia$international == 1 ~ "International",
   indonesia$regional == 1 ~ "Regional",
-  TRUE ~ "Local"
+  TRUE ~ "Domestic"
 )
+
+# Reshape data from wide to long format
+indonesia_long <- indonesia %>%
+  pivot_longer(cols = c(corruption, arrest),
+               names_to = "metric",
+               values_to = "value") %>%
+  mutate(
+    metric = case_when(
+      metric == "corruption" ~ "Corruption Reporting",
+      metric == "arrest" ~ "Arrest Reporting"
+    ),
+    value = value * 10000
+  )
 
 # Color scheme
-colors <- c("International" = "chartreuse4", "Local" = "blue", "Regional" = "darkred")
+colors <- c("International" = "chartreuse4", "Domestic" = "blue", "Regional" = "darkred")
 
-# Corruption plot
-corruption_plot <- ggplot(indonesia, aes(x = date, y = corruption * 10000, 
-                                        group = source_type, color = source_type)) +
-  scale_color_manual(name = "Source Type:", values = colors) +
+# Single plot with facet_wrap
+indonesia_plot <- ggplot(indonesia_long, aes(x = date, y = value, 
+                                             group = source_type, color = source_type)) +
   geom_line() +
-  labs(title = "Corruption Reporting", y = "Articles per 10,000", x = "") +
-  theme_bw() +
-  theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
-
-# Arrest plot
-arrest_plot <- ggplot(indonesia, aes(x = date, y = arrest * 10000, 
-                                    group = source_type, color = source_type)) +
+  facet_wrap(~metric, ncol = 3, scales = "free_y") +
   scale_color_manual(name = "Source Type:", values = colors) +
-  geom_line() +
-  labs(title = "Arrest Reporting", y = "", x = "") +
+  labs(title = "Indonesia 2024 Case Study", 
+       y = "Articles per 10,000", 
+       x = "") +
   theme_bw() +
-  theme(plot.title = element_text(hjust = 0.5))
-
-# Legal action plot
-legalaction_plot <- ggplot(indonesia, aes(x = date, y = legalaction * 10000, 
-                                         group = source_type, color = source_type)) +
-  scale_color_manual(name = "Source Type:", values = colors) +
-  geom_line() +
-  labs(title = "Legal Action Reporting", y = "", x = "") +
-  theme_bw() +
-  theme(legend.position = "none", plot.title = element_text(hjust = 0.5))
-
-# Extract legend
-legend <- get_legend(arrest_plot)
-arrest_plot <- arrest_plot + theme(legend.position = "none")
-
-# Combine plots
-indonesia_combined <- grid.arrange(
-  corruption_plot, arrest_plot, legend,
-  ncol = 3, nrow = 1,
-  widths = c(2, 2, 0.75), heights = c(5.45),
-  top = textGrob("Indonesia 2024 Case Study", gp = gpar(fontsize = 20, font = 3))
-)
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 20),
+    strip.text = element_text(hjust = 0.5),
+    legend.position = c(.87, .25)
+  )
 
 ggsave(file.path(output_path, "indonesia_int_vs_local.jpg"), 
-       plot = indonesia_combined, height = 5, width = 7)
+       plot = indonesia_plot, height = 5, width = 7)
 
-message("Saved: indonesia_int_vs_local.jpg")
 
 # === GENERATE INTERNATIONAL SHARE ANALYSIS ===
-message("Generating international share analysis...")
 
 # Combine international and regional as non-local
 data$non_local <- ifelse(data$international == 1 | data$regional == 1, 1, 0)
