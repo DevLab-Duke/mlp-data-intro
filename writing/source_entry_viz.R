@@ -13,14 +13,6 @@ source(here("build_data", "constants.R"))
 # Load the source entries data
 source_entries <- readRDS(here("data", "1-source_entries.rds"))
 
-# Display structure of the data
-cat("Source entries data structure:\n")
-str(source_entries)
-cat("\nFirst few rows:\n")
-head(source_entries)
-cat("\nFirst few columns:\n")
-head(source_entries[, 1:6])
-
 # Transform data for heatmap
 # The data has columns: date, and then one column for each source
 # We need to transform this to have country information
@@ -114,12 +106,13 @@ p <- ggplot(source_entries_long, aes(x = date, y = reorder(country, active_sourc
                                     fill = active_sources)) +
   geom_tile() +
   facet_grid(region ~ ., scales = "free_y", space = "free_y") +
-  scale_fill_viridis_c(name = "Active\nSources", option = "plasma") +
+  scale_fill_gradient(name = "Active\nSources", low = "lightblue", high = "darkblue", 
+                      breaks = function(x) pretty(x, n = 5), 
+                      labels = function(x) as.integer(x)) +
   labs(
-    title = "Number of Active Sources by Country-Month",
-    x = "Date",
-    y = "Country",
-    caption = "Source: HQMARC corpus data"
+    title = NULL,
+    x = NULL,
+    y = NULL
   ) +
   theme_bw() +
   theme(
@@ -131,7 +124,8 @@ p <- ggplot(source_entries_long, aes(x = date, y = reorder(country, active_sourc
     legend.position = "right",
     panel.grid = element_blank()
   ) +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y")
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y", 
+               limits = c(as.Date("2012-01-01"), as.Date("2024-12-01")))
 
 # Print the plot
 print(p)
@@ -140,18 +134,3 @@ print(p)
 ggsave(here("writing", "source_entry_heatmap.png"), plot = p, 
        width = 12, height = 10, dpi = 300)
 
-# Print summary statistics
-cat("\nSummary of active sources by country:\n")
-summary_stats <- source_entries_long %>%
-  group_by(country, region) %>%
-  summarise(
-    mean_active = mean(active_sources, na.rm = TRUE),
-    max_active = max(active_sources, na.rm = TRUE),
-    min_active = min(active_sources, na.rm = TRUE),
-    .groups = "drop"
-  ) %>%
-  arrange(region, desc(mean_active))
-
-print(summary_stats)
-
-cat("\nVisualization complete! Heatmap saved as 'source_entry_heatmap.png' in the writing folder.\n")
