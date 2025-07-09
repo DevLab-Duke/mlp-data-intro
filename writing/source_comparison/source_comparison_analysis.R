@@ -382,15 +382,15 @@ plot_data$variable <- factor(plot_data$variable,
 colors <- c("Domestic" = "blue", "International" = "chartreuse4")
 
 event_share_plot <- ggplot(plot_data, aes(x = variable)) +
-  geom_bar(aes(y = international * 10000, fill = "International"), 
+  geom_bar(aes(y = local * 10000, fill = "Domestic"), 
            stat = "identity", alpha = 0.5) +
-  geom_bar(aes(y = local, fill = "Domestic"), 
-           stat = "identity", alpha = 0.2, position = "dodge") +
-  labs(y = "Frequency of articles by source type", x = "", 
+  geom_bar(aes(y = international * 10000, fill = "International"), 
+           stat = "identity", alpha = 0.2) +
+  labs(y = "Frequency of articles per 10k by source type", x = "", 
        title = "Domestic and international Sources by Volume") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
-  theme(axis.text.x = element_text(size = 10, angle = 90), #, hjust = 1
+  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
         legend.position = c(.2, 0.8),
         legend.title = element_text(size = 10),
         plot.title = element_text(hjust = 0.5))
