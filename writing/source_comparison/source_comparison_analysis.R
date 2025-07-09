@@ -1,8 +1,6 @@
 # Source Comparison Analysis
 # Refactored from international_vs_national_graphs.Rmd
 # Compares international, regional, and local source coverage patterns
-# 
-# Author: Refactored version
 # Date: 2025-01-27
 
 library(ggplot2)
@@ -72,7 +70,7 @@ for(i in unique(counts_combined$country)) {
 
 # Normalize counts by `total_articles`; exclude metadata columns
 numeric_cols <- which(sapply(counts_combined, is.numeric) & 
-                           !names(counts_combined) %in% c("international", "regional", "cs_999", "total_articles_country"))
+                           !names(counts_combined) %in% c("international", "regional", "cs_999", "total_articles", "total_articles_country"))
 
 counts_combined[, numeric_cols] <- counts_combined[, numeric_cols] / counts_combined$total_articles_country
 
@@ -89,7 +87,7 @@ counts_combined$date <- as.Date(counts_combined$date)
 # Store processed data
 data <- counts_combined
 
-# === GENERATE TRUE VS FALSE SPIKE COMPARISON PLOTS ===
+# GENERATE TRUE VS FALSE SPIKE COMPARISON PLOTS
 
 # Ghana - good spike example
 ghana_spike <- data %>%
@@ -98,7 +96,7 @@ ghana_spike <- data %>%
 
 true_spike_plot <- ggplot(ghana_spike, aes(x = date, y = total_articles_country)) +
   geom_line(color = "blue") +
-  labs(x = "Date", y = "Article Totals", title = "Ghana: True Spike") +
+  labs(x = NULL, y = "Total number of articles", title = "Ghana: True Spike") +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -110,7 +108,7 @@ zambia_file <- here("writing", "source_comparison", "zambia_old_data.csv")
   
 false_spike_plot <- ggplot(zambia_old, aes(x = date, y = total)) +
   geom_line(color = "red") +
-  labs(x = "Date", y = "Article Totals", title = "Zambia: False Spike") +
+  labs(x = NULL, y = "Total number of articles", title = "Zambia: False Spike") +
   theme_bw() +
   theme(plot.title = element_text(hjust = 0.5))
 
@@ -119,11 +117,12 @@ combined_spike_plot <- grid.arrange(
   true_spike_plot, false_spike_plot,
   nrow = 1)
 
-ggsave(file.path(output_path, "true_false_spike.jpg"), 
+ggsave(file.path(output_path, "true_false_spike.png"), 
        plot = combined_spike_plot, height = 5, width = 7)
   
 
-# === GENERATE INDONESIA CASE STUDY PLOTS ===
+# -------------------------------------------------------------------------
+# GENERATE INDONESIA CASE STUDY PLOTS
 
 # Filter Indonesia data for 2024
 indonesia <- data %>%
@@ -170,41 +169,33 @@ indonesia_plot <- ggplot(indonesia_long, aes(x = date, y = value,
     legend.position = c(.87, .25)
   )
 
-ggsave(file.path(output_path, "indonesia_int_vs_local.jpg"), 
+ggsave(file.path(output_path, "indonesia_int_vs_local.png"), 
        plot = indonesia_plot, height = 5, width = 7)
 
 
-# === GENERATE INTERNATIONAL SHARE ANALYSIS ===
+# -------------------------------------------------------------------------
+# GENERATE INTERNATIONAL SHARE ANALYSIS
 
 # Combine international and regional as non-local
 data$non_local <- ifelse(data$international == 1 | data$regional == 1, 1, 0)
 
 # Aggregate by non-local flag
-data_aggregated <- aggregate(cbind(arrest, protest, legalaction, disaster, censor, electionactivity, 
-                                 electionirregularities, activism, martiallaw, cooperate, coup, 
-                                 violencenonlethal, violencelethal, corruption, legalchange, 
-                                 mobilizesecurity, purge, threaten, raid, defamationcase, 
-                                 total_articles, total_articles_country, total_articles_civic) ~ non_local, 
-                            data = data, FUN = sum)
+data_aggregated <- data %>%
+  group_by(non_local) %>%
+  summarise(across(c(all_of(civic), total_articles, total_articles_country, total_articles_civic), 
+                   sum),
+            .groups = "drop")
 
 # Calculate correlations between international and local coverage by country
 countries_unique <- unique(data$country)
-event_vars <- c("arrest", "protest", "legalaction", "disaster", "censor", 
-               "electionactivity", "electionirregularities", "activism", 
-               "martiallaw", "cooperate", "coup", "violencenonlethal", 
-               "violencelethal", "corruption", "legalchange", "mobilizesecurity", 
-               "purge", "threaten", "raid", "defamationcase")
 
-# Filter to only use event vars that exist in the data
-event_vars <- intersect(event_vars, names(data))
-
-correlations <- matrix(NA, nrow = length(countries_unique), ncol = length(event_vars))
+correlations <- matrix(NA, nrow = length(countries_unique), ncol = length(civic))
 
 for(i in seq_along(countries_unique)) {
   country_data <- data[data$country == countries_unique[i], ]
-  for(j in seq_along(event_vars)) {
-    local_data <- country_data[country_data$non_local == 0, event_vars[j]]
-    intl_data <- country_data[country_data$non_local == 1, event_vars[j]]
+  for(j in seq_along(civic)) {
+    local_data <- country_data[country_data$non_local == 0, civic[j]]
+    intl_data <- country_data[country_data$non_local == 1, civic[j]]
     
     # Ensure we have data for both local and international, and same length
     if(length(local_data) > 0 && length(intl_data) > 0 && length(local_data) == length(intl_data)) {
@@ -212,19 +203,31 @@ for(i in seq_along(countries_unique)) {
       correlations[i, j] <- ifelse(is.na(cor_val), 0, cor_val)
     } else if(length(local_data) > 0 && length(intl_data) > 0) {
       # If different lengths, correlate the time series by matching dates
-      local_df <- country_data[country_data$non_local == 0, c("date", event_vars[j])]
-      intl_df <- country_data[country_data$non_local == 1, c("date", event_vars[j])]
+      local_df <- country_data[country_data$non_local == 0, c("date", civic[j])]
+      intl_df <- country_data[country_data$non_local == 1, c("date", civic[j])]
       merged_df <- merge(local_df, intl_df, by = "date", suffixes = c("_local", "_intl"))
       
       if(nrow(merged_df) > 1) {
-        cor_val <- cor(merged_df[, paste0(event_vars[j], "_local")], 
-                      merged_df[, paste0(event_vars[j], "_intl")], 
+        cor_val <- cor(merged_df[, paste0(civic[j], "_local")], 
+                      merged_df[, paste0(civic[j], "_intl")], 
                       use = "complete.obs")
         correlations[i, j] <- ifelse(is.na(cor_val), 0, cor_val)
       }
     }
   }
 }
+
+rm(country_data)
+
+## Be aware of zero-variance country-event pairs; which are currently treated as 0 by previous code
+zero_variance_summary <- data %>%
+  group_by(country, non_local) %>%
+  summarise(across(all_of(civic), ~ sd(.x, na.rm = TRUE)), .groups = "drop") %>%
+  pivot_longer(cols = all_of(civic), names_to = "civic_variable", values_to = "std_dev") %>%
+  mutate(local_or_intl = ifelse(non_local == 0, "local", "international")) %>%
+  filter(std_dev == 0 | is.na(std_dev)) %>%
+  select(country, civic_variable, local_or_intl, std_dev)
+# print(zero_variance_summary)
 
 # Calculate average correlations
 average_cor <- colMeans(correlations, na.rm = TRUE)
@@ -237,17 +240,11 @@ for(i in names(topic_share)) {
   }
 }
 
+# Read civic variable mapping from cs_vars.csv
+cs_vars <- readr::read_csv(here::here("data", "cs_vars.csv"))
+
 # Create renamed columns for plotting
-topic_names <- c(
-  "arrest" = "Arrests", "activism" = "Activism", "protest" = "Protests",
-  "legalaction" = "Legal Actions", "disaster" = "Disasters", "censor" = "Censorship",
-  "electionactivity" = "Election Activity", "electionirregularities" = "Election Irregularities",
-  "martiallaw" = "Martial Law", "cooperate" = "Cooperation", "coup" = "Coup",
-  "violencelethal" = "Lethal Violence", "violencenonlethal" = "Non-lethal Violence",
-  "corruption" = "Corruption", "legalchange" = "Legal Changes",
-  "mobilizesecurity" = "Mobilize Security", "purge" = "Purges",
-  "threaten" = "Threats", "raid" = "Raids", "defamationcase" = "Defamation Cases"
-)
+topic_names <- setNames(cs_vars$name, cs_vars$id)
 
 # Prepare data for plotting
 plot_data <- data.frame(
@@ -260,9 +257,9 @@ plot_data <- data.frame(
 for(i in seq_along(topic_names)) {
   var_name <- names(topic_names)[i]
   if(var_name %in% names(topic_share)) {
-    local_val <- topic_share[topic_share$non_local == 0, var_name]
-    intl_val <- topic_share[topic_share$non_local == 1, var_name]
-    cor_val <- average_cor[match(var_name, event_vars)]
+    local_val <- topic_share[topic_share$non_local == 0, ][[var_name]]
+    intl_val <- topic_share[topic_share$non_local == 1, ][[var_name]]
+    cor_val <- average_cor[match(var_name, civic)]
     
     plot_data <- rbind(plot_data, data.frame(
       variable = topic_names[i],
@@ -278,7 +275,7 @@ plot_data_long <- plot_data %>%
   pivot_longer(cols = c("local", "international"), 
               names_to = "source_type", values_to = "value") %>%
   mutate(source_type = case_when(
-    source_type == "local" ~ "National",
+    source_type == "local" ~ "Domestic",
     source_type == "international" ~ "International"
   ))
 
@@ -287,7 +284,7 @@ plot_data_long$variable <- factor(plot_data_long$variable,
                                  levels = unique(plot_data$variable[order(plot_data$average_cor)]))
 
 # Create the plot
-colors <- c("National" = "blue", "International" = "chartreuse4")
+colors <- c("Domestic" = "blue", "International" = "chartreuse4")
 
 # Format correlation labels (remove leading zero)
 plot_data_long$cor_label <- formatC(plot_data_long$average_cor, digits = 2, format = "f")
@@ -296,9 +293,10 @@ plot_data_long$cor_label <- str_replace(plot_data_long$cor_label, "^-0\\.", "-."
 
 int_share_plot <- ggplot(plot_data_long, aes(x = variable)) +
   geom_bar(aes(y = value, fill = source_type), stat = "identity", position = "fill", alpha = 0.5) +
-  labs(y = "Share", x = "", title = "International Share of Normalized Articles With Correlations") +
+  labs(y = NULL, x = NULL, title = "Correlations between Domestic and International Sources") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
+  scale_y_continuous(labels = scales::percent_format()) +
   theme(axis.text.x = element_text(size = 10, angle = 90),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
@@ -306,17 +304,17 @@ int_share_plot <- ggplot(plot_data_long, aes(x = variable)) +
   geom_text(aes(y = average_cor + 0.15, label = cor_label), vjust = 1, color = "black") +
   geom_point(aes(y = average_cor), color = "darkred")
 
-ggsave(file.path(output_path, "int_share_norm.jpg"), 
+ggsave(file.path(output_path, "int_share_norm.png"), 
        plot = int_share_plot, height = 5, width = 7)
 
-# === GENERATE EVENT SHARE ANALYSIS ===
+
+
+# -------------------------------------------------------------------------
+# GENERATE EVENT SHARE ANALYSIS
 
 # Calculate mean shares by source type
 data_temp <- data
-available_vars <- intersect(c("arrest", "protest", "legalaction", "disaster", "censor", "electionactivity", 
-                             "electionirregularities", "activism", "martiallaw", "cooperate", "coup", 
-                             "violencenonlethal", "violencelethal", "corruption", "legalchange", 
-                             "mobilizesecurity", "purge", "threaten", "raid", "defamationcase"), 
+available_vars <- intersect(civic, 
                            names(data_temp))
 
 event_share <- data_temp %>%
@@ -325,17 +323,6 @@ event_share <- data_temp %>%
   summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop') %>%
   as.data.frame()
 
-# Topic names for display
-topic_names <- c(
-  "arrest" = "Arrests", "activism" = "Activism", "protest" = "Protests",
-  "legalaction" = "Legal Actions", "disaster" = "Disasters", "censor" = "Censorship",
-  "electionactivity" = "Election Activity", "electionirregularities" = "Election Irregularities",
-  "martiallaw" = "Martial Law", "cooperate" = "Cooperation", "coup" = "Coup",
-  "violencelethal" = "Lethal Violence", "violencenonlethal" = "Non-lethal Violence",
-  "corruption" = "Corruption", "legalchange" = "Legal Changes",
-  "mobilizesecurity" = "Mobilize Security", "purge" = "Purges",
-  "threaten" = "Threats", "raid" = "Raids", "defamationcase" = "Defamation Cases"
-)
 
 # Prepare plotting data
 plot_data <- data.frame(
@@ -347,8 +334,8 @@ plot_data <- data.frame(
 for(i in seq_along(topic_names)) {
   var_name <- names(topic_names)[i]
   if(var_name %in% names(event_share)) {
-    local_val <- event_share[event_share$non_local == 0, var_name]
-    intl_val <- event_share[event_share$non_local == 1, var_name]
+    local_val <- event_share[event_share$non_local == 0, ][[var_name]]
+    intl_val <- event_share[event_share$non_local == 1, ][[var_name]]
     
     plot_data <- rbind(plot_data, data.frame(
       variable = topic_names[i],
@@ -362,85 +349,61 @@ for(i in seq_along(topic_names)) {
 plot_data$variable <- factor(plot_data$variable, 
                             levels = plot_data$variable[order(plot_data$international)])
 
-colors <- c("National" = "blue", "International" = "chartreuse4")
+colors <- c("Domestic" = "blue", "International" = "chartreuse4")
 
 event_share_plot <- ggplot(plot_data, aes(x = variable)) +
   geom_bar(aes(y = international * 10000, fill = "International"), 
            stat = "identity", alpha = 0.5) +
-  geom_bar(aes(y = local * 10000, fill = "National"), 
+  geom_bar(aes(y = local * 10000, fill = "Domestic"), 
            stat = "identity", alpha = 0.2) +
   labs(y = "Articles per 10,000", x = "", 
-       title = "Event Share of Total by International and National") +
+       title = "Share of articles from Domestic and International Sources by Volume") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
-  theme(axis.text.x = element_text(size = 10, angle = 90),
-        legend.position = "bottom",
+  theme(axis.text.x = element_text(size = 10, angle = 90), #, hjust = 1
+        legend.position = c(.2, 0.8),
         legend.title = element_text(size = 10),
         plot.title = element_text(hjust = 0.5))
 
-ggsave(file.path(output_path, "event_share_total.jpg"), 
+ggsave(file.path(output_path, "event_share_total.png"), 
        plot = event_share_plot, height = 5, width = 7)
 
 
-# === GENERATE CORRELATION BY COUNTRY ANALYSIS ===
+# -------------------------------------------------------------------------
+# GENERATE CORRELATION BY COUNTRY ANALYSIS
 
+
+# Find total number of non-local articles per country
+intl_aggregated <- data %>%
+  filter(non_local == 1) %>%
+  group_by(country) %>%
+  summarise(int_articles = sum(total_articles, na.rm = TRUE), .groups = 'drop') %>%
+  mutate(log_int_articles = log(int_articles))
 
 # Calculate country-level correlations and international article counts
-countries_unique <- unique(data$country)
 country_stats <- data.frame(
   country = countries_unique,
-  correlation = numeric(length(countries_unique)),
-  int_articles = numeric(length(countries_unique)),
-  log_int_articles = numeric(length(countries_unique))
+  correlation = rowMeans(correlations, na.rm = TRUE)
 )
 
-for(i in seq_along(countries_unique)) {
-  country_data <- data[data$country == countries_unique[i], ]
-  
-  # Calculate correlation across all civic events
-  local_civic <- country_data[country_data$non_local == 0, "civic"]
-  intl_civic <- country_data[country_data$non_local == 1, "civic"]
-  
-  if(length(local_civic) > 0 && length(intl_civic) > 0) {
-    cor_val <- cor(local_civic, intl_civic, use = "complete.obs")
-    country_stats$correlation[i] <- ifelse(is.na(cor_val), 0, cor_val)
-  }
-  
-  # Calculate international article counts
-  intl_data <- country_data[country_data$non_local == 1, ]
-  if(nrow(intl_data) > 0) {
-    # Adjust for double counting (divide by 2)
-    cs_999_col <- ifelse("cs_999" %in% names(intl_data), "cs_999", "total_articles")
-    if(cs_999_col == "cs_999") {
-      int_count <- sum(intl_data$total_articles_country * (intl_data$total_articles - intl_data$cs_999), na.rm = TRUE) / 2
-    } else {
-      int_count <- sum(intl_data$total_articles_country * intl_data$total_articles, na.rm = TRUE) / 2
-    }
-    country_stats$int_articles[i] <- int_count
-    country_stats$log_int_articles[i] <- log(max(int_count, 1))  # Avoid log(0)
-  }
-}
+country_stats = merge(country_stats, intl_aggregated)
 
 # Create scatter plot
 country_plot <- ggplot(country_stats, aes(x = log_int_articles, y = correlation)) +
   geom_point(aes(color = country)) +
-  labs(y = "Correlation", x = "Log International Civic Articles", 
-       title = "Total International Articles vs National/International Correlation by Country") +
+  labs(y = "Correlation between Domestic and International Coverage", x = "Total Number of International Articles (log)", 
+       title = NULL) +
   theme_bw() +
-  theme(legend.position = "none") +
-  scale_y_continuous(limits = c(-0.3, 0.5))
+  theme(legend.position = "none") 
 
 # Add labels for specific countries
-highlight_countries <- c("Timor Leste", "India", "Turkey", "Kosovo")
+highlight_countries <- c("Timor Leste", "India", "Turkey", "Kosovo", "Ukraine")
 highlight_data <- country_stats[country_stats$country %in% highlight_countries, ]
 
-if(nrow(highlight_data) > 0) {
-  country_plot <- country_plot +
-    geom_text(data = highlight_data, 
-              aes(log_int_articles, correlation, label = country),
-              position = position_dodge(width = 1), vjust = -0.5)
-}
+country_plot <- country_plot + geom_text(data = highlight_data, 
+                                         aes(log_int_articles, correlation, label = country),
+                                         vjust = -0.5)
 
-ggsave(file.path(output_path, "int_nat_corr_by_country.jpg"), 
+ggsave(file.path(output_path, "int_nat_corr_by_country.png"), 
        plot = country_plot, height = 5, width = 7)
 
