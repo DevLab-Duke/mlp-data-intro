@@ -72,25 +72,106 @@ for(i in unique(counts_combined$country)) {
 numeric_cols <- which(sapply(counts_combined, is.numeric) & 
                            !names(counts_combined) %in% c("international", "regional", "cs_999", "total_articles", "total_articles_country"))
 
-counts_combined[, numeric_cols] <- counts_combined[, numeric_cols] / counts_combined$total_articles_country
 
+# -------------------------------------------------------------------------
+# NORMALIZATION
 
-# Replace NAs with 0
-counts_combined[is.na(counts_combined)] <- 0
+# Create version of data where counts are raw
+# This tells us about how much data we get from different source-types
+counts_combined_raw <- counts_combined 
 
-# Create total civic space variable using civic events from constants.R
-counts_combined$total_articles_civic <- rowSums(counts_combined[, civic], na.rm = TRUE)
+# Create version of data where counts are normalized by the source-type (separate for international, regional, domestic)
+# This tells us the counterfactual of what our normalized counts would look like if we only had international+regional
+counts_combined_nst <- counts_combined %>%
+  mutate(across(all_of(numeric_cols), ~ .x / total_articles))
 
-# Clean date format
-counts_combined$date <- as.Date(counts_combined$date)
+# Create version of data where counts are normalized by total articles (combining international, regional, and domestic)
+# This tells us about where most of the information in our counts is coming from
+counts_combined_nct <- counts_combined %>%
+  mutate(across(all_of(numeric_cols), ~ .x / total_articles_country))
+
+process_counts_data <- function(data) {
+  data %>%
+    # Replace NAs with 0 (numerator == 0 if denominator == 0)
+    mutate(across(everything(), ~replace_na(.x, 0))) %>%
+    # Create total civic space variable
+    mutate(total_articles_civic = rowSums(select(., all_of(civic)), na.rm = TRUE)) %>%
+    # Clean date format
+    mutate(date = as.Date(date)) %>%
+    # Create non_local variable
+    mutate(non_local = if_else(data$international == 1 | data$regional == 1, 1, 0))
+  
+}
+
+counts_combined_raw = process_counts_data(counts_combined_raw)
+counts_combined_nst = process_counts_data(counts_combined_nst)
+counts_combined_nct = process_counts_data(counts_combined_nct)
+
 
 # Store processed data
-data <- counts_combined
+data <- counts_combined_nst
 
+# -------------------------------------------------------------------------
+# GENERATE INDONESIA CASE STUDY PLOTS
+
+# Filter Indonesia data for 2024
+indonesia <- counts_combined_nst %>%
+  filter(country == "Indonesia") %>%
+  select(date, international, regional, corruption, arrest) %>%
+  filter(date > "2023-12-01" & date < "2025-01-01")
+
+# Create source type labels
+indonesia$source_type <- case_when(
+  indonesia$international == 1 ~ "International",
+  indonesia$regional == 1 ~ "Regional",
+  TRUE ~ "Domestic"
+)
+
+# Convert to factor with desired order
+indonesia$source_type <- factor(indonesia$source_type, 
+                                levels = c("Domestic", "Regional", "International"))
+
+# Reshape data from wide to long format
+indonesia_long <- indonesia %>%
+  pivot_longer(cols = c(corruption, arrest),
+               names_to = "metric",
+               values_to = "value") %>%
+  mutate(
+    metric = case_when(
+      metric == "corruption" ~ "Corruption",
+      metric == "arrest" ~ "Arrest"
+    ),
+    value = value
+  )
+
+# Color scheme
+colors <- c("International" = "red", "Domestic" = "blue", "Regional" = "pink")
+
+# Single plot with facet_wrap
+indonesia_plot <- ggplot(indonesia_long, aes(x = date, y = value, 
+                                             group = source_type, color = source_type)) +
+  geom_line() +
+  facet_wrap(~metric, ncol = 3, scales = "free_y") +
+  scale_color_manual(name = "Source Type:", values = colors) +
+  labs(title = "Share of articles published by source", 
+       y = "% of articles published by source type\n (i.e. Corruption Domestic Articles / Total Domestic Articles)", 
+       x = "") +
+  theme_bw() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 20),
+    strip.text = element_text(hjust = 0.5),
+    legend.position = c(.15, .8)
+  )
+
+ggsave(file.path(output_path, "indonesia_int_vs_local.png"), 
+       plot = indonesia_plot, height = 5, width = 7)
+
+
+# -------------------------------------------------------------------------
 # GENERATE TRUE VS FALSE SPIKE COMPARISON PLOTS
 
 # Ghana - good spike example
-ghana_spike <- data %>%
+ghana_spike <- counts_combined_raw %>%
   filter(country == "Ghana" & international == 0 & regional == 0) %>%
   filter(date < "2023-10-01")
 
@@ -122,77 +203,21 @@ ggsave(file.path(output_path, "true_false_spike.png"),
   
 
 # -------------------------------------------------------------------------
-# GENERATE INDONESIA CASE STUDY PLOTS
-
-# Filter Indonesia data for 2024
-indonesia <- data %>%
-  filter(country == "Indonesia") %>%
-  select(date, international, regional, corruption, arrest) %>%
-  filter(date > "2023-12-01" & date < "2024-07-01")
-
-# Create source type labels
-indonesia$source_type <- case_when(
-  indonesia$international == 1 ~ "International",
-  indonesia$regional == 1 ~ "Regional",
-  TRUE ~ "Domestic"
-)
-
-# Reshape data from wide to long format
-indonesia_long <- indonesia %>%
-  pivot_longer(cols = c(corruption, arrest),
-               names_to = "metric",
-               values_to = "value") %>%
-  mutate(
-    metric = case_when(
-      metric == "corruption" ~ "Corruption Reporting",
-      metric == "arrest" ~ "Arrest Reporting"
-    ),
-    value = value * 10000
-  )
-
-# Color scheme
-colors <- c("International" = "chartreuse4", "Domestic" = "blue", "Regional" = "darkred")
-
-# Single plot with facet_wrap
-indonesia_plot <- ggplot(indonesia_long, aes(x = date, y = value, 
-                                             group = source_type, color = source_type)) +
-  geom_line() +
-  facet_wrap(~metric, ncol = 3, scales = "free_y") +
-  scale_color_manual(name = "Source Type:", values = colors) +
-  labs(title = "Indonesia 2024 Case Study", 
-       y = "Articles per 10,000", 
-       x = "") +
-  theme_bw() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 20),
-    strip.text = element_text(hjust = 0.5),
-    legend.position = c(.87, .25)
-  )
-
-ggsave(file.path(output_path, "indonesia_int_vs_local.png"), 
-       plot = indonesia_plot, height = 5, width = 7)
-
-
-# -------------------------------------------------------------------------
 # GENERATE INTERNATIONAL SHARE ANALYSIS
+# "Of all arrest articles, 70% come from domestic sources and 30% from international sources"
 
 # Combine international and regional as non-local
-data$non_local <- ifelse(data$international == 1 | data$regional == 1, 1, 0)
-
-# Aggregate by non-local flag
-data_aggregated <- data %>%
-  group_by(non_local) %>%
-  summarise(across(c(all_of(civic), total_articles, total_articles_country, total_articles_civic), 
-                   sum),
-            .groups = "drop")
+# We're using both nst and nct in this section
 
 # Calculate correlations between international and local coverage by country
-countries_unique <- unique(data$country)
-
+countries_unique <- unique(counts_combined_nst$country)
+                           
+# Create correlations matrix
 correlations <- matrix(NA, nrow = length(countries_unique), ncol = length(civic))
 
+# Use nst because we want to compare the normalized counts as-if we only had counts for that source-type
 for(i in seq_along(countries_unique)) {
-  country_data <- data[data$country == countries_unique[i], ]
+  country_data <- counts_combined_nst[counts_combined_nst$country == countries_unique[i], ]
   for(j in seq_along(civic)) {
     local_data <- country_data[country_data$non_local == 0, civic[j]]
     intl_data <- country_data[country_data$non_local == 1, civic[j]]
@@ -220,7 +245,7 @@ for(i in seq_along(countries_unique)) {
 rm(country_data)
 
 ## Be aware of zero-variance country-event pairs; which are currently treated as 0 by previous code
-zero_variance_summary <- data %>%
+zero_variance_summary <- counts_combined_nst %>%
   group_by(country, non_local) %>%
   summarise(across(all_of(civic), ~ sd(.x, na.rm = TRUE)), .groups = "drop") %>%
   pivot_longer(cols = all_of(civic), names_to = "civic_variable", values_to = "std_dev") %>%
@@ -231,6 +256,14 @@ zero_variance_summary <- data %>%
 
 # Calculate average correlations
 average_cor <- colMeans(correlations, na.rm = TRUE)
+
+# Aggregate by non-local flag
+# use country-level normalization to measure share of articles from each source-type
+data_aggregated <- counts_combined_nct %>%
+  group_by(non_local) %>%
+  summarise(across(c(all_of(civic), total_articles, total_articles_country, total_articles_civic), 
+                   sum),
+            .groups = "drop")
 
 # Calculate topic shares
 topic_share <- data_aggregated
@@ -293,11 +326,11 @@ plot_data_long$cor_label <- str_replace(plot_data_long$cor_label, "^-0\\.", "-."
 
 int_share_plot <- ggplot(plot_data_long, aes(x = variable)) +
   geom_bar(aes(y = value, fill = source_type), stat = "identity", position = "fill", alpha = 0.5) +
-  labs(y = NULL, x = NULL, title = "Correlations between Domestic and International Sources") +
+  labs(y = "Share of articles from each source type", x = NULL, title = "Coverage by domestic and international sources is weakly correlated") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   scale_y_continuous(labels = scales::percent_format()) +
-  theme(axis.text.x = element_text(size = 10, angle = 90),
+  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
         legend.position = "bottom",
         legend.title = element_text(size = 10),
         plot.title = element_text(hjust = 0.5)) +
@@ -311,14 +344,11 @@ ggsave(file.path(output_path, "int_share_norm.png"),
 
 # -------------------------------------------------------------------------
 # GENERATE EVENT SHARE ANALYSIS
+# "Domestic sources publish 7 arrest articles per 1,000 articles, while international sources publish 3 arrest articles per 1,000 articles"
 
 # Calculate mean shares by source type
-data_temp <- data
-available_vars <- intersect(civic, 
-                           names(data_temp))
-
-event_share <- data_temp %>%
-  select(all_of(c("non_local", available_vars))) %>%
+event_share <- counts_combined_nst %>%
+  select(all_of(c("non_local", civic))) %>%
   group_by(non_local) %>%
   summarise(across(everything(), mean, na.rm = TRUE), .groups = 'drop') %>%
   as.data.frame()
@@ -354,10 +384,10 @@ colors <- c("Domestic" = "blue", "International" = "chartreuse4")
 event_share_plot <- ggplot(plot_data, aes(x = variable)) +
   geom_bar(aes(y = international * 10000, fill = "International"), 
            stat = "identity", alpha = 0.5) +
-  geom_bar(aes(y = local * 10000, fill = "Domestic"), 
-           stat = "identity", alpha = 0.2) +
-  labs(y = "Articles per 10,000", x = "", 
-       title = "Share of articles from Domestic and International Sources by Volume") +
+  geom_bar(aes(y = local, fill = "Domestic"), 
+           stat = "identity", alpha = 0.2, position = "dodge") +
+  labs(y = "Frequency of articles by source type", x = "", 
+       title = "Domestic and international Sources by Volume") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 10, angle = 90), #, hjust = 1
