@@ -560,3 +560,15 @@ This document lists the categories where keywords are currently being deployed a
     -   For purge: resign*; fire*; dismiss; sack; replace; quit.
 -   Purpose of Keywords
     -   The purpose of these keywords is to assign a second event category to those articles in corruption that also feature arrests, legal action, and purges. Articles in those categories that feature these words are double counted as both corruption and the original category.
+
+# Appendix C: Descriptive Maps
+
+These temporal world maps provide a comprehensive overview of civic space coverage patterns across all 65 developing countries in the HQMARC corpus from 2012 to 2024. The maps reveal significant variation in both the intensity of civic space reporting and the types of events that dominate coverage across countries and over time. Geographic clustering is evident, with certain regions showing consistently higher civic space article rates and distinct event profiles that reflect regional political and social dynamics. The temporal dimension captures important shifts corresponding to major political events, democratic transitions, and periods of civic space restriction across the developing world.
+
+## Civic Space Coverage Intensity
+
+![Civic space articles as percentage of total coverage by country-year. Countries are colored according to the proportion of their total news coverage dedicated to civic space events, providing insight into the relative salience of civic space issues across different national contexts. Light gray areas indicate countries without data coverage. The maps show temporal evolution from 2012 through 2024, revealing significant variation in civic space reporting intensity both across countries and over time.](descriptive_maps/figures/civic_space_percentage_appendix.png){#fig-civic-space-percentage}
+
+## Dominant Civic Events by Country
+
+![Most frequently reported civic event type per country-year. Countries are colored according to the civic event category with the highest reporting frequency in each year, showing the diversity of civic space concerns across different national contexts. The maps reveal regional patterns in dominant event types and temporal shifts in civic space priorities, from electoral activities to protests, corruption reporting, and other civic engagement forms.](descriptive_maps/figures/dominant_event_appendix.png){#fig-dominant-events}

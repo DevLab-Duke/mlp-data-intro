@@ -1,0 +1,383 @@
+---
+title: "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models"
+abstract: Civic space - the fundamental freedoms necessary for citizens to influence politics - is under constant contestation. Despite the importance of day-to-day contestation over these rights, there is very little data allowing us to study the events and processes that constitute this struggle. We introduce new data that captures civic space activity across 62 developing countries from 2012 to 2024. Using an original corpus of over 120 million articles from nearly 350 high-quality domestic media outlets and 30 international and regional outlets, we use human-supervised web scraping and open-source computational tools to track monthly variation in media attention across 20 civic space events. Our approach achieves unprecedented coverage of reporting by developing country media outlets, addressing biases in other media event data. We demonstrate the utility of this data for identifying and forecasting major political events and discuss applications for research on regime dynamics during a time of democratic backsliding.
+
+thanks: This study was funded by the United States Agency for International Development (USAID) Bureau for Democracy, Human Rights, and Governance and the Open Society Foundations. Check out our data dashboards at [mlpeace.org](https://web.sas.upenn.edu/mlp-devlab/civic-space-data-and-forecasts/).
+
+date: today 
+date-format: long
+
+authors:
+  - name: Donald A. Moratz
+    affiliations:
+      - ref: upenn1
+      - ref: upenn2
+    corresponding: false
+    email: dmoratz@sas.upenn.edu
+    equal-contributor: true
+  - name: Jeremy Springman
+    affiliations:
+      - ref: upenn1
+      - ref: upenn2
+    corresponding: false
+    email: jspr@sas.upenn.edu
+    equal-contributor: true
+  - name: Erik Wibbels
+    affiliations:
+      - ref: upenn1
+      - ref: upenn2
+    corresponding: false
+    email: ewibbels@sas.upenn.edu
+    equal-contributor: false
+  - name: Serkant Adiguzel
+    affiliations:
+      - ref: su
+    corresponding: false
+    email: serkant.adiguzel@sabanciuniv.edu
+    equal-contributor: false
+  - name: Mateo Villamizar-Chaparro
+    affiliations:
+      - ref: ucu
+    corresponding: false
+    email: santiago.villamizar@ucu.edu.uy
+    equal-contributor: false
+  - name: Zung-Ru Lin
+    affiliations:
+      - ref: upenn1
+    corresponding: false
+    email: zungru@sas.upenn.edu
+    equal-contributor: false
+  - name: Diego Romero
+    affiliations:
+      - ref: usu
+    corresponding: false
+    email: diego.mejiaromero@usu.edu
+    equal-contributor: false
+  - name: Mahda Soltani
+    affiliations:
+      - ref: upenn1
+    corresponding: false
+    email: msoltani@sas.upenn.edu
+    equal-contributor: false
+  - name: Hanling Su
+    affiliations:
+      - ref: upenn1
+    corresponding: false
+    email: hanlings@sas.upenn.edu
+    equal-contributor: false
+  - name: Jitender Swami
+    affiliations:
+      - ref: upenn1
+    corresponding: false
+    email: jswami@sas.upenn.edu
+    equal-contributor: false
+
+affiliations:
+  - id: upenn1
+    name: PDRI-DevLab, University of Pennsylvania
+  - id: upenn2
+    name: Department of Political Science, University of Pennsylvania
+  - id: ucu
+    name: Universidad Católica del Uruguay, Uruguay
+  - id: usu
+    name: Utah State University
+  - id: su
+    name: Sabanci University, Turkiye
+
+filters:
+  - authors-block
+
+bibliography: references.bib
+
+format: 
+  pdf:
+    geometry:
+      - margin=1in
+    colorlinks: true
+
+header-includes:
+  - \usepackage{multirow}
+  - \usepackage{hyperref}
+  - \usepackage[capitalise,noabbrev]{cleveref}
+  - \usepackage{float}
+  - \floatplacement{table}{!ht}
+  - \usepackage{csquotes}
+  - \usepackage{booktabs}
+  - \usepackage{siunitx}
+  - \usepackage{threeparttable}
+  - \usepackage{makecell}
+---
+
+# Introduction
+
+In 2016, approximately 3.5 billion people lived under autocracy; by 2021, this number had surged to over 5.4 billion [@boese2022autocratization]. Concentrated in the global south, this "third wave of autocratization" is constricting civic space^[Following @brechenmacher2019civic, we define civic space as the fundamental freedoms that allow people to gather, communicate, and take part in groups to influence society and politics.] and limiting the ability of citizens to advocate for better governance [@luhrmann2019third; @waldner2018unwelcome]. Nevertheless, citizens worldwide continue to challenge these authoritarian movements.
+
+Despite the importance of this day-to-day push-and-pull over citizen liberties and state control, data to study the events and processes that constitute this struggle is limited. Existing measures of civic space come largely from annual, expert-coded indicators classifying the nature of political regimes. While these regime indices have opened-up new domains of research to rigorous investigation, they are not designed to provide insight into the quotidian politics where battles over civic space take place.
+
+This article introduces the Machine Learning for Peace (ML4P) dataset, which provides **monthly** data on 20 civic space events across 62 developing countries from 2012 through 2024. *ML4P* measures civic space activity by capturing monthly variation in levels of media attention across events, providing a dynamic view of where and when civic space is changing. *ML4P* represents a major advance in our ability to understand civic space dynamics by providing a higher-frequency measure of a broad range of events bearing on civic space. Using a carefully assembled corpus of online news, *ML4P* also captures the significance of these events to the domestic political environment.
+
+Importantly, *ML4P* is constructed from articles collected by the High-Quality Media from Aid Receiving Countries (*HQMARC*) corpus, an original repository of online news from 16 international and 12 regional sources, as well as a curated sample of nearly 350 prominent domestic media outlets based across our sample of countries. Rather than using web-crawlers or pre-canned scraping tools, *HQMARC* uses human-supervised custom web scraping and parsing to carefully capture each outlet's complete publication history. This human-supervised approach is particularly important for domestic news sources, whose websites are often less stable than international ones but which provide far more coverage of domestic politics.
+
+*HQMARC* has major advantages over big data media aggregators relying on web-crawlers and general scraping tools, such as GDELT, Common Crawl, and Internet Archive. By focusing on a curated list of high-quality sources, *HQMARC* achieves a stable, well-understood composition that allows researchers to measure changes in the proportion of media attention devoted to 20 types of events within countries over time. *HQMARC* also surpasses expensive commercial options, such as LexisNexis, in terms of linguistic diversity and coverage of many developing countries.
+
+*HQMARC* includes more than 150 million articles published in more than 40 languages, making human classification prohibitively expensive. To produce *ML4P's* structured data on 20 civic space events from this large volume of multi-lingual text, we use open-source computational tools to translate and extract information from each article, identifying the main event being reported on and the country in which event occurs.
+
+In @sec-background, we discuss how *ML4P* complements existing data on regimes and opens up new avenues for research. In @sec-data, we describe the data production process. We also compare the coverage of *ML4P* to other major media repositories, showing superior accuracy and stability compared to alternatives.
+
+@sec-validation presents results from exploratory analyses and validation exercises. First, we compare event coverage from international and regional sources to that of domestic sources, finding systematic differences in the types of events being covered and documenting the frequency with which significant events are ignored by non-domestic sources. Our findings have implications for event data that is generated from predominantly international or regional media outlets, a common practice in the social sciences.
+
+Second, we conduct an AI-assisted qualitative audit of major events detected across six developing countries. We confirm that events detected by *ML4P* correspond to real events in the world. This measures *ML4P's* ability to generate true positives. Finally, we assess false negatives by conducting case studies of event types, demonstrating that *ML4P* consistently captures major events in the world.
+
+In @sec-usecase we provide a use case, documenting how civic space events are predictive of independently measured instances of severe political instability. @sec-limitations discusses limitations. In the Conclusion, we discuss why *ML4P* represents a valuable new resource and recommend applications for research on autocratization and democratic backsliding, political accountability and contentious politics, media behavior, crisis response, and program evaluation.
+
+# Democratic Erosion, Annual Indices, and the Need for Civic Space Data {#sec-background}
+
+The "third wave of autocratization" has brought renewed attention to the study of regime type, political transitions and democratic backsliding [@luhrmann2019third]. This attention has been accompanied by a proliferation of measures of regime type, including the Varieties of Democracy project [@V-DEM], the Civil Society Organization Sustainability Index [@FHI] and the World Justice Project's Rule of Law Index [@WJP], among many others. These indices are designed to provide information about levels of democracy over time and space and to capture distinct features of regimes, ranging from freedom of the press [@FHP], rule of law [@WJP], the ease of civic organizing [@FHI; @CVC] and beyond.
+
+Though VDEM, in particular, has helped make annual indices more rigorous, they are not designed to provide insight into the quotidian politics where battles over civic space take place.
+
+Ultimately, what appear as slow-moving changes in regimes are the result of government and citizen actions that happen at specific moments in time. Existing measures provide aggregations of those changes over 12-month periods. Our project complements those efforts by measuring the events -- often occurring over days or weeks -- that contribute to broad, prolonged processes of democratic backsliding. We specifically seek to cover civic events that might be lost in the process of aggregating indices and sub-indices annually. Take, for instance, the widespread move across U.S. states in recent years to restrict ballot access, reduce the number of polling places, and increase voter registration requirements. Each of these involves a host of important events: legal changes, administrative decisions, state supreme court decisions, etc. Even if each of those individual events are meaningful for the evolution of democracy in the US, they are averaged across other state and federal events over the year to induce only a modest change in annual regime indices.
+
+ML4P increases the granularity of data -- both temporally and substantively -- that is relevant to broader debates on regime dynamics and backsliding. In doing so, we shift the focus to 'civic space', which we conceptualize as the day-to-day practices through which citizens organise, participate and communicate with each other over the structures that govern them. As a measurement strategy, this analytical shift involves a movement from summary indices to coverage of civically salient events. There are several large event data projects that are relevant to civic space, such the Armed Conflict Location Event Data Project (ACLED), the Uppsala Conflict Data Project Georeferenced Event Dataset (UCDP GED), and the Political Event Classification, Attributes, and Types (Polecat) dataset.
+
+From the point of view of measuring civic activity, these projects has limitations that we overcome. First, they are focused on violence events (ACLED, UCDP, Polecat) and thus provide a very partial range of the activities impacting civic space. Second, these data either rely on relatively expensive and slow human coding (ACLED, UCDP) or only on international news sources (Polecat) that provide weak coverage of civic space in many countries.
+
+Encompassing the breadth of politically-relevant civic space events is difficult. While we have a rich body of theory about 'regimes', the literature on 'civic space' and 'civil society' is spread across varied bodies of work on protest, social capital, legal studies, and election studies. Our solution is to collect data on a large number of different civic space events. In consultation with academic research and policy practitioners, we define 20 civic space event types. They are: activism, arrests, censorship, cooperation, corruption, coups, defamation cases, election activity, election irregularities, legal actions, legal changes, lethal violence, martial law, the mobilization of security forces, non-lethal violence, protests, bureaucratic purges, raids, and threats. We also code disasters given the propensity of aspiring autocrats to use them (particularly COVID) as justification for restricting civil society. While some of these event types, such as protests and coups, are subject to systematic data collection elsewhere, our approach produces the first systematic data on many of them that we know of. Together, these event types provide a rich picture of the monthly contest over civic space and offer the potential for new research on civic dynamics.
+
+# Constructing ML4P {#sec-data}
+
+Social scientists rely heavily on media sources to track important events, yet this reliance poses two persistent challenges: the high cost of producing structured data and the bias or instability of media corpora.
+
+In most contexts, media attention is the best means available to track a wide range of major events. Evidence suggests that access to traditional media effectively increases citizen knowledge of major events and government behavior, even in repressive political environments [@besley2002political; @arendt2024media]. While platforms like radio and social media are important, they often rely on content originally produced by traditional news outlets [@quartey_etal_2023; @reuters2019india], which are generally more trusted [@fotopoulos2023traditional; @bridges2019impact] and provide more comprehensive coverage of political events [@lee2022rethinking; @schafer2024informed].
+
+First, historically, extracting information from unstructured text required human coders, which limited the volume of material that could be processed and introduced lags between an event's occurrence and its inclusion in datasets. This manual approach also made it expensive to update or revise coding rules, since doing so required recoding every previously classified article. Fortunately, recent advances in machine learning and natural language processing (NLP) have eased these constraints by making it possible to automate large-scale text analysis.
+
+Second, even with machine-coding, researchers struggle to find high-quality, comprehensive coverage of events in less-covered countries. Many prominent conflict event datasets (e.g., ICEWS, POLECAT) rely primarily on international or English-language outlets; while those sources might cover major international disputes, they do not systematically cover domestic events in the Global South. Meanwhile, "big data" aggregators such as GDELT, Common Crawl, and Internet Archive capture text more broadly but suffer from inconsistent composition, incomplete source coverage, or inaccurate metadata. These inconsistencies prevent researchers from determining the relative salience of events within each country's media ecosystem, because the overall volume of published articles (the "denominator" of coverage) is not measured. Even reputable private aggregators like LexisNexis exhibit erratic entry and exit of media outlets due to licensing issues, further complicating efforts to track coverage consistently over time.
+
+In response, we use recent advances in automated text analysis on a curated set of domestic outlets with stable publishing practices. This design ensures that we capture a broad range of high-quality media from countries that often go underreported in the international press. By regularly rescraping sources and applying machine coding to the full text, we can detect a variety of major political events and evaluate their important in diverse national contexts. The result is a highly flexible research infrastructure that balances depth of coverage, source reliability, and analytical scalability.
+
+## Building the HQMARC Corpus
+
+*ML4P* is constructed by processing articles from the *HQMARC* corpus, an original repository of online news that tracks the traditional media ecosystem in a wide range of developing countries over more than a decade. A key advantage of *HQMARC* is its unprecedented accuracy and granularity in capturing the publication history of critical domestic media outlets.
+
+To overcome the composition challenges discussed above, we developed a data-collection infrastructure designed to (1) comprehensively capture local sources' full publication history and (2) maintain accurate metadata. This process involves three main steps:
+
+1.  **Identify High-Quality Local Newspapers.** We begin by compiling a list of local newspapers with machine-scrapable websites. We consult publicly available directories of each country's media market (e.g., university library guides, Reporters Without Borders) as well as partner organizations to identify reputable publications that produce and publish original news content, ideally on a daily basis. Under this definition, we exclude most state-owned outlets but may include newspapers based outside their home countries if they remain a leading voice on domestic affairs. For example, *El Faro*---a Salvadoran independent newspaper that relocated its headquarters to Costa Rica due to government persecution---meets these criteria.
+
+    From this initial list, we select newspapers whose online archives extend as far back as possible, preferably to 2012. We aim for at least 3--5 local sources per country, collectively yielding several thousand articles per month. In cases where a source's publication volume declines drastically or ceases entirely, we follow standardized replacement procedures (see Appendix XXX). We then supplement these local outlets with articles from 28 reputable international and regional sources to ensure comprehensive coverage.
+
+2.  **Develop Custom Scrapers and Parsers.** Next, we create tailored scrapers and parsers for each website's unique structure and publishing practices. These tools can bypass common barriers such as robot blockers (e.g., Cloudflare), which affect roughly 15% of our sources. By designing source-specific scrapers, we minimize data loss and ensure that critical metadata (e.g., publication date, author, section) is accurately captured.
+
+3.  **Monitor and Update Quarterly.** Finally, we evaluate scraper and parser performance every 90 days, adapting to changes in website architecture or operational status. This regular monitoring helps us detect when a source reduces its publication frequency or shuts down entirely. Currently, we scrape an average of 4.6 local sources per country, yielding approximately XXX articles per month. Local outlets account for about 81% of the nearly 100 million articles in our database.
+
+In @sec-validation, we compare our coverage of domestic outlets to "big data" media aggregators and demonstrate how reporting by these domestic sources differs from that of international and regional publications. This comparison underlines the importance of high-quality, consistently monitored local coverage—a cornerstone of the *HQMARC* corpus and, by extension, the *ML4P* data.
+
+## Data Quality
+
+First, we compare *HQMARC's* coverage with that of several "big data" media corpora, demonstrating that *HQMARC* captures a significantly larger share of articles from high-quality domestic news outlets. Second, we highlight the challenges of relying on prepackaged scraping tools, showing how our human-supervised scraping methods mitigate data-reliability issues.
+
+We begin by discussing features that distinguish our dataset. In particular, careful human curation of national news sources is critical for comprehensive and accurate data collection. We demonstrate how relying on prepackaged scrapers such as GDELT, Common Crawl, or the Internet Archive often results in poorer coverage and introduces errors. For instance, we compared coverage of three prominent Bangladeshi news outlets in our dataset to the coverage of the same outlets in both GDELT and the Internet Archive.
+
+We selected Bangladesh for this comparison for three reasons. First, these outlets publish a high volume of articles, making them ideal candidates for regular scraping by automated crawlers. Second, the website architecture for each outlet is relatively straightforward, minimizing the complexity of custom parsing scripts. In our experience, site architecture can vary widely; some sites can be scraped with only minor modifications, while others require extensive effort. For Bangladeshi outlets, relatively minimal adjustments were necessary, implying that large-scale crawlers should, in principle, achieve a reasonable level of coverage even without tailoring the approach to each site. Third, many Bangladeshi sources publish primarily in English, reducing the additional hurdles of multilingual parsing. As a result, we regard these outlets as a "best-case scenario" for large-scale data-collection efforts such as GDELT and the Internet Archive.
+
+Despite these favorable conditions, our findings reveal notable disparities in performance between our curated approach and these large-scale tools. Coverage in our dataset begins in 2013 for one source and in 2015 for the other two, whereas GDELT coverage only starts in 2019. Even within overlapping time frames, the monthly article volume that GDELT captures is lower. For the best-covered source, GDELT retrieves approximately 2,100 articles per month on average, compared to 2,500 in our dataset.^[GDELT also includes numerous broken links, redirects, duplicate articles, and advertisements, which *HQMARC* scrubbing procedures remove. In addition, GDELT enforces a five-second delay per query, making it time-consuming to scrape a full historical archive.] The Internet Archive yields even more inconsistent results, requiring roughly two weeks to collect URLs from a single source (2019--2023) and returning many irrelevant or duplicate links. Although the total URL count was large, less than half were usable.
+
+@fig-true_false_spike highlights another reason human validation is essential. On the left, @fig-true_false_spike shows a genuine surge in `ghanaweb.com` coverage in 2020, triggered by a grant from Google that enabled the outlet to expand its reporting capacity. On the right, the same figure shows a spike in `lusakatimes.com` (Zambia) driven by the repeated upload of a single article over 1.5 million times. Each duplicate had a unique URL, making this error difficult to detect automatically. Without informed human oversight, it would be nearly impossible to distinguish legitimate expansions in coverage (Ghana) from artifactually inflated data (Zambia). Our human-in-the-loop approach effectively guards against such discrepancies, enhancing the overall reliability and quality of *HQMARC*.
+
+![Changes in the volume of articles across two sources. In Ghana, the sudden in shift in volume was driven by a grant that reflected a real change in the total articles being published. In Zambia, the sudden shift in volume was driven by a single article duplicated hundreds of thousands of times.](source_comparison/figures/true_false_spike.png){#fig-true_false_spike}
+
+## Processing Text Data from HQMARC
+
+Drawing on articles from the *HQMARC* corpus, we apply several computational tools to extract information about civic space events from raw text. First, we use translation models to convert non-English publications into English, enabling standardized text processing across our multi-lingual dataset. We then employ open-source geoparsing tools to identify all locations mentioned in each article, ensuring that events are correctly attributed to their respective countries. Finally, we use a fine-tuned 1stTR model to detect articles reporting on civic space or foreign influence events.
+
+To develop this 1stTR classifier, we fine-tuned a RoBERTa model using two separate corpora of human-coded newspaper articles collected for the project. For civic space events specifically, the training set comprised 6,475 articles (1,493 non-events and 4,982 events) covering 20 distinct event types. Although the popularity of large language models (LLMs) has grown rapidly since this project began, recent research shows that expensive, closed-source models often offer only modest performance improvements over first-generation models like RoBERTa, and only after costly fine-tuning [@deandrade2024]. In our case, we demonstrate how free, open-source 1stTRs can be rigorously evaluated and deployed across a wide range of countries and languages. By adapting these models for civic space, we also highlight their versatility in detecting additional event types or media characteristics (e.g., polarizing language) from the underlying repository. Incorporating these techniques into a robust, flexible processing pipeline ensures a long-term infrastructure that can be easily updated and expanded to include new event categories or refined coding rules.
+
+Nevertheless, first-generation transformers have limitations. Edge cases can pose significant challenges, and @deandrade2024 advocate using more complex models such as GPT-4 for particularly ambiguous scenarios. However, we find that for our domain, simple keyword filtering on the classified text considerably improves accuracy. As a result, several civic space event types employ a curated keyword corpus to enhance classification^[See Appendix 2 for a complete list of keywords and justifications for their inclusion.]. Moreover, because first-generation classifiers typically perform best with narrowly defined tasks, we developed a second 1stTR specifically to detect civic relevance. For example, within the "arrest" category, this additional model helps exclude articles about arrests unrelated to civic space, maintaining focus on the political or social dimensions most pertinent to our analyses. In the following subsections, we discuss the details of each step of our classification process.
+
+### Translating Non-English Text
+
+Given the well-documented biases in English-language news sources [@baum2015], even in relatively uncontroversial topics like natural disaster coverage [@brimicombe2022], our corpus includes articles published in local languages. Currently, *HQMARC* features content in over 40 languages in addition to English, ranging from high-prevalence languages (e.g., Spanish, French) to less commonly spoken languages (e.g., Georgian, Amharic, Kinyarwanda). To ensure consistent processing, we translate all non-English articles into English^[While it is technically feasible to classify events directly in multiple languages (by using multilingual transformer models and the location-extraction tools described below), we have found that consolidating the text in a single language typically simplifies iterative model improvements and yields greater overall accuracy.].
+
+We systematically test the efficacy of various translation models by selecting a representative sample of articles in each target language and processing them through every available open-source translation model on the Hugging Face platform.^[[Hugging Face](https://huggingface.co/)] We then evaluate whether the resulting English translations are sufficiently accurate and coherent to support reliable classification^[Our evaluation involves both automated checks (e.g., model confidence metrics when available) and manual inspection by bilingual reviewers, who assess whether the translated text preserves the salient information needed for event classification.]. If none of the open-source models produce acceptable results, we compare performance against commercial translation services accessible through the `deep-translator` Python package.^[[deep-translator](https://pypi.org/project/deep-translator/)] We ultimately choose the model that yields the clearest sentence-to-sentence translations with minimal loss of contextual detail.
+
+### Identifying Locations
+
+We employ location extraction to determine where each event actually takes place, given that both international/regional sources and local outlets may report on foreign events. Specifically, we use Named Entity Recognition (NER) with the CLIFF Annotator,^[For technical details on CLIFF, see: [CLIFF Annotator](https://github.com/mediacloud/cliff-annotator)] which integrates the GeoNames database^[[GeoNames](https://www.geonames.org/) is a free, online directory containing over 12 million place names across 250 countries [@dignazio2014cliff].] to identify geographic entities (e.g., states, cities, towns) mentioned in the text. GeoNames is one of the most comprehensive and actively maintained sources of geographic data, making it an ideal reference for matching entity mentions to specific global coordinates.
+
+Once we process an article via CLIFF, we retrieve the location information and convert the resulting country codes to assign the article to one or more specific countries. If the text does not contain any recognized country references, we apply a fallback rule for domestic sources by assigning the event to the source's home country. However, in the case of international or regional outlets, articles without a valid country match are excluded from the dataset to preserve accuracy in our event location data.
+
+## Detecting Civic Space Events
+
+A critical step in event extraction is the classification process. Here, we fine-tune a RoBERTa model [@robertaarticle]---a prominent 1stTR model---to detect reports on civic space events. Our training dataset consists of 6,475 newspaper articles (1,493 non-events and 4,982 events) double human-coded across 20 distinct event types. Notably, over 4,000 of these articles were originally published in languages other than English and later translated. The classifier outputs standard performance metrics (accuracy, precision, recall, F1) and a heatmap to aid in identifying underperforming event categories requiring additional training data. We adopt an iterative approach: after each training round, we gathered new examples for categories with lower accuracy, retrained the model, and repeated until performance stabilized.
+
+@tbl-roberta summarizes the out-of-sample performance of our fine-tuned model. With default ML4P settings, the model achieves an overall accuracy of approximately 0.82 (for civic space events), with most misclassifications arising from articles that mention multiple overlapping events. Column-specific metrics (precision, recall, F1) are provided for each event category.
+
+| Event Category | Precision | Recall | F1 |
+|---|---|---|---|
+| **Arrest** | 0.91 | 0.88 | 0.89 |
+| **Protest** | 0.85 | 0.98 | 0.91 |
+| **Legal action** | 0.77 | 0.75 | 0.76 |
+| **Disaster** | 0.87 | 0.86 | 0.86 |
+| **Censor** | 0.76 | 0.95 | 0.84 |
+| **Election activity** | 0.78 | 0.84 | 0.81 |
+| **Election irregularities** | 0.72 | 0.68 | 0.70 |
+| **Activism** | 0.95 | 0.83 | 0.88 |
+| **State of Emergency** | 0.92 | 0.90 | 0.91 |
+| **Cooperate** | 0.50 | 0.67 | 0.57 |
+| **Coup** | 0.68 | 0.83 | 0.75 |
+| **Non-lethal violence** | 0.79 | 0.81 | 0.80 |
+| **Lethal violence** | 0.90 | 0.82 | 0.86 |
+| **Corruption** | 0.74 | 0.71 | 0.73 |
+| **Legal change** | 0.84 | 0.80 | 0.82 |
+| **Security mobilization** | 0.83 | 0.77 | 0.80 |
+| **Purge** | 0.91 | 0.86 | 0.88 |
+| **Threats** | 1.00 | 0.78 | 0.88 |
+| **Raid** | 1.00 | 0.83 | 0.91 |
+| **-999** | 0.81 | 0.79 | 0.80 |
+
+: RoBERTa Classifier Performance {#tbl-roberta}
+
+To address articles containing multiple overlapping events, we permit dual classifications for certain event types. In particular, events such as corruption often occur concurrently with arrests or legal proceedings, yielding complex narratives. We therefore apply a targeted keyword filter to capture both dimensions of these stories.^[See Appendix for a detailed description of the keyword corpus.] This approach enhances analytic accuracy by retaining both elements of such overlapping events.
+
+### Distinguishing Civic and Non-Civic Events
+
+In addition to our main event-classification model, we developed a separate binary classifier to categorize events more broadly as "civic-related" or "non-civic." This distinction is crucial because some events, while highly newsworthy (e.g., a celebrity arrest), may not reflect civic space concerns. The civic/non-civic classifier, built via transfer learning from our fine-tuned RoBERTa model, draws on a specialized dataset of 2,938 human-coded articles and achieves an overall accuracy of 0.87. For each article the main classifier flags as an event, this secondary model provides a binary (0/1) output indicating its civic relevance.^[We deploy the civic/non-civic classifier specifically for event categories prone to high volumes of coverage unrelated to civic space (e.g., arrests, corruption, raids, threats, legal actions, lethal violence, non-lethal violence).] Non-civic events are still retained to examine baseline news trends, but are easily distinguishable from civic events in downstream analyses. Finally, we aggregate monthly event counts by country across all sources, providing researchers with a dynamic measure of civic space activities worldwide.
+
+### Measuring Salience
+
+As will be discussed in @sec-validation, many national news sources in our study exhibit inconsistent digital presences over time. This may occur for several reasons. First, some outlets produced fewer online articles in earlier years, reflecting a gradual shift from print to digital publishing or limited archiving. Second, certain outlets appear to have purged portions of their archives for unknown reasons. Third, others show sudden increases in publication volume, possibly due to editorial policy changes or staff expansions.
+
+Although raw counts of news articles or deduplicated event occurrences provide useful baseline information, they do not necessarily capture the *relative importance* of these events in domestic politics. For instance, merely knowing the number of legal changes enacted offers limited insight into their significance; by contrast, the level of media attention can reveal the perceived gravity or impact of these changes. This logic applies across a diverse range of civic space events (e.g., legal actions, arrests, protests).
+
+To better reflect event salience, we normalize monthly event counts by each source's total published articles, thereby generating a relative coverage ratio. This ratio indicates how frequently a civic space category appears relative to the full corpus of news coverage for a given month. As a result, our measures are more robust to fluctuations in overall publication rates, allowing for more meaningful cross-temporal and cross-national comparisons of civic space reporting.
+
+### Detecting Major Events
+
+A key advantage of measuring media attention is the ability to identify months in which major civic space events occur. We developed an ensemble algorithm to detect such "shocks" by examining sharp increases in the share of reporting dedicated to each event category. Our approach begins with winsorization, which curbs the influence of extreme outliers by replacing values beyond a specified percentile threshold with the nearest boundary value.
+
+Next, we apply a 25-month rolling window to smooth the normalized event counts and perform a grid search to tune various parameters. These include the multipliers for weighted means and weighted standard deviations, as well as the binning weights and decay functions that govern how observations in the window are weighted. To capture **civic event shocks** accurately, we employ two distinct weighting schemes for the historical (left-hand side, LHS) and future (right-hand side, RHS) segments of the rolling window. For the LHS window, we use a non-linear decay weighting that places progressively less emphasis on more distant historical months, enabling the detection of rapid changes in recent data. For the RHS window, we apply binning weights that decay linearly over time, preventing overestimation of peaks when the underlying data structure shifts.
+
+Combining winsorization with context-sensitive decay and binning weights enables early detection of significant increases in civic space activity. After optimizing these parameters, we integrate the resulting statistical features into a neural network model, supplemented by a set of definitive rules to refine the identification of major events. Two such rules merit special attention. First, we allow for the possibility of multiple consecutive peaks (sequential peak detection), recognizing that a single event can escalate over multiple months. Second, we target an overall peak identification rate of approximately 15%, ensuring that peaks are not overly frequent in highly variable data while still capturing meaningful shifts in lower-variance event types.
+
+This neural network-based procedure facilitates the seamless integration of future methodological updates, including the incorporation of human-validated data, without altering the core winsorization process.
+
+## Maps: percentages and most common event
+
+Our spatial analysis reveals compelling patterns in civic space activities across countries and time. @fig-map_cs_p_main quantifies the proportion of civic space coverage in total articles yearly, calculated as the ratio of civic space articles to all publications. This metric exposed notable variations, particularly in Ukraine, where civic space coverage surged from 10% in 2012 to 30% in 2024 following the 2022 invasion. Complementing this, @fig-map_main_event examines the dominant types of civic space events, determined by the highest-frequency event category in each country. The temporal shift is evident: while 2012 saw legal proceedings, protests, and non-lethal violence dominate the landscape, by 2024 electoral processes and cooperative initiatives had become the primary forms of civic space activity globally. The complete set of maps for all years in the dataset can be found in Appendix.
+
+![Yearly percentages of civic space events for our sample of countries in 2012, 2016, 2020, 2024. Darker values show larger percentages.](descriptive_maps/figures/civic_space_percentage_paper.png){#fig-map_cs_p_main}
+
+![Largest civic space event per country-year for our sample of countries in 2012, 2016, 2020, 2024.](descriptive_maps/figures/dominant_event_paper.png){#fig-map_main_event}
+
+# Data Validation {#sec-validation}
+
+In this section, we present results from two data validation exercises.
+
+## Major Event Validation
+
+We now assess our media-attention measure's ability to detect significant political events in two different ways. First, drawing on the event-detection algorithms described in @sec-data, we examine whether observed spikes in coverage correspond to real-world developments. We randomly selected five countries from our database---Kosovo, Morocco, Angola, Mauritania, and Ukraine---which together span three regions (North Africa, Sub-Saharan Africa, and Eastern Europe) and four languages (Serbian, Albanian, French, and Ukrainian).
+
+Focusing on three recent months of available data (April--June 2024), we used our spike-detection methods to identify anomalously high levels of coverage in each of the 20 civic space event categories. Because we have 3 months × 5 countries × 20 events, this yields 300 total possible events; our algorithms flagged 40 of these as exhibiting major spikes. For each flagged country-month-event combination, we retrieve all relevant articles from the domestic outlet(s) in that country.
+
+Given that some spikes involved hundreds of articles,^[Across detected events, the number of relevant domestic articles ranged from 1 to 1,002. For rare event categories (e.g., *Defamation Case*), a single article can define an event.] we used GPT-4o^[Accessed through the OpenAI API.] to generate brief summaries of up to five key developments per spike. A research assistant then reviewed both (a) the original articles (or a random subset of 50, if more than 50 were available) and (b) the GPT-4o summaries. They evaluated each of the top five summarized events on four dimensions:
+
+-   How many summarized events are accurately described by GPT-4o (i.e., factually correct)?
+-   How many summarized events are indeed the most important events, according to the underlying articles?
+-   How many occurred in the assigned country?
+-   How many match the assigned event category?
+
+In 34 out of 40 country-months (85%), *all* top-five events identified by GPT-4o occurred in the correct country, and in 38 out of 40 (95%), *all* top-five events belonged to the correct event category. Overall, out of 200 summarized events, 181 were classified correctly. These findings strongly suggest that our coverage-based measure reliably detects months with major political developments. The full GPT-4o prompt, human-coding instructions, and validation results can be found in the `gpt-validation` subfolder of the Git repository associated with this paper.
+
+Our second approach begins by identifying a major event expected to generate measurable spikes in media attention within specific event categories. We then examine whether these events correspond to spikes in the CS-ARC data. Specifically, we analyze increases in the normalized share of articles reporting on a given event and identify shocks using the procedure outlined above. We apply this approach in three ways: (1) identifying a single historical event likely to generate media attention on one of our CS-ARC event categories across multiple countries, (2) assessing our ability to detect both frequent and rare political events through spikes in relevant CS-ARC event categories, and (3) analyzing events within a single country that are expected to trigger spikes across multiple CS-ARC event categories.
+
+We first examine the onset of the COVID-19 pandemic and government responses to it, particularly the widespread implementation of social confinement measures, such as lockdowns. These measures often included school closures, curfews, and restrictions on non-essential businesses and government services [@cheng2020covid]. These lockdown measures should be associated with spikes in the Martial Law event category. As shown in Appendix C, Figures 1-6, we detect shocks in Martial Law counts across all countries in our dataset starting in March 2020.
+
+Next, we analyze the detection of key political events across multiple countries, focusing on a relatively frequent event---elections and electoral activities---and a rare event---coup d'état. To do so, we identify the most recent electoral event (e.g., general, parliamentary, or presidential election) for each country in our dataset. @fig-elections_lac demonstrates that our data and shock detection methodology effectively capture periods of heightened electoral activity preceding elections in all 10 Latin American and Caribbean countries we examined. Notably, our approach also detects electoral activity in electoral autocracies, such as Nicaragua under Daniel Ortega [@thaler2022nicaragua], highlighting its ability to track political events across different regime types.^[Appendix C Figures 7-11 plot the normalized share of articles reporting on Electoral Activity for countries in East Asia and the Pacific, Europe and Central Asia, the Middle East and North Africa, South Asia, and Sub-Saharan Africa.]
+
+![Elections and Electoral Activity (Latin America and the Caribbean). Notes: The vertical lines in each panel indicate key milestones in each country's electoral cycle, such as primary elections, congressional elections, or presidential elections.](event_validation/Combined_elections_LAC.png){#fig-elections_lac}
+
+We now focus our attention on coups d'état. We identify nine countries---Burkina Faso, DR Congo, Ethiopia, Mali, Niger, Peru, Tunisia, Turkey, and Zimbabwe---where a coup or self-coup has been attempted or succeeded in the past decade. We then assess whether these events correspond to spikes in the Coup event category. As @fig-coups_9 illustrates, all 14 coups, coup attempts, or self-coups in these nine countries are associated with detected shocks in Coup event counts.
+
+![Coups and Self-Coups (Attempted and Successful). Notes: The vertical lines in each panel indicate the month in which a coup (successful or attempted) or a self-coup occurred in each country.](event_validation/Combined_Coup_Plots.png){#fig-coups_9}
+
+Finally, we examine events expected to generate spikes in multiple event categories. We begin with the 2023 Guatemalan general elections, where opposition candidate Bernardo Arévalo and his party, *Movimiento Semilla*, secured a surprise victory despite institutional attempts to undermine their candidacy. The electoral period spanned from January to August 2023, concluding with the run-off election. As expected, the upper-left panel of @fig-gt_2023 shows that our data and shock detection methodology correctly identify this period as one of heightened electoral activity. Efforts to disqualify Arévalo intensified between the first-round election on June 25 and the run-off on August 20, followed immediately by attempts to prevent him from taking office once the vote count was finalized. The upper-right panel of @fig-gt_2023 captures these irregularities, detecting significant shocks between the general and run-off elections, as well as in the post-election period leading up to the inauguration. Notably, the efforts to block Arévalo's presidency were widely described by international organizations, including the Organization of American States (OAS), as a coup attempt.
+
+The lower-left panel of @fig-gt_2023 further validates our approach, accurately detecting a surge in media attention to the unfolding coup attempt in October---following the Public Prosecutor's direct efforts to nullify the election results---and again in December 2023, when the OAS officially condemned the attempted power grab.^[The press release by the OAS can be found here: <https://www.oas.org/en/media_center/press_release.asp?sCodigo=E-084/23>] Finally, the lower-right panel of @fig-gt_2023 shows that our data and our shock detection methodology correctly identified the media's attention to the massive protests in October, led by indigenous groups and civil society organizations demanding the resignation of the Public Prosecutor and a peaceful transition of power. Researchers have identified this civil society mobilization as a key factor in ensuring the eventual transfer of power [@schwartz2023guatemala; @melendez2023guatemalans; @romero2024guatemala].
+
+![Elections in Guatemala 2023. Notes: The vertical lines in each panel represent key milestones in Guatemala's 2023 electoral cycle, beginning with the official election announcement in January 2023 and concluding with the presidential inauguration in January 2024. The general elections were held in June 2023, followed by the presidential runoff in August 2023.](event_validation/Combined_GTM2023_Plots.png){#fig-gt_2023}
+
+## Comparing International and Local Media
+
+In this section, we illustrate a key use case of our data by comparing national and international news coverage of civic space events in 62 countries. We emphasize two overarching points. First, relying solely on international media often yields an incomplete and potentially biased view of civic space. Second, building a robust corpus of local news outlets worldwide requires extensive human curation, as off-the-shelf scraping methods can introduce substantial errors.
+
+In democratic backsliding research, widely used indicators such as V-Dem typically provide annual snapshots, which fail to capture the day-to-day political struggles that define this era. While big data and machine-learning tools offer a potential solution, our findings highlight two key challenges. First, international media provides sparse and inconsistent coverage of many significant domestic events. Consequently, big data projects or policymakers relying solely on these sources risk forming a skewed understanding of civic space dynamics on the ground. Second, constructing a corpus of domestic news from multiple countries demands careful, ongoing oversight. Sudden changes in a source's publication volume or poorly structured websites can impede comprehensive scraping, requiring customized approaches and regular human validation. Such complexity makes it difficult to rely exclusively on automatic tools. Our approach, by contrast, delivers a deeper and more detailed picture of civic space in each country.
+
+We demonstrate below that international-only coverage---common in big data projects---omits a considerable portion of local civic space events. Specifically, the correlation between international and domestic reporting is often low, and this pattern does not improve if a country is already receiving more international media attention overall. Nor do civic space events that feature most prominently in international media correlate significantly more closely with domestic reports. Finally, we compare domestic and international media outputs directly and find significant differences in the topics they highlight.
+
+In @fig-int_share_norm, the blue bars measure the share of articles in the HQMARC corpus sourced from national outlets, showing that the vast majority of our data is derived from domestic coverage rather than international sources. The red dots represent the correlation between domestic and international reporting for each civic space event category. If both types of sources were capturing the same events, these correlations would be relatively high; yet the mean correlation is only 0.23 and is just 0.51 even for the most similar category, *election activity*. This underscores a fundamental discrepancy between the types of events covered by local and international outlets.
+
+![Proportional distribution of civic event coverage between domestic and international sources across 65 developing countries. Stacked bars show the percentage of total articles about each civic event type that come from domestic (blue) versus international (green) sources. Events are ordered by correlation strength between domestic and international coverage (red points labeled with correlation coefficient). Domestic and international sources show weak correlations in their coverage patterns, regardless of the share of articles coming from international sources. Example: Of all Arrest articles, 83% come from domestic sources and 17% from international sources. The correlation between domestic and international reporting on arrests is 0.17.](source_comparison/figures/int_share_norm.png){#fig-int_share_norm}
+
+We also examine how national and international outlets diverge in their coverage of specific event types. @fig-event_share_total ranks these categories by the extent of international reporting, with domestic coverage stacked atop. Notably, international media devotes a disproportionate share of attention to violent incidents, whereas domestic outlets emphasize legal actions, electoral activity, corruption, protests, and cooperation. Because these latter categories are integral to civic space dynamics, relying solely on international media can yield a heavily skewed perspective. This issue is especially pronounced for high-frequency tracking of civic space, as violence often follows earlier developments such as corruption, legal maneuvers, or demonstrations. Consequently, a system that draws only on readily accessible international reporting provides minimal advance warning of escalating conflict or repression—offering little more lead time than lower-frequency measures such as expert surveys (e.g., V-Dem).
+
+![Frequency of civic event coverage within domestic versus international source portfolios. Overlapping bars show the rate at which each source type covers different civic events, expressed as articles per 10,000 total articles published by that source type. Events are ordered by international coverage frequency (lowest to highest). International sources (green) show more intense focus across all civic event types, suggesting their International sources exhibit higher relative focus on Lethal and Non-lethal Violence, while domestic sources (blue) exhibit higher relative focus on Election Activity. These patterns reflect different editorial priorities of international versus domestic media. Data normalized by total articles within each source type per country-month. Example: Domestic sources publish 65 lethal violence articles per 10,000 articles, while international sources publish 326 lethal violence articles per 10,000 articles.](source_comparison/figures/event_share_total.png){#fig-event_share_total}
+
+Next, we investigate whether the overall volume of international reporting a country receives explains these coverage gaps. Because international outlets focus more intensively on some countries than others, it is plausible that civic space coverage might be more complete where international attention is high. @fig-int_nat_corr_by_country plots a country's volume of international articles (x-axis) against the correlation in civic space event coverage between international and national sources (y-axis). Although there is a modest positive association, the correlation remains low in nearly all cases. For example, Turkey and India receive substantial international attention yet exhibit domestic-international correlation values below 0.5. Meanwhile, Timor-Leste garners very little international coverage, and what coverage it does receive aligns minimally with local reporting.
+
+![Relationship between international media attention and domestic-international coverage correlation across 65 developing countries. Each point represents one country, plotting the correlation between domestic and international civic event coverage (y-axis) against the total volume of international articles about that country (x-axis, log scale). Countries with higher international media attention tend to show stronger positive correlations between domestic and international coverage patterns, suggesting that sustained international focus may lead to more synchronized reporting priorities. Selected countries are labeled to illustrate this pattern: Ukraine, Turkey, and India (high international attention, strong positive correlation) versus Timor Leste and Jamaica (low international attention, weak correlation). Even for high-attention countries, this correlation is surprisingly weak.](source_comparison/figures/int_nat_corr_by_country.png){#fig-int_nat_corr_by_country}
+
+We illustrate the broader point with a case study of reporting on corruption in Indonesia. Between March and November, a series of major corruption scandals broke out, including the PT Timah state enterprise corruption case in March, the Tom Lembong sugar import case and the Sahbirin Noor South Kalimantan Governor case in October, and the Rohidin Mersyah electoral case in November. In May 2024 alone, domestic outlets published over 970 articles covering corruption revelations and 107 articles covering political arrests, many related to the PT Timah state enterprise case. Despite the gravity of these events, our regional and international sources carried *zero* relevant articles.
+
+This discrepancy suggests that a reliance on international and regional sources not only provide an incomplete view of the salience of different events in the domestic political environment, but also the possibility that major events may be entirely overlooked. Across our dataset, we identified 59 cases across 23 countries where we detected shocks indicative of major events but found zero relevant articles published by our regional or international sources.
+
+# Use Case: Forecasting Travel Advisory Onsets with *ML4P* {#sec-usecase}
+
+An effective forecasting model must capture real-world political instability rather than artifacts of measurement or reporting bias. By demonstrating that high-frequency civic space indicators can predict the issuance of independent security assessments—U.S. Department of State (DOS) high-level travel advisories (HLTAs)—this study provides de facto validation that MLP's data reflects meaningful underlying political conditions. If the model successfully anticipates HLTA onsets months in advance, it confirms that MLP's indicators do not merely correlate with political events but also encode predictive signals of escalating instability.
+
+## Data and Methodology
+
+To evaluate whether MLP's data can forecast real-world security risks, we construct a monthly panel dataset covering 60 developing countries from 2012 to 2023 and model the onset of Level 3 ("Reconsider Travel") or Level 4 ("Do Not Travel") travel advisories. These advisories serve as official risk assessments, issued by the U.S. Department of State in response to civil unrest, political repression, armed conflict, health emergencies, natural disasters, and crime. Beyond their significance as public warnings, these advisories drive critical operational responses, including embassy closures, staff relocations, and security escalations. By predicting these advisories before their issuance, our model effectively demonstrates that MLP's civic space indicators capture early warning signals of deteriorating conditions on the ground.
+
+While DOS publishes travel advisories in real time, historical archives are not systematically structured, making retrospective analysis challenging. We reconstructed this dataset by scraping the DOS website for past advisories and supplementing gaps using archived versions from the Wayback Machine (web.archive.org). Since the advisory system changed in 2018—introducing a four-level classification—we standardized earlier advisories by coding all pre-2018 warnings as "serious" (Level 3 or 4 equivalent). We then constructed a binary onset variable, flagging new advisories in a given country-month while ensuring that continued warnings were not misclassified as new events. This dataset, spanning over a decade of U.S. government security assessments, provides a unique opportunity to evaluate whether high-frequency civic space indicators contain predictive signals of advisory issuance.
+
+To forecast HLTA onsets, we incorporate monthly event counts from MLP across 20 political event categories, including protests, arrests of activists, media censorship, election irregularities, and emergency declarations. Given the importance of both gradual and sudden shifts in political conditions, we lag all features by up to 12 months, allowing the model to detect both long-term precursors (such as increasing government repression) and short-term triggers (such as post-election violence). Additionally, we account for persistence by including an indicator distinguishing between new HLTA onsets and continued warnings, a country-specific Bayesian prior that adjusts for baseline differences in advisory issuance, and a COVID-19 indicator to control for the pandemic-driven spike in travel warnings in 2020.
+
+HLTA onsets occur in only 1.42% of country-months, making rare-event forecasting a key challenge. We train a LightGBM gradient-boosted tree model, which effectively handles class imbalance while capturing nonlinear interactions between political variables. To ensure that the model generalizes to unseen time periods, we implement rolling-origin temporal cross-validation, strictly limiting training data to historical observations and preventing information leakage. We evaluate model performance using ROC-AUC, which measures ranking accuracy; AUPRC, which assesses precision-recall tradeoffs for rare-event classification; and the Brier score, which quantifies probability calibration.
+
+## Results
+
+Our models strongly predict HLTA issuance, confirming that MLP's event data captures meaningful geopolitical risk indicators. The six-month forecast achieves an ROC-AUC of 0.87 and an AUPRC of 0.31, demonstrating robust predictive performance. Expanding to a rolling three-month window, where onsets within ±1 month of the forecast are counted as correct, further improves results, yielding an ROC-AUC of 0.90 and an AUPRC of 0.57. These results indicate that MLP's civic space indicators provide leading signals of government security assessments, months before DOS formally recognizes them in its advisories.
+
+An analysis of feature importance reveals that election irregularities, martial law declarations, protest activity, and censorship surges are the most influential predictors of HLTA issuance. Election irregularities, particularly those occurring 11 months before an advisory onset, emerge as a key signal of impending instability. This suggests that government manipulation of elections—whether through fraud, voter suppression, or other irregularities—often sets off political instability that escalates over the following year. Declarations of martial law, especially those occurring one to three months before advisory issuance, serve as immediate precursors, reflecting rapid government responses to deteriorating security conditions. Protest activity within a six-month window is also highly predictive, indicating that sustained civil unrest frequently precedes formal security warnings. Finally, increases in government censorship, particularly those occurring six to ten months before advisory onset, signal mounting repression, which may heighten political tensions and trigger future instability.
+
+To assess real-world forecasting utility, we trained the model on data through December 2023 and generated predictions for advisory onsets in March and June 2024. The model correctly flagged Bangladesh for June 2024, which later received an HLTA due to the July Revolution. It also identified Zimbabwe and Liberia as high-risk for March 2024, and while DOS did not issue an HLTA for these countries, Zimbabwe expelled USAID staff in March, prompting U.S. officials to issue multiple security statements. These cases highlight the practical value of early warnings derived from high-frequency civic space indicators, even when they do not always align with official government actions.
+
+# Limitations {#sec-limitations}
+
+In this section, we discuss the limitations of the *ML4P* dataset. First, we discuss limitations that derive from *HQMARC* corpus on which *ML4P* is built. We then discuss limitations of *ML4P* itself.
+
+Although *HQMARC's* 'medium-data' approach gives a much more reliable representation of domestic media markets in aid-receiving countries, there are several important limitations. First, stories from more recent years are easier to collect than older stories so the total number of stories will tend to trend up over time. We started data collection in 2019, meaning older archives may have some level of missingness. To ensure the best possible coverage of earlier periods, we supplement our scraping process by pulling all possible articles from both Internet Archive and G-Delt.
+
+Second, only news sources that have consistent and/or coherent internet infrastructure are included. We do this in order to ensure that movements in counts are a function of actual news rather than simply changes in the number of sources, but this comes at the cost of coverage, i.e. many sources in many countries have extremely poor web architecture. Third, news organization also have their own biases. For example, their coverage is much stronger in cities than in more rural areas and many international media outlets bias their coverage towards English-speaking countries. Despite these limitations, *HQMARC* is a powerful and flexible tool for understanding how events are shifting within developing countries at high-frequency.
+
+A key limitation of our approach is its implicit reliance on media attention as a proxy for the importance of an event. This assumption introduces potential biases, as media coverage is influenced by editorial priorities, political pressures, and audience interests rather than only the objective significance of an event. Some critical events may receive limited coverage due to competing news cycles, censorship, or media ownership structures, leading to underrepresentation in our dataset. Conversely, sensational or high-profile stories might be disproportionately amplified, skewing the perceived relevance of events in ways that do not necessarily reflect their actual impact.
+
+Another limitation arises from the normalization process, which forces competition between different event categories within a given timeframe (e.g., a month). When an exceptionally large event dominates media coverage---e.g., a major political crisis, a natural disaster, or a global pandemic---other significant but less dramatic events may appear relatively unimportant in our data. This effect can lead to the underdetection of meaningful events that might otherwise register as notable spikes in a less crowded news environment.
+
+# Conclusion
+
+In this paper, we introduced *HQMARC*, a novel dataset designed to enhance the study of civic space in developing countries. We detailed the methodologies employed to construct the dataset, including custom scraping, translation, and event classification. Our findings demonstrate that 1stTR models, such as the fine-tuned RoBERTa model used here, can achieve high-performance classification of local media content in a cost-effective and time-efficient manner.
+
+Furthermore, we outlined our rigorous validation processes, which encompass both the quality of the underlying data and the robustness of subsequent analyses. Our results underscore the necessity of meticulous, human-supervised data collection to maintain overall data integrity. Additionally, we showed that our shock detection algorithm effectively identifies genuine, significant changes in local media attention, thereby reflecting real-world political dynamics.
+
+A critical insight from our analysis is the significant discrepancy between international and domestic media coverage of civic space events. Our study revealed that international sources often exhibit low correlation with domestic reporting and may entirely overlook meaningful local events. This highlights the inherent biases and limitations of relying solely on international media for understanding civic space dynamics.
+
+## Implications
+
+This work has several important implications. First, *HQMARC* provides researchers with a reliable and comprehensive dataset that complements traditional measures of domestic civic activity, such as those offered by V-Dem. Second, our findings inform US foreign policy decision-making by emphasizing the importance of incorporating locally curated media data to gain a more accurate and nuanced understanding of political conditions in strategically important countries. Utilizing media data to monitor evolving political landscapes is crucial for informed policy interventions.
+
+However, our study also cautions policymakers against over-reliance on international media sources or automated scraping tools, which can lead to incomplete or biased assessments of civic space. *HQMARC* bridges this gap by combining direct, human-supervised data collection with advanced tools like 1stTR models and machine translation. This approach ensures high-quality data capture from domestic outlets across diverse linguistic and regional contexts.
+
+Given that media information constitutes a primary data source for the US government, future investments in media data production should integrate our insights. Specifically, enhancing human oversight and customization in data collection processes will mitigate the errors and biases associated with automated scraping. By adopting these strategies, researchers and policymakers can leverage richer and more accurate media coverage to better understand and support civic space dynamics globally.
+
+## References
