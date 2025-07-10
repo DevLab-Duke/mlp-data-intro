@@ -153,7 +153,7 @@ indonesia_plot <- ggplot(indonesia_long, aes(x = date, y = value,
   geom_line() +
   facet_wrap(~metric, ncol = 3, scales = "free_y") +
   scale_color_manual(name = "Source Type:", values = colors) +
-  labs(title = "Share of articles published by source", 
+  labs(title = "Domestic outlets provide more consistent coverage across months of high activity", 
        y = "% of articles published by source type\n (i.e. Corruption Domestic Articles / Total Domestic Articles)", 
        x = "") +
   theme_bw() +
@@ -326,12 +326,13 @@ plot_data_long$cor_label <- str_replace(plot_data_long$cor_label, "^-0\\.", "-."
 
 int_share_plot <- ggplot(plot_data_long, aes(x = variable)) +
   geom_bar(aes(y = value, fill = source_type), stat = "identity", position = "fill", alpha = 0.5) +
-  labs(y = "Share of articles from each source type", x = NULL, title = "Coverage by domestic and international sources is weakly correlated") +
+  labs(y = "Share of articles from each source type", x = NULL, 
+       title = "Coverage by domestic and international sources is weakly correlated") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   scale_y_continuous(labels = scales::percent_format()) +
   theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
-        legend.position = "bottom",
+        legend.position = c(.2, 0.8),
         legend.title = element_text(size = 10),
         plot.title = element_text(hjust = 0.5)) +
   geom_text(aes(y = average_cor + 0.15, label = cor_label), vjust = 1, color = "black") +
@@ -387,7 +388,7 @@ event_share_plot <- ggplot(plot_data, aes(x = variable)) +
   geom_bar(aes(y = international * 10000, fill = "International"), 
            stat = "identity", alpha = 0.2) +
   labs(y = "Frequency of articles per 10k by source type", x = "", 
-       title = "Domestic and international Sources by Volume") +
+       title = "Domestic and international sources focus on different types of events") +
   scale_fill_manual(name = "Source Type:", values = colors) +
   theme_bw() +
   theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1), 
@@ -404,7 +405,7 @@ ggsave(file.path(output_path, "event_share_total.png"),
 
 
 # Find total number of non-local articles per country
-intl_aggregated <- data %>%
+intl_aggregated <- counts_combined_nst %>%
   filter(non_local == 1) %>%
   group_by(country) %>%
   summarise(int_articles = sum(total_articles, na.rm = TRUE), .groups = 'drop') %>%
@@ -421,18 +422,22 @@ country_stats = merge(country_stats, intl_aggregated)
 # Create scatter plot
 country_plot <- ggplot(country_stats, aes(x = log_int_articles, y = correlation)) +
   geom_point(aes(color = country)) +
-  labs(y = "Correlation between Domestic and International Coverage", x = "Total Number of International Articles (log)", 
-       title = NULL) +
+  labs(y = "Correlation between domestic and international coverage", x = "Total international articles covering each country (log)", 
+       title = "Correlation between domestic and international coverage is higher\nin countries with more international coverage") +
   theme_bw() +
   theme(legend.position = "none") 
 
 # Add labels for specific countries
-highlight_countries <- c("Timor Leste", "India", "Turkey", "Kosovo", "Ukraine")
+highlight_countries <- c("Timor Leste", "India", "Turkey", "Jamaica", "Ukraine")
 highlight_data <- country_stats[country_stats$country %in% highlight_countries, ]
 
-country_plot <- country_plot + geom_text(data = highlight_data, 
-                                         aes(log_int_articles, correlation, label = country),
-                                         vjust = -0.5)
+country_plot <- country_plot + 
+  geom_text(data = highlight_data, 
+            aes(log_int_articles, correlation, label = country),
+            vjust = -0.5) +
+  # Expand plot margins to prevent label cutoff
+  coord_cartesian(clip = "off") +
+  theme(plot.margin = margin(t = 20, r = 20, b = 5, l = 5, unit = "pt"))
 
 ggsave(file.path(output_path, "int_nat_corr_by_country.png"), 
        plot = country_plot, height = 5, width = 7)
