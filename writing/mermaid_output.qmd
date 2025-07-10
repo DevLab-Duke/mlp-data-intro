@@ -11,19 +11,22 @@ format:
 ```{r}
 # Load required library
 library(DiagrammeR)
-
+library(webshot2)
+library(chromote)
 # Generate the Mermaid diagram and save it as a PNG
 a = DiagrammeR("
   graph LR
-  A(Scrape news from web)--> B(Translate to English) 
+  A(Scrape news<br>from web)--> B(Translate to<br>English) 
   B --> C{Process} 
-  C --> D[LLM: Detect Events]
-  C --> E[Geographic Locations]
-  C --> F[Custom Keywords]
-  D --> G(Aggregate to Country-Month)
+  C --> D[Detect events]
+  C --> E[Identify locations]
+  C --> F[Apply keywords]
+  D --> G(Count articles per<br>country-month)
   E --> G
   F --> G
-  G --> H( Normalize)", width = "100%", height = "100%")
+  G --> H( Normalize count by<br>total articles published)", width = "100%", height = "100%")
+
+a
 
 a %>%
   htmltools::html_print() %>%

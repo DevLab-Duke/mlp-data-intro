@@ -2,7 +2,7 @@
 title: "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models"
 abstract: Civic space - the fundamental freedoms necessary for citizens to influence politics - is under constant contestation. Despite the importance of day-to-day contestation over these rights, there is very little data allowing us to study the events and processes that constitute this struggle. We introduce new data that captures civic space activity across 62 developing countries from 2012 to 2024. Using an original corpus of over 120 million articles from nearly 350 high-quality domestic media outlets and 30 international and regional outlets, we use human-supervised web scraping and open-source computational tools to track monthly variation in media attention across 20 civic space events. Our approach achieves unprecedented coverage of reporting by developing country media outlets, addressing biases in other media event data. We demonstrate the utility of this data for identifying and forecasting major political events and discuss applications for research on regime dynamics during a time of democratic backsliding.
 
-thanks: This study was funded by the United States Agency for International Development (USAID) Bureau for Democracy, Human Rights, and Governance and the Open Society Foundations. Check out our data dashboards at [mlpeace.org](https://web.sas.upenn.edu/mlp-devlab/civic-space-data-and-forecasts/).
+thanks: This study was funded by the United States Agency for International Development (USAID) Bureau for Democracy, Human Rights, and Governance and the Open Society Foundations. We would like to thank many partners in the NGO and policy world who have helped in the development of this work, including Laura McKechnie, Dan Spealman, Asta Zinbo, Daniel Sabet, Erin McCarthy, and David Jacobstein. We also thank several researchers who were instrumental in the origins of this project, including Scott de Marchi and Spencer Dorsey, and a number of others who made critical contributions along the way, including Rethis Togbedji Gansey, Andreas Beger, Tim McDade, Akanksha Bhattacharyya, and Joan Timoneda.
 
 date: today 
 date-format: long
@@ -28,7 +28,7 @@ authors:
       - ref: upenn2
     corresponding: false
     email: ewibbels@sas.upenn.edu
-    equal-contributor: false
+    equal-contributor: true
   - name: Serkant Adiguzel
     affiliations:
       - ref: su
@@ -108,19 +108,66 @@ header-includes:
   - \usepackage{makecell}
 ---
 
+```{r}
+#| label: load-packages
+#| include: false
+#| echo: false
+#| warning: false
+
+library(tidyverse)
+library(gt)
+library(kableExtra)
+library(ggplot2)
+library(here)
+library(tidyr)
+library(ISOcodes)
+source(here("build_data", "constants.R"))
+
+civic = readr::read_csv(here::here("data", "final-counts", "full-civic-data.csv"))
+
+num_countries = length(unique(civic$country))
+
+sum_lengths <- 0
+for (i in unique(civic$country)) {
+  lsources_len = local_source_select(i)$lsources
+  sum_lengths <- sum_lengths + length(lsources_len)
+}
+
+lan = read_csv(here::here("writing","languages", "Scraping Process List bbcfde3f5f5b4a80a3a0375e5c07f939.csv")) %>%
+  filter(! Name %in% c("Roya’s project")) %>%
+  filter(!is.na(Language)) %>%
+  mutate(Name = gsub(".*: ", "", Name))
+
+# Remove parentheses and all characters between them
+lan$Language <- gsub("\\(.*?\\)", "", lan$Language)
+
+# Trim any leading or trailing spaces left after removing the parentheses
+lan$Language <- trimws(lan$Language)
+
+# Calculate number of languages
+langs = unique(unlist(strsplit(lan$Language, ", ")))
+
+nl = length(langs)
+
+```
+
+{{< pagebreak >}}
+
 # Introduction
 
-In 2016, approximately 3.5 billion people lived under autocracy; by 2021, this number had surged to over 5.4 billion [@boese2022autocratization]. Concentrated in the global south, this "third wave of autocratization" is constricting civic space^[Following @brechenmacher2019civic, we define civic space as the fundamental freedoms that allow people to gather, communicate, and take part in groups to influence society and politics.] and limiting the ability of citizens to advocate for better governance [@luhrmann2019third; @waldner2018unwelcome]. Nevertheless, citizens worldwide continue to challenge these authoritarian movements.
+In 2016, 3.5 billion people lived under autocracy; by 2021, this number surged to over 5.4 billion [@boese2022autocratization]. Concentrated in the global south, this "third wave of autocratization" is constricting civic space and limiting the ability of citizens to advocate for better governance [@luhrmann2019third; @waldner2018unwelcome].^[Following @brechenmacher2019civic, we define civic space as the fundamental freedoms that allow people to gather, communicate, and take part in groups to influence society and politics.] Nevertheless, citizens around the world continue to challenge these authoritarian movements.
 
-Despite the importance of this day-to-day push-and-pull over citizen liberties and state control, data to study the events and processes that constitute this struggle is limited. Existing measures of civic space come largely from annual, expert-coded indicators classifying the nature of political regimes. While these regime indices have opened-up new domains of research to rigorous investigation, they are not designed to provide insight into the quotidian politics where battles over civic space take place.
+Despite the importance of this day-to-day push-and-pull over political liberties and state control, data to study the events and processes that constitute this struggle is limited. Existing measures of civic space come largely from annual, expert-coded indicators classifying the nature of political regimes. While these regime indices have opened-up new domains of research to rigorous investigation, they are not designed to provide insight into the quotidian politics where battles over civic space take place.
 
-This article introduces the Machine Learning for Peace (ML4P) dataset, which provides **monthly** data on 20 civic space events across 62 developing countries from 2012 through 2024. *ML4P* measures civic space activity by capturing monthly variation in levels of media attention across events, providing a dynamic view of where and when civic space is changing. *ML4P* represents a major advance in our ability to understand civic space dynamics by providing a higher-frequency measure of a broad range of events bearing on civic space. Using a carefully assembled corpus of online news, *ML4P* also captures the significance of these events to the domestic political environment.
+This article introduces the Machine Learning for Peace (ML4P) dataset, which provides monthly data on 20 civic space events across 65 developing countries from January 2012 through December 2024. *ML4P* measures civic space activity by capturing monthly variation in levels of media attention across events, providing a dynamic view of where and when civic space events are happening and their level of political salience. *ML4P* represents a major advance in our ability to understand civic space dynamics by providing a higher-frequency measure of a broad range of events bearing on civic space. 
 
-Importantly, *ML4P* is constructed from articles collected by the High-Quality Media from Aid Receiving Countries (*HQMARC*) corpus, an original repository of online news from 16 international and 12 regional sources, as well as a curated sample of nearly 350 prominent domestic media outlets based across our sample of countries. Rather than using web-crawlers or pre-canned scraping tools, *HQMARC* uses human-supervised custom web scraping and parsing to carefully capture each outlet's complete publication history. This human-supervised approach is particularly important for domestic news sources, whose websites are often less stable than international ones but which provide far more coverage of domestic politics.
+Importantly, *ML4P* is constructed from articles collected by the High-Quality Media from Aid Receiving Countries (*HQMARC*) corpus. *HQMARC* is an original corpus of articles scraped from `r sum_lengths` prominent *domestic* media outlets based across our sample of `r num_countries` countries and publishing in `r nl` languages. We supplement these domestic outlets with content scraped from `r length(rsources)` regional and `r length(isources)` international outlets. In sharp contrast to other sources of event data, more than 95% of the articles in *HQMARC* are scraped from domestic media outlets.
 
-*HQMARC* has major advantages over big data media aggregators relying on web-crawlers and general scraping tools, such as GDELT, Common Crawl, and Internet Archive. By focusing on a curated list of high-quality sources, *HQMARC* achieves a stable, well-understood composition that allows researchers to measure changes in the proportion of media attention devoted to 20 types of events within countries over time. *HQMARC* also surpasses expensive commercial options, such as LexisNexis, in terms of linguistic diversity and coverage of many developing countries.
+*HQMARC* employs a human-supervised, source-specific scraping methodology that prioritizes data quality and comprehensiveness over the broad but shallow coverage typical of automated web crawlers. Rather than deploying generic crawling tools that blindly follow hyperlinks across domains, *HQMARC* develops customized harvesting workflows for each media source, beginning with structured entry points such as public sitemaps and falling back to site-specific search strategies only when necessary. This targeted approach enables comprehensive or near-comprehensive capture of all relevant articles published by each source from 2012 through 2024. 
 
-*HQMARC* includes more than 150 million articles published in more than 40 languages, making human classification prohibitively expensive. To produce *ML4P's* structured data on 20 civic space events from this large volume of multi-lingual text, we use open-source computational tools to translate and extract information from each article, identifying the main event being reported on and the country in which event occurs.
+The human-supervised nature of this process proves particularly valuable for domestic news sources, whose websites are less stable than international outlets. This methodology yields significant advantages over both big data media aggregators like GDELT and Common Crawl, which rely on generic web crawlers, and expensive commercial databases like LexisNexis, delivering a stable, well-understood corpus composition with superior linguistic diversity and coverage of developing countries.
+
+*HQMARC's* size and linguistic diversity makes human classification prohibitively expensive. To produce *ML4P's* structured data on civic space events, we apply open-source computational tools to translate and extract information from each article, identifying the main event being reported on and the country in which the event occurs. 
 
 In @sec-background, we discuss how *ML4P* complements existing data on regimes and opens up new avenues for research. In @sec-data, we describe the data production process. We also compare the coverage of *ML4P* to other major media repositories, showing superior accuracy and stability compared to alternatives.
 
@@ -132,17 +179,42 @@ In @sec-usecase we provide a use case, documenting how civic space events are pr
 
 # Democratic Erosion, Annual Indices, and the Need for Civic Space Data {#sec-background}
 
-The "third wave of autocratization" has brought renewed attention to the study of regime type, political transitions and democratic backsliding [@luhrmann2019third]. This attention has been accompanied by a proliferation of measures of regime type, including the Varieties of Democracy project [@V-DEM], the Civil Society Organization Sustainability Index [@FHI] and the World Justice Project's Rule of Law Index [@WJP], among many others. These indices are designed to provide information about levels of democracy over time and space and to capture distinct features of regimes, ranging from freedom of the press [@FHP], rule of law [@WJP], the ease of civic organizing [@FHI; @CVC] and beyond.
+The "third wave of autocratization" has brought renewed attention to the study of regime type, political transitions, and democratic backsliding [@luhrmann2019third]. This attention has been accompanied by a proliferation of measures of regime type, including the Varieties of Democracy project, the Civil Society Organization Sustainability Index and the World Justice Project's Rule of Law Index, among many others. These indices are designed to provide information about levels of democracy over time and space and to capture distinct features of regimes, ranging from freedom of the press, rule of law, the ease of civic organizing and beyond. Though VDEM, in particular, has helped make annual indices more rigorous, they are not designed to provide insight into the quotidian politics where battles over civic space take place.
 
-Though VDEM, in particular, has helped make annual indices more rigorous, they are not designed to provide insight into the quotidian politics where battles over civic space take place.
+ltimately, what appear as slow-moving changes in regimes are the result of government and citizen actions that happen at specific moments in time. Existing measures provide aggregations of those changes over 12-month periods. Our project complements those efforts by measuring the events -- often occurring over days or weeks -- that contribute to broad, prolonged processes of democratic backsliding. We specifically seek to cover civic events that might be lost in the process of aggregating indices and sub-indices annually. Take, for instance, Hungary's systematic dismantling of democratic institutions since 2010. Each stage of this process involved a host of important events: the 2010 media law that brought most outlets under government control, the 2011 constitutional changes that packed the Constitutional Court, the 2012 electoral law that gerrymandered districts, the 2017 targeting of Central European University, and the 2018 "Stop Soros" laws criminalizing aid to asylum seekers. While each of these individual events was meaningful for Hungary's democratic trajectory, annual democracy indices smooth over these discrete moments of institutional change, obscuring the specific mechanisms and timing through which democratic backsliding actually occurs.
 
-Ultimately, what appear as slow-moving changes in regimes are the result of government and citizen actions that happen at specific moments in time. Existing measures provide aggregations of those changes over 12-month periods. Our project complements those efforts by measuring the events -- often occurring over days or weeks -- that contribute to broad, prolonged processes of democratic backsliding. We specifically seek to cover civic events that might be lost in the process of aggregating indices and sub-indices annually. Take, for instance, the widespread move across U.S. states in recent years to restrict ballot access, reduce the number of polling places, and increase voter registration requirements. Each of these involves a host of important events: legal changes, administrative decisions, state supreme court decisions, etc. Even if each of those individual events are meaningful for the evolution of democracy in the US, they are averaged across other state and federal events over the year to induce only a modest change in annual regime indices.
+*ML4P* provides higher-resolution data on regime dynamics by capturing events at both finer temporal scales and greater substantive detail. This approach shifts analytical focus to 'civic space' — the day-to-day practices through which citizens organize, participate, and communicate about the structures that govern them. As a measurement strategy, this shift involves a movement from slow-moving summary indices to the fast-paced civic space events.
 
-ML4P increases the granularity of data -- both temporally and substantively -- that is relevant to broader debates on regime dynamics and backsliding. In doing so, we shift the focus to 'civic space', which we conceptualize as the day-to-day practices through which citizens organise, participate and communicate with each other over the structures that govern them. As a measurement strategy, this analytical shift involves a movement from summary indices to coverage of civically salient events. There are several large event data projects that are relevant to civic space, such the Armed Conflict Location Event Data Project (ACLED), the Uppsala Conflict Data Project Georeferenced Event Dataset (UCDP GED), and the Political Event Classification, Attributes, and Types (Polecat) dataset.
+Several large event data projects produce data bearing on civic space, including the Armed Conflict Location Event Data Project (ACLED; @raleigh2010introducing), the Uppsala Conflict Data Project Georeferenced Event Dataset (UCDP GED; sundberg2013introducing), the Political Event Classification, Attributes, and Types (Polecat; @halterman2023plover) dataset (formerly the Integrated Crisis Early Warning System dataset; @boschee2012automatic), and the Global Database of Events, Language, and Tone (GDELT; @leetaru2013gdelt). 
 
-From the point of view of measuring civic activity, these projects has limitations that we overcome. First, they are focused on violence events (ACLED, UCDP, Polecat) and thus provide a very partial range of the activities impacting civic space. Second, these data either rely on relatively expensive and slow human coding (ACLED, UCDP) or only on international news sources (Polecat) that provide weak coverage of civic space in many countries.
+GDELT:
+Reliant on keyword searches in traditional media reports
+Dynamic source, changes daily, without oversight
+No known review of sources or events [@raleigh2010introducing]
 
-Encompassing the breadth of politically-relevant civic space events is difficult. While we have a rich body of theory about 'regimes', the literature on 'civic space' and 'civil society' is spread across varied bodies of work on protest, social capital, legal studies, and election studies. Our solution is to collect data on a large number of different civic space events. In consultation with academic research and policy practitioners, we define 20 civic space event types. They are: activism, arrests, censorship, cooperation, corruption, coups, defamation cases, election activity, election irregularities, legal actions, legal changes, lethal violence, martial law, the mobilization of security forces, non-lethal violence, protests, bureaucratic purges, raids, and threats. We also code disasters given the propensity of aspiring autocrats to use them (particularly COVID) as justification for restricting civil society. While some of these event types, such as protests and coups, are subject to systematic data collection elsewhere, our approach produces the first systematic data on many of them that we know of. Together, these event types provide a rich picture of the monthly contest over civic space and offer the potential for new research on civic dynamics.
+POLECAT:
+over one-thousand sources across the globe, but only seven languages
+
+UCDP:
+Unknown number of sources, though fewer than 7000, including some non-English sources, based on media aggregators (e.g. Lexis Nexis)
+
+ACLED:
+Over 13,600 sources in over 100 languages—including thousands of local and subnational sources, as well as partnerships with over 50 local conflict observatories—with local sources prioritized
+Manual source monitoring to pick-out reporting on relevant events and retain relevant articlesfor documentation; rather than collecting everything published (unknown denominator)
+
+**Human-led** (UCDP and ACLED)
+- Codings are immutable and sources are retained; limiting ability to update event categories or coding criteria
+- Volume constraints
+
+
+These projects has limitations that we overcome. 
+First, they are focused on violence events (ACLED, UCDP) and thus provide a very partial range of the activities impacting civic space. Second, these data either rely on relatively expensive and slow human coding (ACLED, UCDP) or only on international news sources (Polecat) that provide weak coverage of civic space in many countries.
+
+Encompassing the breadth of politically-relevant civic space events is difficult. While we have a rich body of theory about 'regimes', the literature on 'civic space' and 'civil society' is spread across varied bodies of work on protest, social capital, legal studies, and election studies. Our solution is to collect data on a large number of different civic space events. In consultation with academic research and policy practitioners, we define 20 civic space event types. They are: activism, arrests, censorship, cooperation, corruption, coups, defamation cases, election activity, election irregularities, legal actions, legal changes, lethal violence, martial law, the mobilization of security forces, non-lethal violence, protests, bureaucratic purges, raids, and threats.
+
+@tbl-roberta
+
+We also code disasters given the propensity of aspiring autocrats to use them as justification for restricting civil society. While some of these event types, such as protests and coups, are subject to systematic data collection elsewhere, our approach produces the first systematic data on many of them that we know of. Together, these event types provide a rich picture of the monthly contest over civic space and offer the potential for new research on civic dynamics.
 
 # Constructing ML4P {#sec-data}
 
@@ -155,6 +227,11 @@ First, historically, extracting information from unstructured text required huma
 Second, even with machine-coding, researchers struggle to find high-quality, comprehensive coverage of events in less-covered countries. Many prominent conflict event datasets (e.g., ICEWS, POLECAT) rely primarily on international or English-language outlets; while those sources might cover major international disputes, they do not systematically cover domestic events in the Global South. Meanwhile, "big data" aggregators such as GDELT, Common Crawl, and Internet Archive capture text more broadly but suffer from inconsistent composition, incomplete source coverage, or inaccurate metadata. These inconsistencies prevent researchers from determining the relative salience of events within each country's media ecosystem, because the overall volume of published articles (the "denominator" of coverage) is not measured. Even reputable private aggregators like LexisNexis exhibit erratic entry and exit of media outlets due to licensing issues, further complicating efforts to track coverage consistently over time.
 
 In response, we use recent advances in automated text analysis on a curated set of domestic outlets with stable publishing practices. This design ensures that we capture a broad range of high-quality media from countries that often go underreported in the international press. By regularly rescraping sources and applying machine coding to the full text, we can detect a variety of major political events and evaluate their important in diverse national contexts. The result is a highly flexible research infrastructure that balances depth of coverage, source reliability, and analytical scalability.
+
+@fig-mermaid provides a graphic representation of the *ML4P* data production pipeline. 
+
+![ML4P data production pipeline.](mermaid.png){#fig-mermaid fig-align="center" width="650"}
+
 
 ## Building the HQMARC Corpus
 
