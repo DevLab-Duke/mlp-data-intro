@@ -2,6 +2,18 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## General Instructions
+
+### Readme maintenance for organization and replicability
+
+
+The Readme file is meant to help new users understand the file structure and replicate the analysis. All additions of new code or output should be documented in the Readme. When major changes are made to the organization, code, or output that affect what is already in the Readme, the Readme should be updated.
+
+### Code style
+
+In R code, use tidyverse/dplyr solutions where possible.
+
+
 ## Project Overview
 
 This repository contains the academic paper data and code for "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models". It hosts everything associated with the MLP (Machine Learning for Peace) data introduction paper. The dataset covers 65 developing countries across regions: Eastern Europe/Central Asia, MENA, Latin America & Caribbean, East Asia, Sub-Saharan Africa.

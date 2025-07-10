@@ -133,6 +133,40 @@ Core dependencies include: `tidyverse`, `here`, `psych`, `gt`, `kableExtra`, `gg
 
 The `writing/event_validation/` folder contains refactored plotting scripts for generating validation visualizations of select civic events:
 
+#### File Structure and Execution Order
+
+The validation analysis is organized into modular R scripts that should be run in sequence:
+
+1. **`01_data_loading.R`** - Data loading and preparation module
+   - Loads shock detection results from `data/final-counts/shock-civic-data.csv`
+   - Loads full civic dataset from `data/final-counts/full-civic-data.csv`
+   - Adds region information using `constants.R` mappings
+   - Provides functions: `load_shock_data()`, `load_full_data()`
+
+2. **`02_plotting_functions.R`** - Reusable plotting functions library
+   - Core plotting functions with shock point overlays
+   - Regional time series plots with normalized event counts
+   - Country-specific validation plots (coups, elections)
+   - Provides functions: `create_regional_shock_plot()`, `create_country_plot()`, `create_election_timeline()`
+
+3. **`03_regional_plots.R`** - Regional plot generation
+   - Creates normalized count plots with shock points for all regions
+   - Generates activism and martial law visualizations by region
+   - Uses functions from modules 1 and 2
+   - Provides function: `generate_regional_count_plots()`
+
+4. **`04_country_plots.R`** - Country-specific plot generation  
+   - Individual coup analysis for 9 countries (Burkina Faso, DR Congo, Ethiopia, Mali, Niger, Peru, Tunisia, Turkey, Zimbabwe)
+   - Election timeline validation for 16 countries with electoral events
+   - Guatemala 2023 special analysis (4-panel visualization)
+   - Provides functions: `generate_coup_plots()`, `generate_election_plots()`, `generate_guatemala_analysis()`
+
+5. **`generate_all_plots.R`** - Main execution script
+   - Coordinates generation of all plots using the modular structure
+   - Sources all modules and executes plot generation functions
+   - **Run this script to generate all validation visualizations**
+   - Provides progress tracking and error handling
+
 #### Input Data
 - **`data/final-counts/shock-civic-data.csv`**: Combined shock detection results across all countries
 - **`data/final-counts/full-civic-data.csv`**: Complete civic event dataset with normalized counts
@@ -144,6 +178,29 @@ The `writing/event_validation/` folder contains refactored plotting scripts for 
 - **Election validation**: `Election_[Country].png` and `Combined_elections_[Region].png` - Election activity with event timelines
 - **Special analysis**: `Combined_GTM2023_Plots.png` - Guatemala 2023 4-panel electoral analysis
 
+### Descriptive Maps
+
+The `writing/descriptive_maps/` folder contains world map visualizations showing temporal patterns in civic space coverage across all 65 developing countries:
+
+#### Core Script
+- **`descriptive_maps.R`**: Refactored standalone R script (originally from `Maps_MVC.Rmd`) that generates temporal world maps using repository data and standardized variable mappings
+
+#### Input Data
+- **`data/final-counts/full-civic-data.csv`**: Complete civic event dataset with normalized counts
+- **`build_data/constants.R`**: Civic event categories and country lists  
+- **`data/cs_vars.csv`**: Variable name to human-readable label mappings
+
+#### Generated Outputs
+- **`civic_space_percentage_appendix.png`**: Multi-year faceted map showing civic space articles as percentage of total articles per country (all years, with legend positioned in blank grid space)
+- **`civic_space_percentage_paper.png`**: Selected years version (2012, 2016, 2020, 2024) for manuscript figures
+- **`dominant_event_appendix.png`**: Multi-year faceted map showing the most frequently reported civic event type per country-year (all years, with legend positioned in blank grid space)
+- **`dominant_event_paper.png`**: Selected years version for manuscript figures
+
+#### Key Features
+- **Consistent styling**: Light gray for countries without data, no "NA" entries in legends
+- **Repository integration**: Uses standardized data sources and variable mappings from `constants.R` and `cs_vars.csv`
+- **Space-efficient legends**: Appendix versions place legends in unused grid space for better layout
+- **Dual output formats**: Both comprehensive appendix versions and focused paper versions for different publication needs
 
 ### GPT Summarization
 
