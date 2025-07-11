@@ -79,6 +79,27 @@ get_normalized_civic_variables <- function() {
   return(paste0(civic, "Norm"))
 }
 
+#' Load variable labels from cs_vars.csv
+#' @return named character vector where names are variable ids and values are labels
+load_variable_labels <- function() {
+  labels_data <- read.csv(here("data", "cs_vars.csv"), stringsAsFactors = FALSE)
+  labels <- setNames(labels_data$name, labels_data$id)
+  return(labels)
+}
+
+#' Get proper label for a variable
+#' @param var_id variable identifier (e.g., "coup", "martiallaw")
+#' @return character string with proper label
+get_variable_label <- function(var_id) {
+  labels <- load_variable_labels()
+  if (var_id %in% names(labels)) {
+    return(labels[[var_id]])
+  } else {
+    # Fallback to formatted version of the variable name
+    return(str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", var_id)))
+  }
+}
+
 #' Main function to load all data
 #' @return list containing shock_data and civic_data
 load_all_data <- function() {

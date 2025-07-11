@@ -44,8 +44,14 @@ generate_regional_count_plots <- function(output_path = here("writing", "event_v
         date_range = c("2019-01-01", "2020-12-01")
       )
       
-      # Save plot
-      filename <- paste0("Normalized_", str_to_title(event_var), "_", gsub(" ", "_", region_name), ".png")
+      # Save plot - use proper variable label for filename
+      event_label <- get_variable_label(event_var)
+      # Remove "Normalized" from filename for State of Emergency and Civic Activism plots
+      if (event_var %in% c("martiallaw", "activism")) {
+        filename <- paste0(gsub(" ", "_", event_label), "_", gsub(" ", "_", region_name), ".png")
+      } else {
+        filename <- paste0("Normalized_", gsub(" ", "_", event_label), "_", gsub(" ", "_", region_name), ".png")
+      }
       save_plot(p, filename, output_path)
       
       message("Saved: ", filename)

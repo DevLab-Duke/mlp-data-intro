@@ -4,7 +4,9 @@
 
 This repository contains the academic paper data and code for "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models". It hosts everything associated with the MLP (Machine Learning for Peace) data introduction paper. The dataset covers 65 developing countries across regions: Eastern Europe/Central Asia, MENA, Latin America & Caribbean, East Asia, Sub-Saharan Africa.
 
-Current Overleaf Location: https://www.overleaf.com/9891685827jxbvnrshzxbw#683bc8
+**Manuscript Location**: 
+- **Main manuscript**: `writing/manuscript.qmd`
+- **Supplemental materials**: `writing/appendix.qmd`
 
 ### Event Categories
 - **Civic events**: 20 categories including arrest, censor, protest, activism, coup, etc.

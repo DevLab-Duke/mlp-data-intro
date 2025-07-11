@@ -9,6 +9,10 @@ library(dplyr)
 library(scales)
 library(patchwork)
 library(stringr)
+library(here)
+
+# Load the data loading functions (includes variable label functions)
+source(here("writing", "event_validation", "01_data_loading.R"))
 
 #' Create regional shock plots for a specific event type
 #' @param data shock data (contains normalized variables that represent shocks)
@@ -27,13 +31,16 @@ create_regional_shock_plot <- function(data, event_var, region_name,
   # The shock data contains normalized columns that represent shock intensity
   shock_var <- paste0(event_var, "Norm")
   
+  # Get proper label for the event variable
+  event_label <- get_variable_label(event_var)
+  
   # Create plot
   p <- ggplot(region_data, aes(x = date, y = .data[[shock_var]])) +
     geom_line() +
     facet_wrap(~country, scales = "free_x") +
-    labs(title = paste(str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", event_var)), "Shocks Over Time -", region_name),
+    labs(title = paste(event_label, "Shocks Over Time -", region_name),
          x = "Date",
-         y = paste("Number of", str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", event_var)), "Shocks")) +
+         y = paste("Number of", event_label, "Shocks")) +
     theme_minimal() +
     scale_y_continuous(breaks = scales::breaks_pretty(n = 3)) +
     scale_x_date(
@@ -66,11 +73,14 @@ create_regional_count_plot <- function(data, event_var, region_name,
   # Filter data for the region
   region_data <- data %>% filter(region == region_name)
   
+  # Get proper label for the event variable
+  event_label <- get_variable_label(event_var)
+  
   # Choose variable (normalized or raw)
   plot_var <- ifelse(use_normalized, paste0(event_var, "Norm"), event_var)
   y_label <- ifelse(use_normalized, 
-                   paste("Normalized", str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", event_var)), "Counts"),
-                   paste(str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", event_var)), "Counts"))
+                   paste("Normalized", event_label, "Counts"),
+                   paste(event_label, "Counts"))
   
   # Create plot
   p <- ggplot(region_data, aes(x = date, y = .data[[plot_var]])) +
@@ -122,6 +132,9 @@ create_country_coup_plot <- function(shock_data, civic_data, country_name,
   shock_var <- paste0(event_var, "Norm.shock")
   raw_shock_var <- event_var
   
+  # Get proper label for the event variable
+  event_label <- get_variable_label(event_var)
+  
   # Create base plot with normalized civic data as line (converted to percentage)
   p <- ggplot(merged_data, aes(x = date, y = .data[[civic_norm_var]] * 100)) +
     geom_line() +
@@ -129,7 +142,7 @@ create_country_coup_plot <- function(shock_data, civic_data, country_name,
     geom_point(data = merged_data %>% filter(.data[[shock_var]] > 0),
                aes(x = date, y = .data[[civic_norm_var]] * 100),
                color = "red", size = 2) +
-    labs(title = paste("Share of Articles about Coups in", country_name),
+    labs(title = paste("Share of Articles about", event_label, "in", country_name),
          x = "Date",
          y = "% of Articles",
          color = "") +
@@ -246,12 +259,23 @@ create_regional_count_plot_with_shocks <- function(civic_data, shock_data, event
     left_join(shock_region %>% select(country, date, all_of(paste0(event_var, "Norm"))), 
               by = c("country", "date"), suffix = c("", ".shock"))
   
+  # Get proper label for the event variable
+  event_label <- get_variable_label(event_var)
+  
   # Choose variable (normalized or raw)
   civic_var <- ifelse(use_normalized, paste0(event_var, "Norm"), event_var)
   shock_var <- paste0(event_var, "Norm.shock")
-  y_label <- ifelse(use_normalized, 
-                   paste("Normalized", str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", event_var)), "Counts"),
-                   paste(str_to_title(gsub("([a-z])([A-Z])", "\\1 \\2", event_var)), "Counts"))
+  
+  # Set labels - special handling for martiallaw and activism
+  if (event_var %in% c("martiallaw", "activism")) {
+    y_label <- "% of Articles"
+    plot_title <- paste(event_label, "-", region_name)
+  } else {
+    y_label <- ifelse(use_normalized, 
+                     paste("Normalized", event_label, "Counts"),
+                     paste(event_label, "Counts"))
+    plot_title <- paste(y_label, "Over Time (with Shock Points) -", region_name)
+  }
   
   # Create base plot with civic data line
   p <- ggplot(merged_data, aes(x = date, y = .data[[civic_var]])) +
@@ -261,7 +285,7 @@ create_regional_count_plot_with_shocks <- function(civic_data, shock_data, event
                aes(x = date, y = .data[[civic_var]]),
                color = "red", size = 2) +
     facet_wrap(~country, scales = "free_x") +
-    labs(title = paste(y_label, "Over Time (with Shock Points) -", region_name),
+    labs(title = plot_title,
          x = "Date",
          y = y_label) +
     theme_minimal() +
@@ -275,6 +299,12 @@ create_regional_count_plot_with_shocks <- function(civic_data, shock_data, event
   # Format y-axis for normalized data
   if (use_normalized) {
     p <- p + scale_y_continuous(labels = scales::label_percent(scale = 1))
+  }
+  
+  # Add COVID-19 reference line for martiallaw (State of Emergency) plots
+  if (event_var == "martiallaw") {
+    p <- p + geom_vline(xintercept = as.Date("2020-03-01"), 
+                       linetype = "dashed", color = "red", alpha = 0.7)
   }
   
   return(p)
