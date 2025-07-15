@@ -579,38 +579,13 @@ These validation figures demonstrate the effectiveness of ML4P's event detection
 
 ## State of Emergency Detection by Region
 
-### East Asia and Pacific
-
 ![State of Emergency events detection in East Asia and Pacific countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Clear spikes are visible across multiple countries starting in March 2020, corresponding to the implementation of emergency measures and lockdowns in response to the pandemic.](event_validation/State_of_Emergency_East_Asia_and_Pacific.png){#fig-soe-eap width="100%"}
-
-### Europe and Central Asia
 
 ![State of Emergency events detection in Europe and Central Asia countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Pronounced spikes are evident across the region starting in March 2020, reflecting the widespread implementation of emergency measures in response to the pandemic.](event_validation/State_of_Emergency_Europe_and_Central_Asia.png){#fig-soe-eca width="100%"}
 
-### Latin America and Caribbean
-
 ![State of Emergency events detection in Latin America and Caribbean countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Significant increases in State of Emergency reporting are visible across the region starting in March 2020, corresponding to the implementation of pandemic-related emergency measures.](event_validation/State_of_Emergency_Latin_America_and_Caribbean.png){#fig-soe-lac width="100%"}
-
-### Middle East and North Africa
 
 ![State of Emergency events detection in Middle East and North Africa countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Clear spikes in State of Emergency reporting are visible across countries in the region starting in March 2020, reflecting the implementation of emergency measures in response to the pandemic.](event_validation/State_of_Emergency_Middle_East_and_North_Africa.png){#fig-soe-mena width="100%"}
 
-### Sub-Saharan Africa
-
 ![State of Emergency events detection in Sub-Saharan Africa countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Systematic increases in State of Emergency reporting are evident across multiple countries starting in March 2020, corresponding to the implementation of pandemic-related emergency measures and lockdowns.](event_validation/State_of_Emergency_Sub-Saharan_Africa.png){#fig-soe-ssa width="100%"}
 
-# Appendix E: Descriptive Figures
-
-These descriptive figures provide additional visualization of State of Emergency event patterns across regional groupings in the HQMARC dataset. The figures complement the validation analysis by showing the distribution and frequency of State of Emergency reporting across different geographic regions.
-
-## State of Emergency Event Distribution by Region
-
-![State of Emergency event distribution in East Asia and Pacific region.](event_validation/State_of_Emergency_East_Asia_and_Pacific.png){#fig-desc-soe-eap width="100%"}
-
-![State of Emergency event distribution in Europe and Central Asia region.](event_validation/State_of_Emergency_Europe_and_Central_Asia.png){#fig-desc-soe-eca width="100%"}
-
-![State of Emergency event distribution in Latin America and Caribbean region.](event_validation/State_of_Emergency_Latin_America_and_Caribbean.png){#fig-desc-soe-lac width="100%"}
-
-![State of Emergency event distribution in Middle East and North Africa region.](event_validation/State_of_Emergency_Middle_East_and_North_Africa.png){#fig-desc-soe-mena width="100%"}
-
-![State of Emergency event distribution in Sub-Saharan Africa region.](event_validation/State_of_Emergency_Sub-Saharan_Africa.png){#fig-desc-soe-ssa width="100%"}
