@@ -197,10 +197,7 @@ These limitations of existing data sources underscore the need for ML4P's approa
 
 <!-- two persistent challenges: the high cost of producing structured data and the bias or instability of media corpora. -->
 
-Social scientists rely heavily on media reports to produce event data. While the flaws of . 
-https://claude.ai/public/artifacts/cdd92288-3741-4b01-9b2b-a824e2a918cd
-
-For many events, monitoring media reports is the best means available to track their occurrence across a wide range of national contexts. 
+Social scientists rely heavily on media reports to produce event data [@schrodt2013guide]. While the flaws of are well documented, [@daphi2025local, @earl2004use], monitoring media reports is the best means available to track the occurrence of many events across a wide range of national contexts. 
 
 Evidence suggests that access to traditional media effectively increases citizen knowledge of major events and government behavior, even in repressive political environments [@besley2002political; @arendt2024media]. While platforms like radio and social media are important, they often rely on content originally produced by traditional news outlets [@quartey_etal_2023; @reuters2019india], which are generally more trusted [@fotopoulos2023traditional; @bridges2019impact] and provide more comprehensive coverage of political events [@lee2022rethinking; @schafer2024informed].
 
