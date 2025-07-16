@@ -39,3 +39,109 @@ a %>%
 
 ```
 
+```{r}
+# Load required library
+library(DiagrammeR)
+library(webshot2)
+library(chromote)
+# Generate the Mermaid diagram and save it as a PNG
+a = DiagrammeR("
+  graph LR
+  A{Collect} --> B(Identify<br>high-quality<br>sources)
+  B --> C(Customize<br>harvesting with<br>human oversight)
+  C --> D[Identify urls]
+  C --> E[Scrape]
+  C --> F[Parse]
+  D --> G{Process}
+  E --> G
+  F --> G
+  G --> H[Translate to<br>English]
+  H --> I[Detect events]
+  H --> J[Identify locations]
+  H --> K[Apply keywords]
+  I --> L{Aggregate}
+  J --> L
+  K --> L
+  L --> M(Count<br>articles per<br>country-month)
+  M --> N(Normalize count<br>by total<br>articles published)
+  %% Define CSS classes for node styling
+  classDef startNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
+  classDef processNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+  classDef decisionNode fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+  classDef actionNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
+  classDef endNode fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+  
+  %% Apply classes to nodes
+  class A,G,L processNode
+  class B,C,D,E,F startNode
+  class H,I,J,K actionNode
+  class M,N endNode
+  
+  ", width = "100%", height = "100%")
+
+a
+
+a %>%
+  htmltools::html_print() %>%
+  webshot::webshot(file = "mermaid.png",
+                   vwidth = 1000,
+                   vheight = 250,
+                   cliprect = "viewport")
+
+
+
+```
+
+
+```{r}
+# Load required library
+library(DiagrammeR)
+library(webshot2)
+library(chromote)
+# Generate the Mermaid diagram and save it as a PNG
+a = DiagrammeR("
+  graph TD
+  A{Collect} --> B(Identify high-quality sources)
+  B --> C(Customize harvesting with human oversight)
+  C --> D[Identify urls]
+  C --> E[Scrape]
+  C --> F[Parse]
+  D --> G{Process}
+  E --> G
+  F --> G
+  G --> H[Translate to English]
+  H --> I[Detect events]
+  H --> J[Identify locations]
+  H --> K[Apply keywords]
+  I --> L{Aggregate}
+  J --> L
+  K --> L
+  L --> M(Count articles per country-month)
+  M --> N(Normalize count by total articles published)
+  %% Define CSS classes for node styling
+  classDef startNode fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000
+  classDef processNode fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000
+  classDef decisionNode fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000
+  classDef actionNode fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px,color:#000
+  classDef endNode fill:#ffebee,stroke:#c62828,stroke-width:2px,color:#000
+  
+  %% Apply classes to nodes
+  class A,G,L processNode
+  class B,C,D,E,F startNode
+  class H,I,J,K actionNode
+  class M,N endNode
+  
+  ", width = "100%", height = "100%")
+
+a
+
+a %>%
+  htmltools::html_print() %>%
+  webshot::webshot(file = "mermaid.png",
+                   vwidth = 1000,
+                   vheight = 250,
+                   cliprect = "viewport")
+
+
+
+```
