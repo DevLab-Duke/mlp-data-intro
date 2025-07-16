@@ -228,10 +228,7 @@ This process ensures that we capture a broad range of high-quality media from co
 
 Appendix A provides comprehensive documentation of the media sources and linguistic diversity underlying the *HQMARC* corpus. Section 1 documents the geographic distribution of domestic and regional media outlets across our sample, presenting visualizations of source counts by country and temporal patterns of source activity over the 2012-2024 period. Section 2 catalogs the linguistic diversity of the corpus, documenting the languages published by media outlets in each country using ISO language codes. Section 3 provides the complete inventory of digital news sources included in *HQMARC* by country, offering full transparency about the specific media outlets that comprise our dataset.
 
-## Documenting Data Quality
-
-
-First, we compare *HQMARC's* coverage with that of several "big data" media corpora, demonstrating that *HQMARC* captures a significantly larger share of articles from high-quality domestic news outlets. Second, we highlight the challenges of relying on generalized scraping and parsing tools, showing how our customized harvesting workflow with human oversight mitigate data-reliability issues.
+To document the necessity of this approach, we conduct a case study comparing *HQMARC's* coverage with that of several "big data" media corpora, demonstrating that *HQMARC* captures a significantly larger share of articles from high-quality domestic news outlets. We then demonstrate the pitfalls of relying on generalized scraping and parsing tools without human oversight, showing how our customized harvesting workflow with human oversight mitigate data-reliability issues.
 
 We begin by discussing features that distinguish our dataset. In particular, careful human curation of national news sources is critical for comprehensive and accurate data collection. We demonstrate how relying on prepackaged scrapers such as GDELT, Common Crawl, or the Internet Archive often results in poorer coverage and introduces errors. For instance, we compared coverage of three prominent Bangladeshi news outlets in our dataset to the coverage of the same outlets in both GDELT and the Internet Archive.
 
