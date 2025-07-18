@@ -1,0 +1,443 @@
+event,prompt,prompt_js
+arrest,"
+            Analyze the following text and provide a summary report on key arrest events in {country} for {year_month}. Detail reasons for arrests, profiles of those arrested, and their impact on the community. Rank events by significance based on number of people affected, prominence of arrestees, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant arrest event
+            ...
+            n. Least significant arrest event within the top 10
+
+            Conclude with an overview of arrest trends.
+        ","Here is a sample of newspaper articles reporting on arrests. Generate a numbered list that summarizes reporting on the most important protests that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include who was arrested and the reasons for the arrest. Rank the importance of arrests based on the number of people affected, the prominence of arrestees, and the number of articles reporting on the arrest. For each summary, begin by writing the name of the country where the event took place in parentheses.      
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant arrest              
+...             
+n. {country} Least significant arrest         
+
+Do not describe more than 5 events. "
+protest,"
+            Provide a summary report on major protests in {country} for {year_month}. Focus on causes, scale, impact of protests, and governmental responses. Assess importance based on number of participants, public response, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most impactful protest
+            ...
+            n. Least impactful protest within the top 10
+
+            Conclude with an analysis of overall protest movements and societal responses.
+        ","Here is a sample of newspaper articles reporting on protests. Generate a numbered list that summarizes reporting on the most important protests that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include who was protesting and the reasons for the protest. Rank the importance of arrests based on the number of people affected, the prominence of protestors, and the number of articles reporting on the protest. For each summary, begin by writing the name of the country where the event took place in parentheses.
+
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country}ÊMost significant protest              
+...             
+n. {country}ÊLeast significant protest         
+
+Do not describe more than 5 events. "
+legalaction,"
+            Summarize significant legal actions in {country} for {year_month}, including trials, verdicts, and legal reforms. Highlight the parties involved, nature of cases, and implications. Rank based on legal significance, public interest, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant legal action
+            ...
+            n. Least significant legal action within the top 10
+
+            Conclude with insights into the legal landscape.
+        ","Here is a sample of newspaper articles reporting on legal actions (including trials, verdicts, etc.). Generate a numbered list that summarizes reporting on the most important legal actions that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved and the nature of the cases. Rank the importance of legal actions based on the prominence of the parties involved, the legal significance of the action, and the number of articles reporting on the legal action. For each summary, begin by writing the name of the country where the event took place in parentheses.
+             
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant legal action             
+...             
+n. {country} Least significant legal action      
+
+Do not describe more than 5 events. "
+disaster,"
+            Summarize key disaster events in {country} for {year_month}. Detail type of disaster, areas affected, number of people impacted, and response measures. Rank events by severity, scale of impact, and frequency of mentions:
+
+            Input text:
+            {combined_text}
+
+            1. Most severe disaster event
+            ...
+            n. Least severe disaster within the top 10
+
+            Conclude with insights into disaster response and preparedness.
+        ","Here is a sample of newspaper articles reporting on disasters (including natural disasters, public health emergencies, etc.). Generate a numbered list that summarizes reporting on the most important disasters that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the nature of the disaster and the number of people affected. Rank the importance of disasters based on the severity and scale of the impact and the number of articles reporting on the disaster. For each summary, begin by writing the name of the country where the event took place in parentheses.
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant disaster             
+...             
+n. {country} Least significant disaster      
+
+Do not describe more than 5 events. "
+censor,"
+            Analyze censorship events in {country} for {year_month}. Include types of censorship (media, internet, etc.), entities involved, and reasons. Rank by impact on freedom of expression, public reaction, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most impactful censorship event
+            ...
+            n. Least impactful censorship event within the top 10
+
+            Conclude with a discussion on trends in censorship and its implications.
+        ","Here is a sample of newspaper articles reporting on censorship. Generate a numbered list that summarizes reporting on the most important acts of censorship that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about who or what is being censored, the nature of the censorship (legal action, threats, etc.). Rank the importance of each instance of censorship based on the importance of the censorship for freedom of expression and the number of articles reporting on the censorship. For each summary, begin by writing the name of the country where the event took place in parentheses.           
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant instance of censorship             
+...             
+n. {country} Least significant instance of censorship      
+
+Do not describe more than 5 events. "
+electionactivity,"
+            Provide a summary of election activities in {country} for {year_month}. Focus on campaigns, major political movements, and public engagement. Assess importance based on scale of activity, public interest, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most notable election activity
+            ...
+            n. Least notable election activity within the top 10
+
+            Conclude with an overview of the political climate and public sentiment.
+        ","Here is a sample of newspaper articles reporting on election activity. Generate a numbered list that summarizes reporting on the most important election activity that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about who or what is involved in the activity, the nature of the activity (campaigning, registering voters, etc.). Rank the importance of the election activity based on their importance for elections and the number of articles reporting on the censorship. For each summary, begin by writing the name of the country where the event took place in parentheses.             
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant instance of election activity             
+...             
+n. {country} Least significant instance of election activity      
+
+Do not describe more than 5 events. "
+electionirregularities,"
+            Summarize key election irregularities in {country} for {year_month}. Detail types of irregularities, affected regions, and potential impact on election outcomes. Rank by severity, public reaction, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most severe election irregularity
+            ...
+            n. Least severe irregularity within the top 10
+
+            Conclude with insights into election integrity and public trust.
+        ","Here is a sample of newspaper articles reporting on election irregularities. Generate a numbered list that summarizes reporting on the most important election irregularity events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the type of irregularity, who or what may have caused the irregularity. Rank the importance of the election irregularity events based on their importance for election outcomes  and the number of articles reporting on the election irregularities. For each summary, begin by writing the name of the country where the event took place in parentheses.          
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant instance of election irregularity event   
+...             
+n. {country} Least significant instance of election irregularity event    
+
+Do not describe more than 5 events. "
+activism,"
+            Analyze major activism events in {country} for {year_month}. Include causes championed, notable figures, and outcomes achieved. Rank based on societal impact, scale of participation, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most impactful activism event
+            ...
+            n. Least impactful activism event within the top 10
+
+            Conclude with an assessment of the influence of activism on societal change.
+        ","Here is a sample of newspaper articles reporting on activism. Generate a numbered list that summarizes reporting on the most important activism events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about who was involved, the causes being advocated for. Rank the importance of activism events based on the number of people involved, the government response, and the number of articles reporting on the activism event. For each summary, begin by writing the name of the country where the event took place in parentheses.             
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant activism event            
+...             
+n. {country} Least significant activism event         
+
+Do not describe more than 5 events. "
+martiallaw,"
+            Provide a summary of martial law impositions in {country} for {year_month}. Focus on reasons for declaration, areas affected, and implications for civil liberties. Assess importance based on impact on public life, reaction, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant martial law imposition
+            ...
+            n. Least significant imposition within the top 10
+
+            Conclude with an analysis of the political and social ramifications of martial law.
+        ","Here is a sample of newspaper articles reporting on state of emergency. Generate a numbered list that summarizes reporting on the most important state of emergency events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the reasons state of emergency was declared. Rank the importance of state of emergency events based on the impact on public life, the implications for civil liberties, and the number of articles reporting on the state of emergency event. For each summary, begin by writing the name of the country where the event took place in parentheses.          
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant state of emergency event            
+...             
+n. {country} Least significant state of emergency event         
+
+Do not describe more than 5 events. "
+cooperate,"
+            Summarize key cooperative events or agreements in {country} for {year_month}, focusing on partnerships, alliances, and joint initiatives. Highlight the parties involved, objectives, and outcomes. Rank by significance, potential impact, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant cooperative event
+            ...
+            n. Least significant cooperative event within the top 10
+
+            Conclude with a perspective on the evolving nature of cooperation in the region or sector.
+        ","Here is a sample of newspaper articles reporting on political cooperation. Generate a numbered list that summarizes reporting on the most important political cooperation events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the cooperation and the objective of the cooperation. Rank the importance of political cooperation events based on the outcomes of the cooperation and the number of articles reporting on the cooperation event. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant political cooperation event            
+...             
+n. {country} Least significant political cooperation event         
+
+Do not describe more than 5 events. "
+coup,"
+            Provide a summary of any coup attempts or occurrences in {country} for {year_month}. Detail the involved parties, motives, and outcomes. Rank events based on their involved parties, motives, and outcomes, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most impactful coup event
+            ...
+            n. Least impactful coup event within the top 10
+
+            Conclude with insights into the political landscape and implications for governance.
+        ","Here is a sample of newspaper articles reporting on irregular transitions. Generate a numbered list that summarizes reporting on the most important irregular transition events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the irregular transition and the outcomes of the irregular transition. Rank the importance of irregular transition events based on the  impact on the countryâ€™s political system and the number of articles reporting on the irregular transition event. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant irregular transition event            
+...             
+n. {country} Least significant irregular transition event         
+
+Do not describe more than 5 events. "
+violencenonlethal,"
+            Analyze significant non-lethal violence events in {country} for {year_month}, such as riots or clashes. Include causes, parties involved, and repercussions. Rank by scale, societal impact, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant non-lethal violence event
+            ...
+            n. Least significant non-lethal violence event within the top 10
+
+            Conclude with an overview of public safety and social stability.
+        ","Here is a sample of newspaper articles reporting on non-lethal violence. Generate a numbered list that summarizes reporting on the most important non-lethal violence events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the non-lethal violence and the outcomes of the non-lethal violence. Rank the importance of non-lethal violence events based on the  severity and scale of the impact and the number of articles reporting on the non-lethal violence event. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant non-lethal violence event            
+...             
+n. {country} Least significant non-lethal violence event         
+
+Do not describe more than 5 events. "
+violencelethal,"
+            Summarize key lethal violence incidents in {country} for {year_month}, like homicides or armed conflicts. Detail the causes, affected groups, and outcomes. Rank events by severity, impact on communities, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most severe lethal violence incident
+            ...
+            n. Least severe lethal violence incident within the top 10
+
+            Conclude with an assessment of the security situation and its implications.
+        ","Here is a sample of newspaper articles reporting on lethal violence. Generate a numbered list that summarizes reporting on the most important lethal violence events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the lethal violence and the outcomes of the lethal violence. Rank the importance of lethal violence events based on the  severity and scale of the impact and the number of articles reporting on the lethal violence event. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant lethal violence event            
+...             
+n. {country} Least significant lethal violence event         
+
+Do not describe more than 5 events. "
+corruption,"
+            Provide a summary report on corruption cases in {country} for {year_month}. Focus on scandals, investigations, and key figures involved. Assess importance based on the level of corruption, public reaction, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant corruption case
+            ...
+            n. Least significant corruption case within the top 10
+
+            Conclude with insights into the state of governance and public trust.
+        ","Here is a sample of newspaper articles reporting on corruption. Generate a numbered list that summarizes reporting on the most important corruption events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the corruption, the nature of the corruption (embezzlement, money laundering, etc.). Rank the importance of corruption events based on the amount of money involved, the scale of the investigation,  and the number of articles reporting on the corruption event. For each summary, begin by writing the name of the country where the event took place in parentheses.             
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant corruption event            
+...             
+n. {country} Least significant corruption event         
+
+Do not describe more than 5 events. "
+legalchange,"
+            Analyze major legal changes in {country} for {year_month}, including new laws or amendments. Highlight the nature of legal changes, entities involved, and potential societal impact. Rank based on significance, public interest, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant legal change
+            ...
+            n. Least significant legal change within the top 10
+
+            Conclude with an overview of the evolving legal landscape.
+        ","Here is a sample of newspaper articles reporting on legal changes (including new laws, amendments, etc.). Generate a numbered list that summarizes reporting on the most important legal changes that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the name of the legal changes and the nature of the legal changes. Rank the importance of legal changes based on the impact on the countryâ€™s institutions, the legal significance of the change, and the number of articles reporting on the legal change. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant legal change             
+...             
+n. {country} Least significant legal change      
+
+Do not describe more than 5 events. "
+mobilizesecurity,"
+            Summarize key security mobilization events in {country} for {year_month}. Detail the reasons, scale, and scope of mobilizations. Rank by impact on public safety, response effectiveness, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant security mobilization
+            ...
+            n. Least significant security mobilization within the top 10
+
+            Conclude with an assessment of the security readiness and implications for public order.
+        ","Here is a sample of newspaper articles reporting on security force mobilizations. Generate a numbered list that summarizes reporting on the most important security force mobilization events that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the nature of the mobilization and the scale of the mobilization. Rank the importance of security force mobilization events based on the impact on public life, the implications for civil liberties, and the number of articles reporting on the mobilization. For each summary, begin by writing the name of the country where the event took place in parentheses.             
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant security force mobilization event          
+...             
+n. {country} Least significant security force mobilization event
+
+Do not describe more than 5 events. "
+purge,"
+            Provide a summary of significant purges in {country} for {year_month}, such as political or organizational clean-ups. Include motives, key figures affected, and outcomes. Rank events based on impact on the organization or society, public perception, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most impactful purge event
+            ...
+            n. Least impactful purge event within the top 10
+
+            Conclude with insights into the implications for governance and power dynamics.
+        ","Here is a sample of newspaper articles reporting on purges and replacements from government office. Generate a numbered list that summarizes reporting on the most important purges and replacements that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the purges and replacements and the scale of the purges and replacements. Rank the importance of purges and replacements based on the impact on government institutions, the distribution of political power, and the number of articles reporting on the purges and replacements. For each summary, begin by writing the name of the country where the event took place in parentheses.             
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant purges and replacements      
+...             
+n. {country} Least significant purges and replacements
+
+Do not describe more than 5 events. "
+threaten,"
+            Summarize key threats reported in {country} for {year_month}, including political, military, or other forms of intimidation. Detail the nature of the threats, targets, and potential consequences. Rank by seriousness, potential impact, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most serious threat
+            ...
+            n. Least serious threat within the top 10
+
+            Conclude with an assessment of the overall security environment and stability.
+        ","Here is a sample of newspaper articles reporting on political threats. Generate a numbered list that summarizes reporting on the most important political threats that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved in the threats and the nature of the threats. Rank the importance of political threat events based on the outcomes of the threats and the number of articles reporting on the threats. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant political threats            
+...             
+n. {country} Least significant political threats         
+
+Do not describe more than 5 events. "
+raid,"
+            Analyze major raid incidents in {country} for {year_month}, such as police raids or military operations. Include reasons, targets, and outcomes of these raids. Rank based on impact, scale, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most impactful raid
+            ...
+            n. Least impactful raid within the top 10
+
+            Conclude with an overview of the effectiveness and implications of these operations.
+        ","Here is a sample of newspaper articles reporting on raids. Generate a numbered list that summarizes reporting on the most important raids that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include the target of the raid and the reasons for the raid. Rank the importance of raids based on the number of people affected, the prominence of people or organizations being raided, and the number of articles reporting on the raid. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant raid              
+...             
+n. {country} Least significant raid         
+
+Do not describe more than 5 events. "
+defamationcase,"
+            Provide a summary of significant defamation cases in {country} for {year_month}. Focus on key litigations, parties involved, and verdicts. Assess importance based on societal impact, public interest, and frequency in source material:
+
+            Input text:
+            {combined_text}
+
+            1. Most significant defamation case
+            ...
+            n. Least significant defamation case within the top 10
+
+            Conclude with insights into the state of freedom of speech and media integrity.
+        ","Here is a sample of newspaper articles reporting on defamation cases (including trials, verdicts, etc.). Generate a numbered list that summarizes reporting on the most important defamation cases that occurred. When there are multiple articles reporting on the same {event}, you should only write 1 summary. I want your summary to be no more than 2 sentences. In your summary, include information about the parties involved and the nature of the cases. Rank the importance of defamation cases based on the prominence of the parties involved, the legal significance of the action, and the number of articles reporting on the defamation case. For each summary, begin by writing the name of the country where the event took place in parentheses.              
+
+Input text: 
+{combined_text}
+
+Output:             
+1. {country} Most significant defamation case            
+...             
+n. {country} Least significant defamation case      
+
+Do not describe more than 5 events. "
