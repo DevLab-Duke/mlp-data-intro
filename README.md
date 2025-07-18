@@ -204,13 +204,19 @@ The `writing/descriptive_maps/` folder contains world map visualizations showing
 - **Space-efficient legends**: Appendix versions place legends in unused grid space for better layout
 - **Dual output formats**: Both comprehensive appendix versions and focused paper versions for different publication needs
 
-### GPT Summarization
+### Shock Validation
 
-This folder contains GPT-powered event summarization tools for the MLP project:
+The `writing/shock_validation/` folder contains GPT-powered event summarization tools and validation materials for the MLP project:
 
 - **`GPT code.ipynb`**: Jupyter notebook implementing automated event summarization using OpenAI's GPT models. The script processes civic events detected by the ML4P forecasting system, retrieving relevant news articles from MongoDB and generating human-readable summaries for each event category by country-month. Includes functions for country/source mapping, text preprocessing, and two-stage summarization (event listing + final synthesis).
 
 - **`event_prompts.csv`**: Contains templated prompts for 20 different civic event types (arrest, protest, corruption, etc.) with both detailed and concise prompt variations. Each prompt guides GPT to extract, rank, and summarize the most significant events while filtering out irrelevant or misplaced content.
+
+- **`filtered_event_summaries.csv`**: Dataset containing GPT-generated event summaries filtered and processed for validation analysis.
+
+- **`MLP Validation.pdf`**: Documentation and analysis of the MLP database validation process using GPT-powered summarization.
+
+- **`notes.txt`**: Supporting notes and documentation for the validation workflow.
 
 ### geoparsing_test
 
@@ -221,6 +227,17 @@ This folder evaluates geographic location extraction performance comparing CLIFF
 - **`Geoparsing_report.Rmd`**: R Markdown analysis comparing CLIFF vs GPT performance on geographic entity extraction from 250 Colombian news articles. Evaluates accuracy across different administrative levels, categorizes errors by type (ambiguity, hierarchical misclassification, context disambiguation), and provides comprehensive performance metrics.
 
 - **`Geoparsing_GPT_CLIFF.xlsx`**: Dataset containing results from both CLIFF and GPT geoparsing systems with human-coded ground truth for validation.
+
+### Source Comparison
+
+The `writing/source_comparison/` folder contains comparative analysis between the MLP database and other news data sources:
+
+#### Lexis Nexis Comparison
+
+The `writing/source_comparison/nexis/` folder contains materials comparing the MLP database's linguistic and country coverage with that of Lexis Nexis:
+
+- Analysis files examining coverage patterns, language diversity, and geographic representation across both databases
+- Comparative evaluation of source quality and comprehensiveness between MLP and Lexis Nexis datasets
 
 ## Roxygen
 
