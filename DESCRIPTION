@@ -4,7 +4,7 @@ Title: MLP Data Introduction: Tracking Civic Space in Developing Countries
 Version: 1.0.0
 Description: This package provides data and analysis tools for tracking civic space 
     in developing countries using a high-quality corpus of domestic media and 
-    transformer models. The dataset covers 65 developing countries across regions: 
+    transformer models. The dataset covers 65 developing countries across regions 
     Eastern Europe/Central Asia, MENA, Latin America & Caribbean, East Asia, and 
     Sub-Saharan Africa. It includes both civic events (20 categories) and regional 
     and international (RAI) influence events (22 categories) extracted from 

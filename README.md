@@ -222,3 +222,16 @@ This folder evaluates geographic location extraction performance comparing CLIFF
 
 - **`Geoparsing_GPT_CLIFF.xlsx`**: Dataset containing results from both CLIFF and GPT geoparsing systems with human-coded ground truth for validation.
 
+## Roxygen
+
+```
+roxygen2::roxygenise(
+  load_code = function(path) {
+    # Define the path to your custom folder
+    custom_folder <- file.path(path, "build_data")
+
+    # Source all R files within that folder
+    lapply(list.files(custom_folder, pattern = "\\.R$", full.names = TRUE), source)
+  }
+)
+```
