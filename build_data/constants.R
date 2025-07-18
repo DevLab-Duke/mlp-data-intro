@@ -3,22 +3,174 @@
 #   Constants or quasi-constants that might need periodic updating
 #
 
+#' Civic Event Categories
+#'
+#' A character vector containing the complete list of civic event categories
+#' tracked in the MLP dataset. These categories capture various forms of civic
+#' and political activity including protests, government actions, and civil 
+#' rights violations.
+#'
+#' @format A character vector with 20 elements:
+#' \describe{
+#'   \item{arrest}{Arrests of individuals}
+#'   \item{censor}{Censorship activities}
+#'   \item{electionactivity}{General election-related activities}
+#'   \item{electionirregularities}{Election irregularities and violations}
+#'   \item{cooperate}{Cooperative activities between actors}
+#'   \item{coup}{Coup attempts or coups}
+#'   \item{defamationcase}{Defamation cases and legal proceedings}
+#'   \item{disaster}{Natural disasters and emergency responses}
+#'   \item{legalaction}{Legal actions and proceedings}
+#'   \item{legalchange}{Changes in laws and legal frameworks}
+#'   \item{martiallaw}{Martial law declarations}
+#'   \item{mobilizesecurity}{Mobilization of security forces}
+#'   \item{corruption}{Corruption-related events}
+#'   \item{activism}{Civil society and activist activities}
+#'   \item{protest}{Protest activities}
+#'   \item{purge}{Purges of officials or groups}
+#'   \item{raid}{Raids and enforcement actions}
+#'   \item{threaten}{Threats and intimidation}
+#'   \item{violencelethal}{Lethal violence events}
+#'   \item{violencenonlethal}{Non-lethal violence events}
+#' }
+#'
+#' @source MLP (Machine Learning for Peace) project categorization
+#' @seealso \code{\link{cr_vars}} for civic relevant subset
+#' @examples
+#' # View all civic event categories
+#' civic
+#' 
+#' # Check if a category exists
+#' "protest" %in% civic
+#' 
+#' # Count total categories
+#' length(civic)
 #' @export
 civic <- c("arrest", "censor", "electionactivity", "electionirregularities", "cooperate",
            "coup", "defamationcase", "disaster", "legalaction", "legalchange",
            "martiallaw", "mobilizesecurity", "corruption", "activism", "protest", "purge",
            "raid", "threaten", "violencelethal", "violencenonlethal")
 
+#' Regional and International Influence (RAI) Event Categories
+#'
+#' A character vector containing all 22 categories of regional and international
+#' influence events tracked in the MLP dataset. These categories capture various
+#' forms of international engagement including diplomatic, economic, military,
+#' and cultural activities.
+#'
+#' @format A character vector with 21 elements:
+#' \describe{
+#'   \item{arms_transfer_security_aid_assistance}{Arms transfers and security aid}
+#'   \item{bribery_economic_corruption}{Economic corruption and bribery}
+#'   \item{cyber_attack}{Cyber attacks and digital warfare}
+#'   \item{diplomatic_action}{General diplomatic actions}
+#'   \item{diplomatic_mediation}{Diplomatic mediation efforts}
+#'   \item{diplomatic_meeting}{Diplomatic meetings and summits}
+#'   \item{diplomatic_statement}{Diplomatic statements and declarations}
+#'   \item{diplomatic_ties}{Establishment or changes in diplomatic ties}
+#'   \item{foreign_aid_assistance}{Foreign aid and assistance programs}
+#'   \item{foreign_investment}{Foreign investment activities}
+#'   \item{intelligence_counterintelligence}{Intelligence and counterintelligence}
+#'   \item{joint_security_force_exercise}{Joint military and security exercises}
+#'   \item{media_campaign_intervention}{Media campaigns and interventions}
+#'   \item{military_activity}{Military activities and operations}
+#'   \item{political_process_policy_intervention}{Political and policy interventions}
+#'   \item{security_engagement}{Security engagement and cooperation}
+#'   \item{social_academic_cultural_activity}{Social, academic, and cultural activities}
+#'   \item{tech_transfer_investment}{Technology transfer and investment}
+#'   \item{trade_agreement_exchange}{Trade agreements and exchanges}
+#'   \item{trade_financial_sanction}{Trade and financial sanctions}
+#'   \item{transnational_organization_crime}{Transnational organized crime}
+#' }
+#'
+#' @source MLP (Machine Learning for Peace) project categorization
+#' @examples
+#' # View all RAI event categories
+#' rai
+#' 
+#' # Check if a category exists
+#' "diplomatic_action" %in% rai
+#' 
+#' # Count total categories
+#' length(rai)
 #' @export
 rai <- c("arms_transfer_security_aid_assistance", "bribery_economic_corruption", "cyber_attack", "diplomatic_action", "diplomatic_mediation", "diplomatic_meeting",
          "diplomatic_statement", "diplomatic_ties", "foreign_aid_assistance", "foreign_investment", "intelligence_counterintelligence", "joint_security_force_exercise",
          "media_campaign_intervention", "military_activity", "political_process_policy_intervention", "security_engagement", "social_academic_cultural_activity",
          "tech_transfer_investment", "trade_agreement_exchange", "trade_financial_sanction", "transnational_organization_crime")
 
+#' Civic Relevant Variables
+#'
+#' A character vector containing the subset of civic event categories that are
+#' considered relevant to civic space. These variables represent civic events
+#' that have been filtered to include only those pertaining to political and
+#' civic space activities, excluding events that are narrowly criminal or
+#' non-political in nature.
+#'
+#' @format A character vector with 11 elements representing civic space-relevant events:
+#' \describe{
+#'   \item{arrest}{Arrests of individuals (civic space relevant)}
+#'   \item{cooperate}{Cooperative activities (positive civic space indicator)}
+#'   \item{corruption}{Corruption-related events}
+#'   \item{defamationcase}{Defamation cases and legal proceedings}
+#'   \item{legalaction}{Legal actions and proceedings}
+#'   \item{legalchange}{Changes in laws and legal frameworks}
+#'   \item{purge}{Purges of officials or groups}
+#'   \item{raid}{Raids and enforcement actions}
+#'   \item{threaten}{Threats and intimidation}
+#'   \item{violencelethal}{Lethal violence events}
+#'   \item{violencenonlethal}{Non-lethal violence events}
+#' }
+#'
+#' @details These variables undergo additional filtering to determine civic space
+#' relevance. For example, arrests related to political activities are included
+#' while arrests for purely criminal activities are excluded. This filtering
+#' creates separate "_ncr" (non-civic relevant) versions of these variables.
+#'
+#' @source MLP (Machine Learning for Peace) project categorization
+#' @seealso \code{\link{civic}} for complete list of civic categories
+#' @examples
+#' # View civic relevant variables
+#' cr_vars
+#' 
+#' # Check overlap with civic variables
+#' all(cr_vars %in% civic)
+#' 
+#' # Find civic variables not in civic relevant subset
+#' setdiff(civic, cr_vars)
 #' @export
 cr_vars = c("arrest", "cooperate", "corruption", "defamationcase", "legalaction", "legalchange", "purge", "raid", "threaten", "violencelethal", "violencenonlethal")
 
-## Define countries
+#' Countries in MLP Dataset
+#'
+#' A character vector containing all 65 developing countries included in the
+#' MLP (Machine Learning for Peace) dataset. Countries are organized by region:
+#' Eastern Europe/Central Asia (EE/CA), Middle East & North Africa (MENA),
+#' Latin America & Caribbean (LAC), East Asia (EA), and Sub-Saharan Africa (SSA).
+#'
+#' @format A character vector with 65 country names organized by region:
+#' \describe{
+#'   \item{EE/CA (16 countries)}{Eastern Europe and Central Asia}
+#'   \item{MENA (4 countries)}{Middle East and North Africa}
+#'   \item{LAC (12 countries)}{Latin America and Caribbean}
+#'   \item{EA (11 countries)}{East Asia}
+#'   \item{SSA (22 countries)}{Sub-Saharan Africa}
+#' }
+#'
+#' @source MLP (Machine Learning for Peace) project country selection
+#' @seealso \code{\link{country_regions}} for country-to-region mapping
+#' @examples
+#' # View all countries
+#' countries
+#' 
+#' # Count total countries
+#' length(countries)
+#' 
+#' # Check if a country is included
+#' "Nigeria" %in% countries
+#' 
+#' # Count countries by region using country_regions
+#' sapply(country_regions, length)
 #' @export
 countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic",
                "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan", # EE/CA
@@ -30,7 +182,43 @@ countries <- c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", 
                "Mauritania", "Mozambique", "Namibia", "Nigeria", "Rwanda", "Senegal", "South Africa", "South Sudan",
                "Tanzania", "Tunisia", "Uganda", "Zambia", "Zimbabwe") # SSA
 
-## Country-to-region mapping
+#' Country-to-Region Mapping
+#'
+#' A named list mapping countries to their respective geographic regions in the
+#' MLP dataset. This mapping is used for regional analysis and regional source
+#' filtering.
+#'
+#' @format A named list with 5 elements:
+#' \describe{
+#'   \item{EE_CA}{Eastern Europe and Central Asia (16 countries)}
+#'   \item{MENA}{Middle East and North Africa (4 countries)}
+#'   \item{LAC}{Latin America and Caribbean (12 countries)}
+#'   \item{EA}{East Asia (11 countries)}
+#'   \item{SSA}{Sub-Saharan Africa (22 countries)}
+#' }
+#'
+#' @source MLP (Machine Learning for Peace) project regional classification
+#' @seealso \code{\link{countries}} for complete country list, \code{\link{region_sources}} for regional source mapping
+#' @examples
+#' # View all regions
+#' names(country_regions)
+#' 
+#' # Get countries in Sub-Saharan Africa
+#' country_regions$SSA
+#' 
+#' # Count countries by region
+#' sapply(country_regions, length)
+#' 
+#' # Find which region a country belongs to
+#' find_region <- function(country) {
+#'   for (region in names(country_regions)) {
+#'     if (country %in% country_regions[[region]]) {
+#'       return(region)
+#'     }
+#'   }
+#'   return(NULL)
+#' }
+#' find_region("Nigeria")
 #' @export
 country_regions <- list(
   "EE_CA" = c("Albania", "Armenia", "Belarus", "Georgia", "Hungary", "Kosovo", "Serbia", "Azerbaijan", "Moldova", "Macedonia", "Dominican Republic", "Turkey", "Ukraine", "Uzbekistan", "Kyrgyzstan", "Kazakhstan"),
@@ -41,9 +229,49 @@ country_regions <- list(
 )
 
 
-## Usable sources
-
-#' @describeIn whitelist_sources Vector of usable international sources.
+#' International News Sources
+#'
+#' A character vector containing CSV filenames of validated international news
+#' sources used in the MLP dataset. These 15 major international outlets provide
+#' global coverage and are included for all countries in the analysis.
+#'
+#' @format A character vector with 15 elements representing international news sources:
+#' \describe{
+#'   \item{aljazeera.com.csv}{Al Jazeera}
+#'   \item{bbc.com.csv}{BBC}
+#'   \item{csmonitor.com.csv}{Christian Science Monitor}
+#'   \item{france24.com.csv}{France 24}
+#'   \item{nytimes.com.csv}{New York Times}
+#'   \item{reuters.com.csv}{Reuters}
+#'   \item{scmp.com.csv}{South China Morning Post}
+#'   \item{theguardian.com.csv}{The Guardian}
+#'   \item{themoscowtimes.com.csv}{The Moscow Times}
+#'   \item{washingtonpost.com.csv}{Washington Post}
+#'   \item{wsj.com.csv}{Wall Street Journal}
+#'   \item{lemonde.fr.csv}{Le Monde}
+#'   \item{liberation.fr.csv}{Libération}
+#'   \item{elpais.com.csv}{El País}
+#'   \item{lefigaro.fr.csv}{Le Figaro}
+#' }
+#'
+#' @details These sources were selected based on their global reach, editorial
+#' independence, and consistent coverage of international events. Note that
+#' xinhuanet was recently replaced with sapo.pt in the source list.
+#'
+#' @source MLP (Machine Learning for Peace) project source validation
+#' @seealso \code{\link{rsources}} for regional sources, \code{\link{local_source_select}} for local sources
+#' @examples
+#' # View all international sources
+#' isources
+#' 
+#' # Count international sources
+#' length(isources)
+#' 
+#' # Check if a source is included
+#' "bbc.com.csv" %in% isources
+#' 
+#' # Remove .csv extension for display
+#' gsub(".csv", "", isources)
 #' @export
 isources = c("aljazeera.com.csv", "bbc.com.csv", "csmonitor.com.csv", "france24.com.csv",
              "nytimes.com.csv", "reuters.com.csv", "scmp.com.csv", "theguardian.com.csv",
@@ -51,14 +279,90 @@ isources = c("aljazeera.com.csv", "bbc.com.csv", "csmonitor.com.csv", "france24.
              "lemonde.fr.csv", "liberation.fr.csv", "elpais.com.csv",
              "lefigaro.fr.csv")
 
-#' @describeIn whitelist_sources Vector of usable regional sources.
+#' Regional News Sources
+#'
+#' A character vector containing CSV filenames of validated regional news sources
+#' used in the MLP dataset. These 12 outlets provide regional coverage and are
+#' selectively applied based on geographic relevance using the \code{\link{region_sources}}
+#' function.
+#'
+#' @format A character vector with 12 elements representing regional news sources:
+#' \describe{
+#'   \item{africanews.com.csv}{Africanews}
+#'   \item{asia.nikkei.com.csv}{Asia Nikkei}
+#'   \item{asiatimes.com.csv}{Asia Times}
+#'   \item{balkaninsight.com.csv}{Balkan Insight}
+#'   \item{cnnespanol.cnn.com.csv}{CNN en Español}
+#'   \item{euronews.com.csv}{Euronews}
+#'   \item{indiatimes.com.csv}{India Times}
+#'   \item{iwpr.net.csv}{Institute for War & Peace Reporting}
+#'   \item{neweasterneurope.eu.csv}{New Eastern Europe}
+#'   \item{timesofindia.indiatimes.com.csv}{Times of India}
+#'   \item{telemundo.com.csv}{Telemundo}
+#'   \item{theeastafrican.co.ke.csv}{The East African}
+#' }
+#'
+#' @details Regional sources are mapped to specific geographic regions through
+#' the \code{region_rsources} list. When \code{use_region_filter = TRUE}, only
+#' regionally relevant sources are included for each country.
+#'
+#' @source MLP (Machine Learning for Peace) project source validation
+#' @seealso \code{\link{isources}} for international sources, \code{\link{region_rsources}} for region mapping, \code{\link{region_sources}} for filtering function
+#' @examples
+#' # View all regional sources
+#' rsources
+#' 
+#' # Count regional sources
+#' length(rsources)
+#' 
+#' # Get regional sources for a specific country
+#' region_sources("Nigeria")
+#' 
+#' # Check which regions use each source
+#' for (region in names(region_rsources)) {
+#'   cat(region, ":", length(region_rsources[[region]]), "sources\n")
+#' }
 #' @export
 rsources = c("africanews.com.csv", "asia.nikkei.com.csv","asiatimes.com.csv","balkaninsight.com.csv",
              "cnnespanol.cnn.com.csv","euronews.com.csv",
              "indiatimes.com.csv", "iwpr.net.csv", "neweasterneurope.eu.csv", "timesofindia.indiatimes.com.csv",
              "telemundo.com.csv", "theeastafrican.co.ke.csv")
 
-## Region-to-regional-sources mapping
+#' Region-to-Regional-Sources Mapping
+#'
+#' A named list mapping geographic regions to their relevant regional news sources.
+#' This mapping is used by the \code{\link{region_sources}} function to filter
+#' regional sources based on geographic relevance when \code{use_region_filter = TRUE}.
+#'
+#' @format A named list with 5 elements:
+#' \describe{
+#'   \item{EE_CA}{Eastern Europe/Central Asia sources (4 sources)}
+#'   \item{MENA}{Middle East/North Africa sources (2 sources)}
+#'   \item{LAC}{Latin America/Caribbean sources (2 sources)}
+#'   \item{EA}{East Asia sources (4 sources)}
+#'   \item{SSA}{Sub-Saharan Africa sources (2 sources)}
+#' }
+#'
+#' @details This mapping ensures that only geographically relevant regional sources
+#' are included for each country. For example, countries in Sub-Saharan Africa will
+#' only include Africanews and The East African, not CNN en Español.
+#'
+#' @source MLP (Machine Learning for Peace) project source validation
+#' @seealso \code{\link{rsources}} for complete regional source list, \code{\link{region_sources}} for filtering function, \code{\link{country_regions}} for country-region mapping
+#' @examples
+#' # View all region-source mappings
+#' region_rsources
+#' 
+#' # Get sources for Sub-Saharan Africa
+#' region_rsources$SSA
+#' 
+#' # Count sources by region
+#' sapply(region_rsources, length)
+#' 
+#' # Check which regions use a specific source
+#' source_to_find <- "euronews.com.csv"
+#' regions_using_source <- names(region_rsources)[sapply(region_rsources, function(x) source_to_find %in% x)]
+#' cat("Regions using", source_to_find, ":", paste(regions_using_source, collapse = ", "))
 #' @export
 region_rsources <- list(
   "EE_CA" = c("balkaninsight.com.csv", "euronews.com.csv", "iwpr.net.csv", "neweasterneurope.eu.csv"),
@@ -71,9 +375,28 @@ region_rsources <- list(
 #' Get Regional Sources for Country
 #'
 #' Returns appropriate regional sources for a given country based on its region.
+#' This function looks up which region a country belongs to and returns only
+#' the regional sources relevant to that geographic area.
 #'
-#' @param country String name of country
-#' @return Vector of regional source filenames
+#' @param country Character string. Name of country to look up regional sources for.
+#' @return Character vector of regional source filenames (CSV files) relevant to the country's region.
+#' @details This function uses the \code{country_regions} and \code{region_rsources}
+#' mappings to determine which regional sources are geographically relevant.
+#' If a country is not found in the region mappings, it returns an empty vector
+#' and issues a warning.
+#' @seealso \code{\link{country_regions}} for country-region mapping, \code{\link{region_rsources}} for region-source mapping
+#' @examples
+#' # Get regional sources for Nigeria (SSA region)
+#' region_sources("Nigeria")
+#' 
+#' # Get regional sources for Ukraine (EE_CA region)
+#' region_sources("Ukraine")
+#' 
+#' # Get regional sources for Colombia (LAC region)
+#' region_sources("Colombia")
+#' 
+#' # Check what happens with invalid country
+#' # region_sources("InvalidCountry") # Returns empty vector with warning
 #' @export
 region_sources <- function(country) {
   # Find which region the country belongs to
@@ -94,9 +417,44 @@ region_sources <- function(country) {
   region_rsources[[country_region]] %||% character(0)
 }
 
-#' @describeIn whitelist_sources Function that returns country-specific local sources. Countries where
-#' more than 50% of volume came from non-independent sources & RSF >=100 have sources differentiated 
-#' by independence (ind_sources and state_sources). These countries used to have weighting.
+#' Get Local Sources for Country
+#'
+#' Returns country-specific local news sources for a given country. Some countries
+#' have sources differentiated by independence status (independent vs state-controlled)
+#' based on media freedom indicators.
+#'
+#' @param country Character string. Name of country to look up local sources for.
+#' @return Named list containing local source information:
+#' \describe{
+#'   \item{lsources}{Character vector of all local source CSV filenames}
+#'   \item{ind_sources}{Character vector of independent source names (without .csv), if applicable}
+#'   \item{state_sources}{Character vector of state-controlled source names (without .csv), if applicable}
+#' }
+#' @details Countries where more than 50% of media volume came from non-independent
+#' sources and RSF (Reporters Sans Frontières) score >= 100 have sources differentiated
+#' by independence status. These countries previously used weighting in analysis.
+#' Sources are stored as CSV filenames in the lsources field, while independence
+#' classifications use source names without the .csv extension.
+#' @seealso \code{\link{isources}} for international sources, \code{\link{rsources}} for regional sources
+#' @examples
+#' # Get local sources for Nigeria (no independence differentiation)
+#' local_source_select("Nigeria")
+#' 
+#' # Get local sources for Zimbabwe (has independence differentiation)
+#' zim_sources <- local_source_select("Zimbabwe")
+#' zim_sources$lsources  # All sources
+#' zim_sources$ind_sources  # Independent sources only
+#' zim_sources$state_sources  # State-controlled sources only
+#' 
+#' # Check which countries have independence differentiation
+#' countries_with_ind <- c()
+#' for (country in countries) {
+#'   sources <- local_source_select(country)
+#'   if ("ind_sources" %in% names(sources)) {
+#'     countries_with_ind <- c(countries_with_ind, country)
+#'   }
+#' }
+#' countries_with_ind
 #' @export
 local_source_select <- function(country){
   dat <- list(
@@ -334,7 +692,27 @@ local_source_select <- function(country){
   dat[[country]]
 }
 
-# Identify the most recent month for each country; with final update, all countries are valid through `2024-12-01`
+#' Get Last Valid Month for Country
+#'
+#' Returns the last month with valid data for a given country in the MLP dataset.
+#' As of the final update, all countries have data through December 1, 2024.
+#' This function is used to filter datasets to exclude months with incomplete
+#' or invalid data.
+#'
+#' @param country Character string. Name of the country to look up.
+#' @return Character string in "YYYY-MM-DD" format representing the last valid month ("2024-12-01" for all countries).
+#' @details This function uses a simple lookup approach with all countries currently
+#' set to "2024-12-01". The function could be refactored to use a lookup table
+#' if different countries have different end dates in the future.
+#' @examples
+#' # Get last valid month for Nigeria
+#' country_last_month("Nigeria")
+#' 
+#' # Get last valid month for Ukraine
+#' country_last_month("Ukraine")
+#' 
+#' # Use in data filtering
+#' # df <- df[df$date <= country_last_month("Kenya"), ]
 #' @export
 country_last_month <- function(country){
   if(country %in% "Kenya"){

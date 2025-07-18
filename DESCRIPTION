@@ -1,0 +1,33 @@
+Package: mlpdataintro
+Type: Package
+Title: MLP Data Introduction: Tracking Civic Space in Developing Countries
+Version: 1.0.0
+Description: This package provides data and analysis tools for tracking civic space 
+    in developing countries using a high-quality corpus of domestic media and 
+    transformer models. The dataset covers 65 developing countries across regions: 
+    Eastern Europe/Central Asia, MENA, Latin America & Caribbean, East Asia, and 
+    Sub-Saharan Africa. It includes both civic events (20 categories) and regional 
+    and international (RAI) influence events (22 categories) extracted from 
+    international, regional, and local news sources.
+License: MIT + file LICENSE
+Depends: 
+    R (>= 4.0.0)
+Imports:
+    tidyverse,
+    here,
+    psych,
+    gt,
+    kableExtra,
+    ggplot2,
+    changepoint,
+    readr,
+    dplyr,
+    tibble
+Suggests:
+    roxygen2,
+    testthat
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+URL: https://github.com/username/mlp-data-intro
+BugReports: https://github.com/username/mlp-data-intro/issues

@@ -6,10 +6,28 @@
 # From: update-forecasts.R ------------------------------------------------
 
 
-# Optionally override which date folder is used for a country's Civic or RAI
-# counts.
-# To add an override, expand the override list in the code below
-#
+#' Override Date Folder Selection
+#'
+#' Optionally override which date folder is used for a country's Civic or RAI
+#' counts. By default, uses "latest" folder, but specific date folders can be
+#' specified for individual countries and data types.
+#'
+#' @param country Character string. Name of the country.
+#' @param type Character string. Type of data, either "civic" or "rai".
+#' @return Character string specifying the date folder to use (e.g., "latest", "2025_1_8").
+#' @details To add an override, expand the override list in the function code.
+#' When an override is specified, the function prints a message indicating
+#' which subfolder is being used.
+#' @examples
+#' # Get default date folder for Nigeria civic data
+#' date_folder("Nigeria", "civic")
+#' 
+#' # Get date folder for Belarus (has override)
+#' date_folder("Belarus", "civic")
+#' 
+#' # Get date folder for RAI data
+#' date_folder("Ukraine", "rai")
+#' @export
 date_folder <- function(country, type = c("civic", "rai")) {
   # default: "latest"
   ret <- "latest"
@@ -40,12 +58,23 @@ date_folder <- function(country, type = c("civic", "rai")) {
 
 # From: paths.R -----------------------------------------------------------
 
-#' Path finders
+#' Path Finders
 #'
-#' Functions that find the local computer path to various locations
+#' Functions that find the local computer path to various locations in the
+#' MLP project structure. This is the main documentation entry point for all
+#' path-related functions.
 #'
 #' @param \dots Combined with the root path using [file.path()].
-#'
+#' @return This function just returns TRUE invisibly and is used for documentation.
+#' @details This function is a placeholder for documentation purposes. Use the
+#' specific path functions like \code{\link{path_root}}, \code{\link{path_dropbox}},
+#' or \code{\link{path_counts_civic}} instead.
+#' @seealso \code{\link{path_root}}, \code{\link{path_dropbox}}, \code{\link{path_counts_civic}}, \code{\link{path_counts_rai}}
+#' @examples
+#' # This function is for documentation only
+#' # Use specific path functions instead:
+#' # path_root("some", "subdirectory")
+#' # path_dropbox("Counts_Civic_New")
 #' @export
 #' @aliases path_root path_dropbox path_datastore
 path <- function(...) {
@@ -55,6 +84,20 @@ path <- function(...) {
 
 
 #' @describeIn path Path to the ML4P-Civic-Space-Forecasting folder (that is on git).
+#' @param \dots Additional path components to append using [file.path()].
+#' @return Character string representing the full path to the project root or subdirectory.
+#' @details This function constructs paths to the main project directory that
+#' contains the git repository. It includes system-specific path configurations
+#' and validates that the directory exists.
+#' @examples
+#' # Get path to project root
+#' path_root()
+#' 
+#' # Get path to subdirectory
+#' path_root("data", "civic")
+#' 
+#' # Get path to specific file
+#' path_root("build_data", "constants.R")
 #' @export
 path_root <- function(...) {
   if (Sys.info()["nodename"]=="jeremy-System-Product-Name") {
@@ -70,6 +113,20 @@ path_root <- function(...) {
 }
 
 #' @describeIn path Path to the "ML for Peace" Dropbox folder
+#' @param \dots Additional path components to append using [file.path()].
+#' @return Character string representing the full path to the Dropbox folder or subdirectory.
+#' @details This function constructs paths to the main Dropbox folder containing
+#' the ML for Peace project data. It includes system-specific path configurations
+#' for different users and validates that the directory exists.
+#' @examples
+#' # Get path to Dropbox root
+#' path_dropbox()
+#' 
+#' # Get path to civic counts folder
+#' path_dropbox("Counts_Civic_New")
+#' 
+#' # Get path to specific country folder
+#' path_dropbox("Counts_Civic_New", "Nigeria")
 #' @export
 path_dropbox <- function(...) {
   # default guess
@@ -93,6 +150,19 @@ path_dropbox <- function(...) {
 
 
 #' @describeIn path Path to the civic counts folder
+#' @param \dots Additional path components to append using [file.path()].
+#' @return Character string representing the full path to the civic counts folder or subdirectory.
+#' @details This function constructs paths to the Dropbox folder containing
+#' civic event counts data. It's a convenience wrapper around \code{path_dropbox}.
+#' @examples
+#' # Get path to civic counts root
+#' path_counts_civic()
+#' 
+#' # Get path to specific country
+#' path_counts_civic("Nigeria")
+#' 
+#' # Get path to specific date folder
+#' path_counts_civic("Nigeria", "2024_12_1")
 #' @export
 path_counts_civic <- function(...) {
   path_dropbox("Counts_Civic_New", ...)
@@ -101,8 +171,30 @@ path_counts_civic <- function(...) {
 
 # From: extract-counts-by-source.R ----------------------------------------
 
-# Read and format a raw Counts_... file from Dropbox
-# Handles some minor annoyances.
+#' Read and Format Raw Counts CSV File
+#'
+#' Reads and formats a raw counts CSV file from Dropbox, handling various
+#' data formatting issues and standardizing the structure.
+#'
+#' @param file Character string. Path to the CSV file to read.
+#' @return Data frame with standardized columns including source, date, and event counts.
+#' @details This function handles several data formatting issues:
+#' \itemize{
+#'   \item{Extracts source name from filename}
+#'   \item{Standardizes date column to first day of month}
+#'   \item{Removes redundant date columns}
+#'   \item{Reorders columns with source and date first}
+#' }
+#' @examples
+#' \dontrun{
+#' # Read a civic counts file
+#' df <- read_counts_csv("/path/to/bbc.com.csv")
+#' 
+#' # Check the structure
+#' str(df)
+#' head(df)
+#' }
+#' @keywords internal
 read_counts_csv <- function(file) {
   df <- suppressMessages(readr::read_csv(file, show_col_types = FALSE))
   df$source <- tools::file_path_sans_ext(basename(file))
@@ -123,8 +215,35 @@ read_counts_csv <- function(file) {
 }
 
 
-# this function whitelists and combines all the [source].csv files in a folder.
-# low-level function that is used by the three specific extractors below
+#' Vet and Combine News Sources
+#'
+#' Validates and combines all CSV files in a folder against a whitelist of
+#' approved sources for a given country. This is a low-level function used
+#' by the specific data extraction functions.
+#'
+#' @param path Character string. Path to the folder containing CSV files.
+#' @param country Character string. Name of the country for source validation.
+#' @param use_region_filter Logical. If TRUE, apply regional filtering to sources.
+#' @return Data frame with combined data from all valid sources, plus attributes
+#' for source validation results.
+#' @details This function:
+#' \itemize{
+#'   \item{Validates sources against whitelist}
+#'   \item{Warns about missing or unexpected local sources}
+#'   \item{Combines all valid source files}
+#'   \item{Adds country column}
+#'   \item{Stores validation results as attributes}
+#' }
+#' @examples
+#' \dontrun{
+#' # Combine sources for Nigeria
+#' df <- vet_and_combine_sources("/path/to/Nigeria/Combined", "Nigeria")
+#' 
+#' # Check validation results
+#' attr(df, "used_sources")
+#' attr(df, "not_used_sources")
+#' }
+#' @keywords internal
 vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   csv_files <- dir(path, full.names = TRUE, pattern = ".csv$")
   
@@ -182,14 +301,33 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
 }
 
 
-#' Resolve subfolder
+#' Resolve Date Subfolder
 #'
-#' Resolve the date subfolder name for a country on Dropbox
+#' Resolves the date subfolder name for a country on Dropbox, handling
+#' the "latest", "all", or specific date folder selection.
 #'
-#' @param date One of "latest", "all", or a specific folder name like "2022_1_12".
-#'
-#' @returns A character vector of sub-folder names.
-#'
+#' @param type Character string. Type of data, either "rai" or "civic".
+#' @param country Character string. Name of the country.
+#' @param date Character string. One of "latest", "all", or a specific folder name like "2022_1_12".
+#' @return Character vector of subfolder names.
+#' @details This function:
+#' \itemize{
+#'   \item{Lists available date folders for the country}
+#'   \item{Filters to standard date format folders}
+#'   \item{Sorts folders chronologically}
+#'   \item{Returns latest, all, or specific folder as requested}
+#' }
+#' @examples
+#' \dontrun{
+#' # Get latest date folder for Nigeria civic data
+#' db_resolve_date("civic", "Nigeria", "latest")
+#' 
+#' # Get all available date folders
+#' db_resolve_date("civic", "Nigeria", "all")
+#' 
+#' # Get specific date folder
+#' db_resolve_date("rai", "Ukraine", "2024_12_1")
+#' }
 #' @keywords internal
 db_resolve_date <- function(type = c("rai", "civic"), country, date = "latest") {
   type <- match.arg(type)
@@ -227,6 +365,36 @@ db_resolve_date <- function(type = c("rai", "civic"), country, date = "latest") 
 }
 
 
+#' Extract Civic Counts by Source
+#'
+#' Extracts civic event counts by news source for a specific country from
+#' Dropbox, handling the complex folder structure and source validation.
+#'
+#' @param country Character string. Name of the country to extract data for.
+#' @param date Character string. Date folder to use ("latest" or specific folder name).
+#' @param quiet Logical. If TRUE, suppress progress messages.
+#' @param use_region_filter Logical. If TRUE, apply regional filtering to sources.
+#' @return Data frame with civic counts by source, returned invisibly.
+#' @details This function:
+#' \itemize{
+#'   \item{Resolves the appropriate date folder}
+#'   \item{Handles legacy folder structures (Civic_Related, Combined, Non_Civic_Related)}
+#'   \item{Validates and combines sources}
+#'   \item{Merges civic relevant and non-civic relevant data}
+#'   \item{Writes output to datastore}
+#' }
+#' @examples
+#' \dontrun{
+#' # Extract civic counts for Nigeria
+#' extract_civic_counts_by_source("Nigeria")
+#' 
+#' # Extract with regional filtering
+#' extract_civic_counts_by_source("Ukraine", use_region_filter = TRUE)
+#' 
+#' # Extract from specific date folder
+#' extract_civic_counts_by_source("Kenya", date = "2024_12_1")
+#' }
+#' @export
 extract_civic_counts_by_source <- function(country, date = "latest", quiet = FALSE, use_region_filter = FALSE) {
   stopifnot(
     "country must be just 1 country" = length(country)==1
@@ -282,6 +450,24 @@ extract_civic_counts_by_source <- function(country, date = "latest", quiet = FAL
 }
 
 
+#' Read Civic Counts by Source
+#'
+#' Reads the processed civic counts by source data from the local datastore.
+#'
+#' @param country Character string. Name of the country to read data for.
+#' @return Tibble with civic counts by source for the specified country.
+#' @details This function reads the CSV files generated by \code{\link{extract_civic_counts_by_source}}
+#' from the local datastore directory.
+#' @examples
+#' \dontrun{
+#' # Read civic counts by source for Nigeria
+#' nigeria_data <- read_civic_by_source("Nigeria")
+#' 
+#' # Check the structure
+#' str(nigeria_data)
+#' head(nigeria_data)
+#' }
+#' @export
 read_civic_by_source <- function(country) {
   path <- here("data", "0-civic-by-source", sprintf("%s.csv", country))
   res <- readr::read_csv(path, show_col_types = FALSE)
@@ -293,20 +479,31 @@ read_civic_by_source <- function(country) {
 # From: aggregate-and-merge.R ---------------------------------------------
 
 
-#' Create country-month Civic and RAI counts
+#' Create Country-Month Civic Counts
 #'
-#' Aggregate and merge the Civic and RAI data for a country to produce
-#' unnormalized country-month data. These are written to `{datastore}/1-raw-counts`.
+#' Aggregates civic event counts by country and month, creating normalized
+#' variables and filtering to valid date ranges. The processed data are
+#' written to the datastore.
 #'
-#' @param country Country
-#' @param quiet Print diagnostic messages?
-#'
-#' @details Depends on the 0-civic.../0-rai... CSV files in the datastore,
-#'   and the assets/impute-list.csv file.
-#'
-#' @return The new data are saved to the datastore and invisible returned as
-#' well.
-#'
+#' @param country Character string. Name of the country to process.
+#' @param quiet Logical. If TRUE, suppress diagnostic messages.
+#' @return Data frame with aggregated civic counts, returned invisibly.
+#' @details This function:
+#' \itemize{
+#'   \item{Reads civic counts by source}
+#'   \item{Aggregates by country and date}
+#'   \item{Filters to valid date range using \code{\link{country_last_month}}}
+#'   \item{Creates normalized variables (counts/total_articles)}
+#'   \item{Writes output to datastore}
+#' }
+#' @examples
+#' \dontrun{
+#' # Aggregate civic data for Nigeria
+#' aggregate_and_merge("Nigeria")
+#' 
+#' # Aggregate with diagnostic messages
+#' aggregate_and_merge("Ukraine", quiet = FALSE)
+#' }
 #' @export
 #' @aliases read_raw_counts update_story_counts update_source_entries read_source_entries
 aggregate_and_merge <- function(country, quiet = TRUE) {
@@ -347,9 +544,20 @@ aggregate_and_merge <- function(country, quiet = TRUE) {
   invisible(df)
 }
 
-#' @describeIn aggregate_and_merge Mashes together all of the by-source data to
-#' create the source entries matrix.
+#' @describeIn aggregate_and_merge Creates the source entries matrix showing temporal coverage patterns.
 #' @param use_rai Logical. If TRUE (default), join civic and RAI data. If FALSE, use only civic data.
+#' @return Source entries matrix saved to datastore and returned invisibly.
+#' @details This function creates a binary matrix showing when each local news source
+#' was active (published articles) across the full time series. The matrix is essential
+#' for tracking source entry/exit patterns over time.
+#' @examples
+#' \dontrun{
+#' # Create source entries matrix with both civic and RAI data
+#' update_source_entries()
+#' 
+#' # Create with only civic data
+#' update_source_entries(use_rai = FALSE)
+#' }
 #' @export
 update_source_entries <- function(use_rai = TRUE) {
   # Load civic data
@@ -405,14 +613,31 @@ update_source_entries <- function(use_rai = TRUE) {
 
 #' Country Source Whitelist
 #'
-#' Whitelist of all usable sources for a country---international, regional, and
-#'   local.
+#' Returns the complete whitelist of all usable news sources for a country,
+#' including international, regional, and local sources.
 #'
-#' @param country Country
+#' @param country Character string. Name of the country.
 #' @param use_region_filter Logical. If TRUE, only include regional sources 
 #'   relevant to the country's geographic region. If FALSE, include all regional
 #'   sources (legacy behavior). Default is FALSE for backward compatibility.
-#'
+#' @return Character vector of all valid source CSV filenames for the country.
+#' @details This function combines:
+#' \itemize{
+#'   \item{International sources (\code{\link{isources}})}
+#'   \item{Regional sources (\code{\link{rsources}} or filtered by region)}
+#'   \item{Local sources (from \code{\link{local_source_select}})}
+#' }
+#' @examples
+#' # Get all sources for Nigeria (legacy behavior)
+#' whitelist_sources("Nigeria")
+#' 
+#' # Get sources with regional filtering
+#' whitelist_sources("Nigeria", use_region_filter = TRUE)
+#' 
+#' # Compare the difference
+#' all_sources <- whitelist_sources("Ukraine")
+#' filtered_sources <- whitelist_sources("Ukraine", use_region_filter = TRUE)
+#' setdiff(all_sources, filtered_sources)
 #' @export
 #' @aliases isources rsources local_source_select vet_sources region_sources
 whitelist_sources <- function(country, use_region_filter = FALSE) {
@@ -432,11 +657,20 @@ whitelist_sources <- function(country, use_region_filter = FALSE) {
   )
 }
 
-#' @describeIn whitelist_sources Vet a list of sources against whitelist; returns
-#'   subset of valid sources.
-#' @param sources Vector of source names to validate
-#' @param country Country name
+#' @describeIn whitelist_sources Validates a list of sources against the whitelist.
+#' @param sources Character vector. Source names to validate.
+#' @param country Character string. Country name for validation context.
 #' @param use_region_filter Logical. Passed to whitelist_sources(). Default FALSE.
+#' @return Character vector containing only the valid sources from the input list.
+#' @details This function takes a list of source names and returns only those
+#' that are present in the whitelist for the given country.
+#' @examples
+#' # Validate a list of sources for Nigeria
+#' test_sources <- c("bbc.com.csv", "invalid_source.csv", "nation.africa.csv")
+#' valid_sources <- vet_sources(test_sources, "Nigeria")
+#' 
+#' # Check what was filtered out
+#' setdiff(test_sources, valid_sources)
 #' @export
 vet_sources <- function(sources, country, use_region_filter = FALSE) {
   valid <- whitelist_sources(country, use_region_filter = use_region_filter)
@@ -449,18 +683,45 @@ vet_sources <- function(sources, country, use_region_filter = FALSE) {
 # RAI ---------------------------------------------------------------------
 
 #' @describeIn path Path to the RAI counts folder
+#' @param \dots Additional path components to append using [file.path()].
+#' @return Character string representing the full path to the RAI counts folder or subdirectory.
+#' @details This function constructs paths to the Dropbox folder containing
+#' Regional and International (RAI) influence counts data. It's a convenience
+#' wrapper around \code{path_dropbox}.
+#' @examples
+#' # Get path to RAI counts root
+#' path_counts_rai()
+#' 
+#' # Get path to specific country
+#' path_counts_rai("Ukraine")
+#' 
+#' # Get path to specific influencer folder
+#' path_counts_rai("Ukraine", "2024_12_1", "Russia")
 #' @export
 path_counts_rai <- function(...) {
   path_dropbox("Counts_RAI_New", ...)
 }
 
-#' Read un-aggregated RAI counts
+#' Read RAI Counts by Source and Influencer
 #'
-#' Read the un-aggregated RAI counts by source and influencer in the datastore.
-#' Exported for rai.atari.
+#' Reads the processed RAI counts by source and influencer data from the
+#' local datastore.
 #'
-#' @param country Country
-#'
+#' @param country Character string. Name of the country to read data for.
+#' @return Tibble with RAI counts by source and influencer for the specified country.
+#' @details This function reads the CSV files generated by
+#' \code{\link{extract_rai_counts_by_source_and_influencer}} from the local
+#' datastore directory. The data includes counts for Combined, China, and Russia
+#' influencer categories.
+#' @examples
+#' \dontrun{
+#' # Read RAI counts for Ukraine
+#' ukraine_rai <- read_rai_by_source_and_influencer("Ukraine")
+#' 
+#' # Check the structure
+#' str(ukraine_rai)
+#' unique(ukraine_rai$influencer)
+#' }
 #' @export
 read_rai_by_source_and_influencer <- function(country) {
   path <- here("data","0-rai-by-source-and-influencer", sprintf("%s.csv", country))
@@ -469,18 +730,35 @@ read_rai_by_source_and_influencer <- function(country) {
   tibble::as_tibble(res)
 }
 
-#' Country RAI Counts by Source and Influencer
+#' Extract RAI Counts by Source and Influencer
 #'
-#' Extract RAI counts by source and influencer for a country from Dropbox. This
-#' function literally just combines a bunch of separate CSV files into one
-#' big CSV file of raw counts for one country. It does not do source whitelisting.
+#' Extracts RAI (Regional and International) influence counts by source and
+#' influencer for a country from Dropbox, combining separate CSV files into
+#' a unified dataset.
 #'
-#' @param country Country name
-#' @param date character; name of the sub-folder to read; defaults to latest available
-#'
-#' @returns Invisibly returns the raw RAI counts by news source, but the main
-#'   effect is to write a CSV to the datastore on Dropbox.
-#'
+#' @param country Character string. Name of the country to extract data for.
+#' @param date Character string. Date folder to use ("latest" or specific folder name).
+#' @param quiet Logical. If TRUE, suppress progress messages.
+#' @param use_region_filter Logical. If TRUE, apply regional filtering to sources.
+#' @return Data frame with RAI counts by source and influencer, returned invisibly.
+#' @details This function:
+#' \itemize{
+#'   \item{Processes data for three influencer categories: Combined, China, Russia}
+#'   \item{Validates and combines sources for each influencer}
+#'   \item{Merges with total article counts from civic data}
+#'   \item{Writes output to datastore}
+#' }
+#' @examples
+#' \dontrun{
+#' # Extract RAI counts for Ukraine
+#' extract_rai_counts_by_source_and_influencer("Ukraine")
+#' 
+#' # Extract with regional filtering
+#' extract_rai_counts_by_source_and_influencer("Nigeria", use_region_filter = TRUE)
+#' 
+#' # Extract from specific date folder
+#' extract_rai_counts_by_source_and_influencer("Belarus", date = "2024_12_1")
+#' }
 #' @export
 #' @seealso [extract_article_total()], [extract_rai_counts_by_source_and_influencer()]
 extract_rai_counts_by_source_and_influencer <- function(country,
@@ -542,6 +820,33 @@ extract_rai_counts_by_source_and_influencer <- function(country,
 }
 
 
+#' Aggregate and Merge RAI Data
+#'
+#' Aggregates RAI (Regional and International) influence counts by country,
+#' influencer, and month, creating normalized variables and theme calculations.
+#' The processed data are written to separate files by influencer.
+#'
+#' @param country Character string. Name of the country to process.
+#' @param quiet Logical. If TRUE, suppress diagnostic messages.
+#' @return Data frame with aggregated RAI counts, returned invisibly.
+#' @details This function:
+#' \itemize{
+#'   \item{Reads RAI counts by source and influencer}
+#'   \item{Aggregates by influencer, country, and date}
+#'   \item{Filters to valid date range using \code{\link{country_last_month}}}
+#'   \item{Creates normalized variables (counts/total_articles)}
+#'   \item{Calculates RAI theme sums based on \code{data/rai_vars.csv}}
+#'   \item{Writes separate files for each influencer}
+#' }
+#' @examples
+#' \dontrun{
+#' # Aggregate RAI data for Ukraine
+#' aggregate_and_merge_rai("Ukraine")
+#' 
+#' # Aggregate with diagnostic messages
+#' aggregate_and_merge_rai("Belarus", quiet = FALSE)
+#' }
+#' @export
 aggregate_and_merge_rai <- function(country, quiet = TRUE) {
   df <- read_rai_by_source_and_influencer(country)
   # Process RAI variables:
