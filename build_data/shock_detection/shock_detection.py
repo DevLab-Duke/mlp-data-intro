@@ -184,10 +184,12 @@ def detect_peaks(folder, countries, date):
                     plt.close()
 
             # Save civic peaks to civic folder
-            peaks_df.to_csv(
-                f'{civic_result_folder}/{country}.csv',
-                index = False
-            )
+            # peaks_df.to_csv(
+            #     f'{civic_result_folder}/{country}.csv',
+            #     index = False
+            # )
+            outfile = os.path.join(civic_result_folder, f'{country}.csv')
+            peaks_df.to_csv(outfile, index=False)
             
     return peak_results
 
@@ -277,10 +279,12 @@ def detect_rai_peaks_by_influencer(folder, countries, date):
                 plt.close()
         
         # Save peaks to RAI folder with influencer in filename
-        peaks_df.to_csv(
-            f'../../data/2-rai-shock/{country}_{influencer}.csv',
-            index=False
-        )
+        # peaks_df.to_csv(
+        #     f'../../data/2-rai-shock/{country}_{influencer}.csv',
+        #     index=False
+        # )
+        outfile = os.path.join(rai_result_folder, f'{country}_{influencer}.csv')
+        peaks_df.to_csv(outfile, index=False)
         
     return peak_results
 
