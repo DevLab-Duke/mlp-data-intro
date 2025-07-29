@@ -306,10 +306,10 @@ def run_rai_peak_detection(path):
 # run_rai_peak_detection(rai_data_folder)
 
 # ZR's adding new variable to run peak detection
-RUN_PEAK_DETECTION = False   # flip to True when you need fresh outputs
+RUN_PEAK_DETECTION = True   # flip to True when you need fresh outputs
 
 if RUN_PEAK_DETECTION:
-    run_peak_detection(civic_data_folder)
+    # run_peak_detection(civic_data_folder)
     run_rai_peak_detection(rai_data_folder)
 else:
     print("⚠️  Skipping peak‑detection step (RUN_PEAK_DETECTION = False)")
