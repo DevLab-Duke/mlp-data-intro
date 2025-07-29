@@ -11,7 +11,10 @@ warnings.filterwarnings('ignore')
 from peak_detector import PeakDetector
 import matplotlib.dates as mdates
 from keras import Input, Model
-from keras.layers import TFSMLayer
+# from keras.layers import TFSMLayer
+from tensorflow.keras.layers import TFSMLayer
+import tensorflow as tf
+TFSMLayer = tf.keras.layers.TFSMLayer
 
 # Global Variables Inputs
 today = date.today()
@@ -21,18 +24,34 @@ month = today.strftime("%m")
 year = today.strftime("%Y")
 
 # Filesystem env variables
-civic_data_folder = '../../data/1-civic-aggregate'
-rai_data_folder = '../../data/1-rai-aggregate'
-civic_result_folder = '../../data/2-civic-shock'
-rai_result_folder = '../../data/2-rai-shock'
+# civic_data_folder = '../../data/1-civic-aggregate'
+# rai_data_folder = '../../data/1-rai-aggregate'
+# civic_result_folder = '../../data/2-civic-shock'
+# rai_result_folder = '../../data/2-rai-shock'
+
+#relative paths
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+civic_data_folder = os.path.join(SCRIPT_DIR, '../../data/1-civic-aggregate')
+rai_data_folder   = os.path.join(SCRIPT_DIR, '../../data/1-rai-aggregate')
+civic_result_folder = os.path.join(SCRIPT_DIR, '../../data/2-civic-shock')
+rai_result_folder   = os.path.join(SCRIPT_DIR, '../../data/2-rai-shock')
 
 # Stage remaining countries (New Civic but no New RAI as of 6/26)
-country_list = ['Armenia', 'Belarus', 'Hungary', 'Azerbaijan', 'Moldova', 'Macedonia', 'Turkey', 
-                'Uzbekistan', 'Kyrgyzstan', 'Kazakhstan', 'Algeria', 'Guatemala', 'Bangladesh', 
-                'Cambodia', 'India', 'Indonesia', 'Malaysia', 'Nepal', 'Pakistan', 'Philippines', 
-                'Sri Lanka', 'Timor Leste', 'Angola', 'Burkina Faso', 'Cameroon', 'DR Congo', 'Ghana', 
-                'Liberia', 'Malawi', 'Mozambique', 'Namibia', 'Nigeria', 'Rwanda', 'South Africa', 
-                'South Sudan', 'Tunisia', 'Uganda']
+# country_list = ['Armenia', 'Belarus', 'Hungary', 'Azerbaijan', 'Moldova', 'Macedonia', 'Turkey', 
+#                 'Uzbekistan', 'Kyrgyzstan', 'Kazakhstan', 'Algeria', 'Guatemala', 'Bangladesh', 
+#                 'Cambodia', 'India', 'Indonesia', 'Malaysia', 'Nepal', 'Pakistan', 'Philippines', 
+#                 'Sri Lanka', 'Timor Leste', 'Angola', 'Burkina Faso', 'Cameroon', 'DR Congo', 'Ghana', 
+#                 'Liberia', 'Malawi', 'Mozambique', 'Namibia', 'Nigeria', 'Rwanda', 'South Africa', 
+#                 'South Sudan', 'Tunisia', 'Uganda']
+
+country_list = ['Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh', 'Belarus', 'Benin', 'Burkina Faso',
+                'Cambodia', 'Cameroon', 'Colombia', 'Costa Rica', 'DR Congo', 'Dominican Republic', 'Ecuador', 'El Salvador',
+                'Ethiopia', 'Georgia', 'Ghana', 'Guatemala', 'Honduras', 'Hungary', 'India', 'Indonesia', 'Jamaica', 'Kazakhstan',
+                'Kenya', 'Kosovo', 'Kyrgyzstan', 'Liberia', 'Macedonia', 'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Moldova',
+                'Morocco', 'Mozambique', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'Pakistan', 'Panama', 'Paraguay',
+                'Peru', 'Philippines', 'Rwanda', 'Senegal', 'Serbia', 'Solomon Islands', 'South Africa', 'South Sudan', 'Sri Lanka',
+                'Tanzania', 'Timor Leste', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'Uzbekistan', 'Zambia', 'Zimbabwe']
 
 #Function to get files from static folder
 def get_updated_files(path='.'):
@@ -283,8 +302,17 @@ def run_rai_peak_detection(path):
     print("RAI peak detection completed.")
     
 # Run both civic and RAI peak detection
-run_peak_detection(civic_data_folder)    
-run_rai_peak_detection(rai_data_folder)
+# run_peak_detection(civic_data_folder)    
+# run_rai_peak_detection(rai_data_folder)
+
+# ZR's adding new variable to run peak detection
+RUN_PEAK_DETECTION = False   # flip to True when you need fresh outputs
+
+if RUN_PEAK_DETECTION:
+    run_peak_detection(civic_data_folder)
+    run_rai_peak_detection(rai_data_folder)
+else:
+    print("⚠️  Skipping peak‑detection step (RUN_PEAK_DETECTION = False)")
 
 # Combine all CSV files into single files
 def combine_civic_shock_files():
@@ -311,8 +339,15 @@ def combine_civic_shock_files():
                                       if col not in ['country', 'date']]
         combined_civic = combined_civic[cols]
         
+        # Jeremy's
         # Save combined file to final-counts folder
-        final_counts_folder = '../../data/final-counts'
+        # final_counts_folder = '../../data/final-counts'
+        # output_path = os.path.join(final_counts_folder, 'shock-civic-data.csv')
+        # combined_civic.to_csv(output_path, index=False)
+
+        # ZR's relative paths
+        final_counts_folder = os.path.join(SCRIPT_DIR, '../../data/final-counts')
+        os.makedirs(final_counts_folder, exist_ok=True)          # <‑‑ add this
         output_path = os.path.join(final_counts_folder, 'shock-civic-data.csv')
         combined_civic.to_csv(output_path, index=False)
         print(f"Combined civic shock data saved to: {output_path}")
@@ -348,8 +383,15 @@ def combine_rai_shock_files():
                                                     if col not in ['country', 'influencer', 'date']]
         combined_rai = combined_rai[cols]
         
+        # Jeremy's
         # Save combined file to final-counts folder
-        final_counts_folder = '../../data/final-counts'
+        # final_counts_folder = '../../data/final-counts'
+        # output_path = os.path.join(final_counts_folder, 'shock-rai-data.csv')
+        # combined_rai.to_csv(output_path, index=False)
+
+        # ZR's relative paths
+        final_counts_folder = os.path.join(SCRIPT_DIR, '../../data/final-counts')
+        os.makedirs(final_counts_folder, exist_ok=True)          # <‑‑ add this
         output_path = os.path.join(final_counts_folder, 'shock-rai-data.csv')
         combined_rai.to_csv(output_path, index=False)
         print(f"Combined RAI shock data saved to: {output_path}")
