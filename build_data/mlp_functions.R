@@ -37,8 +37,8 @@ date_folder <- function(country, type = c("civic", "rai")) {
   override <- list()
   
   # Override list:
-  override[["Belarus"]][["civic"]] <- "2025_1_8"
-  override[["Belarus"]][["rai"]] <- "2025_1_8"
+  # override[["Belarus"]][["civic"]] <- "2025_1_8"
+  # override[["Belarus"]][["rai"]] <- "2025_1_8"
   
   
   # check for overrides
@@ -131,6 +131,11 @@ path_root <- function(...) {
 path_dropbox <- function(...) {
   # default guess
   base <- "~/Dropbox/ML for Peace"
+
+  # ZR: Mac
+  if (Sys.info()[["user"]] == "zungrulin") {       
+    base <- "/Users/zungrulin/Library/CloudStorage/Dropbox/ML for Peace"  
+  }
   
   # jeremy: office windows
   if (Sys.info()["user"]=="jerem") {
@@ -200,7 +205,12 @@ read_counts_csv <- function(file) {
   df$source <- tools::file_path_sans_ext(basename(file))
   
   # Fix a date column, indexing months to first, not last date
-  df$date <- df[[colnames(df)[grepl("date", colnames(df))][1]]]
+  # df$date <- df[[colnames(df)[grepl("date", colnames(df))][1]]]
+  date_col <- colnames(df)[grepl("date", colnames(df), ignore.case = TRUE)]
+  if (length(date_col) == 0) {
+    stop(sprintf("No date column found in %s", basename(file)))
+  }
+  df$date <- df[[date_col[1]]]
   df$date <- as.Date(paste0(substr(df$date, 1, 8), "01"))
   
   # Remove other date info we don't need
@@ -329,6 +339,7 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
 #' db_resolve_date("rai", "Ukraine", "2024_12_1")
 #' }
 #' @keywords internal
+
 db_resolve_date <- function(type = c("rai", "civic"), country, date = "latest") {
   type <- match.arg(type)
   
@@ -349,7 +360,14 @@ db_resolve_date <- function(type = c("rai", "civic"), country, date = "latest") 
   folders <- folders[order(dates)]
   
   if (date=="latest") {
-    res <- tail(folders, 1)
+    #jeremy's old block
+    # res <- tail(folders, 1)
+      for (f in rev(folders)) {                # iterate from newest to oldest
+      if (dir.exists(path_counts_rai(country, f))) {
+        res <- f
+        break
+      }
+    }
   } else if (date=="all") {
     res <- folders
   } else {
@@ -761,61 +779,142 @@ read_rai_by_source_and_influencer <- function(country) {
 #' }
 #' @export
 #' @seealso [extract_article_total()], [extract_rai_counts_by_source_and_influencer()]
+
+### Jeremy's original script- not merging counts with different rows
+# extract_rai_counts_by_source_and_influencer <- function(country,
+#                                                         date = "latest",
+#                                                         quiet = TRUE,
+#                                                         use_region_filter = FALSE) {
+#   stopifnot(
+#     "country must be just 1 country" = length(country)==1
+#   )
+  
+#   date_folder <- db_resolve_date("rai", country, date)
+#   if (!quiet) {
+#     cat(paste0("Using '", date_folder, "/' folder\n"))
+#   }
+  
+#   influencer_ops <- c("Combined", "China", "Russia")
+  
+#   # The date folder should contain Combined, Russia, China sub-folders
+#   if (!all(influencer_ops %in% dir(path_counts_rai(country, date_folder)))) {
+#     stop("could not find influencer folders")
+#   }
+  
+#   df_by_influencer <- list()
+#   for (influencer_i in influencer_ops) {
+    
+#     path <- path_counts_rai(country, date_folder, influencer_i)
+    
+#     df <- vet_and_combine_sources(path, country, use_region_filter = use_region_filter)
+    
+#     # fix -999 name
+#     names(df)[names(df) %in% "-999"] = "rai_999"
+    
+#     # Add the influencer type and move to front
+#     df$influencer <- influencer_i
+#     front <- c("influencer")
+#     df <- df[, c(front, setdiff(colnames(df), front))]
+    
+#     df_by_influencer[[influencer_i]] <- df
+#   }
+#   df_by_influencer <- do.call(rbind, df_by_influencer)
+#   rownames(df_by_influencer) <- NULL
+  
+  
+#   # Retrieve `total_articles` from civic counts
+#   dft = read_csv(here("data", "0-civic-by-source", sprintf("%s.csv", country)), show_col_types = FALSE) %>%
+#     dplyr::select(country, source, date, total_articles)
+#   # RAI and civic should be the same length
+#   stopifnot(
+#     "rai and civic row numbers are not equal" = nrow(dft)==(nrow(df_by_influencer)/3)
+#   )
+  
+#   df_by_influencer = left_join(df_by_influencer, dft)
+
+#   # Write to datastore
+#   outfile <- here("data", "0-rai-by-source-and-influencer", sprintf("%s.csv", country))
+#   readr::write_csv(df_by_influencer, file = outfile, progress = FALSE)
+  
+#   invisible(df_by_influencer)
+# }
+
+### ZR's version with civic/rai padding
 extract_rai_counts_by_source_and_influencer <- function(country,
                                                         date = "latest",
                                                         quiet = TRUE,
                                                         use_region_filter = FALSE) {
-  stopifnot(
-    "country must be just 1 country" = length(country)==1
-  )
-  
+  #  Minimal fix:  pad civic rows to match the (country, source, date) grid that
+  #  exists in the RAI data.  This removes the hard stop when one dataset starts
+  #  earlier / ends later than the other after the repository migration.
+
+  stopifnot("country must be just 1 country" = length(country) == 1)
+
   date_folder <- db_resolve_date("rai", country, date)
-  if (!quiet) {
-    cat(paste0("Using '", date_folder, "/' folder\n"))
-  }
-  
+  if (!quiet) cat(sprintf("Using '%s/' folder\n", date_folder))
+
   influencer_ops <- c("Combined", "China", "Russia")
-  
-  # The date folder should contain Combined, Russia, China sub-folders
+
+  # The date‑folder should contain Combined, Russia, China sub‑folders
   if (!all(influencer_ops %in% dir(path_counts_rai(country, date_folder)))) {
     stop("could not find influencer folders")
   }
-  
+
+  # 1. Build the (source, date) counts for each influencer
   df_by_influencer <- list()
   for (influencer_i in influencer_ops) {
-    
     path <- path_counts_rai(country, date_folder, influencer_i)
-    
-    df <- vet_and_combine_sources(path, country, use_region_filter = use_region_filter)
-    
-    # fix -999 name
-    names(df)[names(df) %in% "-999"] = "rai_999"
-    
-    # Add the influencer type and move to front
+    df   <- vet_and_combine_sources(path, country,
+                                    use_region_filter = use_region_filter)
+
+    # Fix "‑999" column name produced by vet_and_combine_sources()
+    names(df)[names(df) %in% "-999"] <- "rai_999"
+
+    # Tag with influencer and move that column to the front
     df$influencer <- influencer_i
     front <- c("influencer")
     df <- df[, c(front, setdiff(colnames(df), front))]
-    
+
     df_by_influencer[[influencer_i]] <- df
   }
   df_by_influencer <- do.call(rbind, df_by_influencer)
   rownames(df_by_influencer) <- NULL
-  
-  
-  # Retrieve `total_articles` from civic counts
-  dft = read_csv(here("data", "0-civic-by-source", sprintf("%s.csv", country)), show_col_types = FALSE) %>%
-    dplyr::select(country, source, date, total_articles)
-  # RAI and civic should be the same length
-  stopifnot(
-    "rai and civic row numbers are not equal" = nrow(dft)==(nrow(df_by_influencer)/3)
-  )
-  
-  df_by_influencer = left_join(df_by_influencer, dft)
 
-  # Write to datastore
+  # 2. Read civic counts once per (country, source, date)
+  civic_raw <- readr::read_csv(
+    here("data", "0-civic-by-source", sprintf("%s.csv", country)),
+    show_col_types = FALSE
+  ) %>%
+    dplyr::select(country, source, date, total_articles)
+
+
+  # 3. Pad civic counts so every (country, source, date) that appears in the rai
+  #    grid exists in the civic grid (fill missing with 0).  This ensures the
+  #    downstream join doesn't fail, regardless of differing start/end months.
+  grid_keys <- df_by_influencer %>%
+    dplyr::select(country, source, date) %>%
+    dplyr::distinct()
+
+  civic_aligned <- grid_keys %>%
+    dplyr::left_join(civic_raw, by = c("country", "source", "date")) %>%
+    dplyr::mutate(total_articles = tidyr::replace_na(total_articles, 0L))
+
+  # a warning if, even after padding, we still see a mismatch.
+  if (nrow(civic_aligned) != nrow(df_by_influencer) / 3) {
+    warning("RAI and civic row numbers differ even after padding; please verify data integrity.")
+  }
+
+  # 4. Merge aligned civic counts back into the influencer‑expanded RAI frame
+  df_by_influencer <- dplyr::left_join(
+    df_by_influencer,
+    civic_aligned,
+    by = c("country", "source", "date")
+  )
+
+  # 5. Persist and return invisibly
   outfile <- here("data", "0-rai-by-source-and-influencer", sprintf("%s.csv", country))
   readr::write_csv(df_by_influencer, file = outfile, progress = FALSE)
-  
+
   invisible(df_by_influencer)
 }
 
