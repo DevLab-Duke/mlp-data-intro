@@ -9,8 +9,9 @@ source(here("build_data", "constants.R"))
 ## Create MLP data using modified mlp package functions
 
 # Only remaining Civic country (add this to RAI when it's available)
-country_name_list = c("Mexico") # SSA
-
+# country_name_list = c("Mexico") # SSA
+country_name_list = c('Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh', 'Belarus', 'Benin', 'Burkina Faso', 'Cambodia', 'Cameroon', 'Colombia', 'Costa Rica', 'DR Congo', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Ethiopia', 'Georgia', 'Ghana', 'Guatemala', 'Honduras', 'Hungary', 'India', 'Indonesia', 'Jamaica', 'Kazakhstan', 'Kenya', 'Kosovo', 'Kyrgyzstan', 'Liberia', 'Macedonia', 'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Moldova', 'Morocco', 'Mozambique', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'Pakistan', 'Panama', 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Senegal', 'Serbia', 'Solomon Islands', 'South Africa', 'South Sudan', 'Sri Lanka', 'Tanzania', 'Timor Leste', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'Uzbekistan', 'Zambia', 'Zimbabwe')
+# country_name_list = c('India', 'Indonesia', 'Jamaica', 'Kazakhstan', 'Kenya', 'Kosovo', 'Kyrgyzstan', 'Liberia', 'Macedonia', 'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Moldova', 'Morocco', 'Mozambique', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'Pakistan', 'Panama', 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Senegal', 'Serbia', 'Solomon Islands', 'South Africa', 'South Sudan', 'Sri Lanka', 'Tanzania', 'Timor Leste', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'Uzbekistan', 'Zambia', 'Zimbabwe')
 ## Civic
 for (cc in country_name_list) {
   cat("Civic:", cc, "\n")
@@ -19,12 +20,12 @@ for (cc in country_name_list) {
   cat("Aggregated country-month data for", cc, "\n")
   df <- aggregate_and_merge(cc, quiet = FALSE)
 
-}
+# }
 
 # RAI
 # Already run throughgh Civic, but New RAI wasn't ready
-country_name_list = c("Armenia", "Belarus", "Hungary", "Azerbaijan", "Moldova", "Macedonia", "Turkey", "Uzbekistan", "Kyrgyzstan", "Kazakhstan", "Algeria", "Guatemala", "Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Sri Lanka", "Timor Leste", "Angola", "Burkina Faso", "Cameroon", "DR Congo", "Ghana", "Liberia", "Malawi", "Mozambique", "Namibia", "Nigeria", "Rwanda", "South Africa", "South Sudan", "Tunisia", "Uganda")
-
+# country_name_list = c("Armenia", "Belarus", "Hungary", "Azerbaijan", "Moldova", "Macedonia", "Turkey", "Uzbekistan", "Kyrgyzstan", "Kazakhstan", "Algeria", "Guatemala", "Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", "Pakistan", "Philippines", "Sri Lanka", "Timor Leste", "Angola", "Burkina Faso", "Cameroon", "DR Congo", "Ghana", "Liberia", "Malawi", "Mozambique", "Namibia", "Nigeria", "Rwanda", "South Africa", "South Sudan", "Tunisia", "Uganda", "Mexico")
+country_name_list = c('Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh', 'Belarus', 'Benin', 'Burkina Faso', 'Cambodia', 'Cameroon', 'Colombia', 'Costa Rica', 'DR Congo', 'Dominican Republic', 'Ecuador', 'El Salvador', 'Ethiopia', 'Georgia', 'Ghana', 'Guatemala', 'Honduras', 'Hungary', 'India', 'Indonesia', 'Jamaica', 'Kazakhstan', 'Kenya', 'Kosovo', 'Kyrgyzstan', 'Liberia', 'Macedonia', 'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Moldova', 'Morocco', 'Mozambique', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'Pakistan', 'Panama', 'Paraguay', 'Peru', 'Philippines', 'Rwanda', 'Senegal', 'Serbia', 'Solomon Islands', 'South Africa', 'South Sudan', 'Sri Lanka', 'Tanzania', 'Timor Leste', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'Uzbekistan', 'Zambia', 'Zimbabwe')
 ## RAI
 for (cc in country_name_list) {
   cat("RAI:", cc, "\n")
