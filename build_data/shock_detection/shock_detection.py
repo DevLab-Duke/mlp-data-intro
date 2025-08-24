@@ -48,10 +48,11 @@ rai_result_folder   = os.path.join(SCRIPT_DIR, '../../data/2-rai-shock')
 country_list = ['Albania', 'Algeria', 'Angola', 'Armenia', 'Azerbaijan', 'Bangladesh', 'Belarus', 'Benin', 'Burkina Faso',
                 'Cambodia', 'Cameroon', 'Colombia', 'Costa Rica', 'DR Congo', 'Dominican Republic', 'Ecuador', 'El Salvador',
                 'Ethiopia', 'Georgia', 'Ghana', 'Guatemala', 'Honduras', 'Hungary', 'India', 'Indonesia', 'Jamaica', 'Kazakhstan',
-                'Kenya', 'Kosovo', 'Kyrgyzstan', 'Liberia', 'Macedonia', 'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Moldova',
+                'Kenya', 'Kosovo', 'Kyrgyzstan', 'Liberia', 'Macedonia', 'Malawi', 'Malaysia', 'Mali', 'Mauritania', 'Mexico', 'Moldova',
                 'Morocco', 'Mozambique', 'Namibia', 'Nepal', 'Nicaragua', 'Niger', 'Nigeria', 'Pakistan', 'Panama', 'Paraguay',
                 'Peru', 'Philippines', 'Rwanda', 'Senegal', 'Serbia', 'Solomon Islands', 'South Africa', 'South Sudan', 'Sri Lanka',
                 'Tanzania', 'Timor Leste', 'Tunisia', 'Turkey', 'Uganda', 'Ukraine', 'Uzbekistan', 'Zambia', 'Zimbabwe']
+# country_list = ['Mexico']
 
 #Function to get files from static folder
 def get_updated_files(path='.'):
@@ -121,10 +122,15 @@ def convert_to_training_data_2(Y, country, event, peak_detector, mode='cutoff'):
 def detect_peaks(folder, countries, date):
     # match = re.search(r'\d{4}-\d{2}-\d{2}', folder)
     # date = match.group(0)
-    civic_plot_dir = f'../../data/2-civic-shock'
-    rai_plot_dir = f'../../data/2-rai-shock'
+    # civic_plot_dir = f'../../data/2-civic-shock'
+    # rai_plot_dir = f'../../data/2-rai-shock'
+    # os.makedirs(civic_plot_dir, exist_ok=True)
+    # os.makedirs(rai_plot_dir, exist_ok=True)
+
+    civic_plot_dir = os.path.join(SCRIPT_DIR, '../../data/2-civic-shock')
+    rai_plot_dir   = os.path.join(SCRIPT_DIR, '../../data/2-rai-shock')
     os.makedirs(civic_plot_dir, exist_ok=True)
-    os.makedirs(rai_plot_dir, exist_ok=True)
+    os.makedirs(rai_plot_dir,   exist_ok=True)
     
     lookaround = 12
     std_dev = 0.88
@@ -195,7 +201,9 @@ def detect_peaks(folder, countries, date):
 
 def detect_rai_peaks_by_influencer(folder, countries, date):
     """Process RAI shock detection for each influencer CSV file separately."""
-    rai_plot_dir = f'../../data/2-rai-shock'
+    # rai_plot_dir = f'../../data/2-rai-shock'
+    # os.makedirs(rai_plot_dir, exist_ok=True)
+    rai_plot_dir = os.path.join(SCRIPT_DIR, '../../data/2-rai-shock')
     os.makedirs(rai_plot_dir, exist_ok=True)
     
     lookaround = 12
@@ -313,7 +321,7 @@ def run_rai_peak_detection(path):
 RUN_PEAK_DETECTION = True   # flip to True when you need fresh outputs
 
 if RUN_PEAK_DETECTION:
-    # run_peak_detection(civic_data_folder)
+    run_peak_detection(civic_data_folder)
     run_rai_peak_detection(rai_data_folder)
 else:
     print("⚠️  Skipping peak‑detection step (RUN_PEAK_DETECTION = False)")
