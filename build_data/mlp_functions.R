@@ -255,7 +255,7 @@ read_counts_csv <- function(file) {
 #' }
 #' @keywords internal
 vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
-  csv_files <- dir(path, full.names = TRUE, pattern = ".csv$")
+  csv_files <- dir(path, full.names = TRUE, pattern = "\\.csv$")
   
   # Get expected sources from constants.R
   expected_sources <- whitelist_sources(country, use_region_filter = use_region_filter)
@@ -268,7 +268,7 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
   csv_files <- csv_files[basename(csv_files) %in% valid_sources]
   
   # Check for source discrepancies and generate warnings (only for local sources)
-  sources_in_folder <- basename(dir(path, pattern = ".csv$"))
+  sources_in_folder <- basename(dir(path, pattern = "\\.csv$"))
   
   # Get local sources only for warning checks
   local_sources_expected <- local_source_select(country)$lsources
@@ -342,43 +342,37 @@ vet_and_combine_sources <- function(path, country, use_region_filter = FALSE) {
 
 db_resolve_date <- function(type = c("rai", "civic"), country, date = "latest") {
   type <- match.arg(type)
-  
-  if (type=="rai") {
-    folders <- dir(path_counts_rai(country))
-  } else {
-    folders <- dir(path_counts_civic(country))
-  }
-  
-  # take out any non-standard folders, i.e. keep only ones containing numbers
-  # and "_". This is to deal with Serbia/(cliff)2021_12_15
+
+  # pick the right base path
+  base_path <- if (type == "rai") path_counts_rai(country) else path_counts_civic(country)
+  folders   <- dir(base_path)
+
+  # keep only YYYY_M_D style, drop unparseable
   folders <- folders[grepl("^[0-9_]+$", folders)]
-  
-  # the "kind-of-date" format is not necessarily in the correct order because
-  # the month and day integers don't aren't padded with 0, i.e. 2023_4_7 comes
-  # after 2023_4_13 in string sorting, but should be before/earlier
-  dates <- as.Date(folders, format = "%Y_%m_%d")
+  dates   <- as.Date(folders, format = "%Y_%m_%d")
+  keep    <- !is.na(dates)
+  folders <- folders[keep]
+  dates   <- dates[keep]
+
+  if (!length(folders)) {
+    stop(sprintf("No date folders found for '%s' (%s) under: %s", country, type, base_path))
+  }
+
   folders <- folders[order(dates)]
-  
-  if (date=="latest") {
-    #jeremy's old block
-    # res <- tail(folders, 1)
-      for (f in rev(folders)) {                # iterate from newest to oldest
-      if (dir.exists(path_counts_rai(country, f))) {
-        res <- f
-        break
-      }
-    }
-  } else if (date=="all") {
+
+  if (identical(date, "latest")) {
+    # newest folder in the *same* tree
+    res <- tail(folders, 1)
+  } else if (identical(date, "all")) {
     res <- folders
   } else {
-    res <- date
-    if (!res %in% folders) {
-      msg <- sprintf("Folder '%s' does not exist, found: '%s'",
-                     date,
-                     paste0(folders, collapse = "', '"))
-      stop(msg)
+    if (!date %in% folders) {
+      stop(sprintf("Folder '%s' does not exist, found: '%s'",
+                   date, paste0(folders, collapse = "', '")))
     }
+    res <- date
   }
+
   res
 }
 
@@ -526,40 +520,37 @@ read_civic_by_source <- function(country) {
 #' @aliases read_raw_counts update_story_counts update_source_entries read_source_entries
 aggregate_and_merge <- function(country, quiet = TRUE) {
   df <- read_civic_by_source(country)
-  # Process Civic variables:
   df$source <- NULL
   df <- df |>
     dplyr::group_by(country, date) |>
     dplyr::summarise_all(sum) |>
     dplyr::ungroup()
-    
-  # Re-order columns
-  new_cols <- c("country", "date",
-                civic, "cs_999",
-                paste0("ncr_", cr_vars),
-                "total_articles")
+
+  new_cols <- c("country","date", civic, "cs_999", paste0("ncr_", cr_vars), "total_articles")
   df <- df[, new_cols]
-  
-  # Check for missing values
+
   any_na <- !all(complete.cases(df))
-  if (any_na) {
-    warning(sprintf("Merged data for '%s' has missing values.", country))
-  }
-  if (any_na & !quiet) {
-    cat(sprintf("Merged data for '%s' has missing values\n", country))
-  }
-  
-  # Call country_last_month() from constants.R that lists the last month of good data for each country
+  if (any_na) warning(sprintf("Merged data for '%s' has missing values.", country))
+  if (any_na & !quiet) cat(sprintf("Merged data for '%s' has missing values\n", country))
+
   df <- df %>% dplyr::filter(date <= country_last_month(!!country))
-  
-  # Add normalized variables to the master dataframe
-  df[, paste0(civic , "Norm")] <- as.data.frame(lapply(df[,civic], function(x) x/df[, "total_articles"]))
-  df[, paste0( paste0("ncr_", cr_vars) , "Norm")] <- as.data.frame(lapply(df[, paste0("ncr_", cr_vars) ], function(x) x/df[, "total_articles"]))
-  
-  out_path <- here("data", "1-civic-aggregate", sprintf("%s.csv", country))
+
+  safe_div <- function(num, den) ifelse(is.na(den) | den == 0, 0, num / den)
+  df[paste0(civic, "Norm")] <-
+    as.data.frame(lapply(df[civic], function(x) safe_div(x, df$total_articles)))
+  df[paste0(paste0("ncr_", cr_vars), "Norm")] <-
+    as.data.frame(lapply(df[paste0("ncr_", cr_vars)], function(x) safe_div(x, df$total_articles)))
+
+  if (any(is.na(df$total_articles)) || any(df$total_articles == 0, na.rm = TRUE)) {
+    message(sprintf("Info: %d rows had total_articles==0/NA; normalized values set to 0.",
+                    sum(is.na(df$total_articles) | df$total_articles == 0, na.rm = TRUE)))
+  }
+
+  dir.create(here("data","1-civic-aggregate"), recursive = TRUE, showWarnings = FALSE)
+  out_path <- here("data","1-civic-aggregate", sprintf("%s.csv", country))
   readr::write_csv(df, out_path)
-  
-  invisible(df)
+
+  invisible(df)   
 }
 
 #' @describeIn aggregate_and_merge Creates the source entries matrix showing temporal coverage patterns.
@@ -977,8 +968,12 @@ aggregate_and_merge_rai <- function(country, quiet = TRUE) {
   df <- df %>% dplyr::filter(date <= country_last_month(!!country))
   
   # Add normalized variables to the master dataframe
-  df[, paste0(rai , "Norm")]   <- as.data.frame(lapply(df[,rai], function(x) x/df[, "total_articles"]))
-  
+  # df[, paste0(rai , "Norm")]   <- as.data.frame(lapply(df[,rai], function(x) x/df[, "total_articles"]))
+  safe_div <- function(num, den) ifelse(is.na(den) | den == 0, 0, num / den)
+
+  df[ paste0(rai, "Norm") ] <-
+    as.data.frame(lapply(df[ rai ], function(x) safe_div(x, df$total_articles)))
+    
   # Add RAI theme calculations based on data/rai_vars.csv
   rai_vars <- readr::read_csv(here("data", "rai_vars.csv"), show_col_types = FALSE)
   
