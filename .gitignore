@@ -26,3 +26,6 @@ build/
 data/2-civic-shock/
 data/2-rai-shock/
 
+.DS_Store
+data/.DS_Store
+
