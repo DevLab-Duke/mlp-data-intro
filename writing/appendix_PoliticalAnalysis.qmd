@@ -1,0 +1,611 @@
+---
+title: "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models "
+subtitle: "Supplemental Materials"
+
+format: 
+  pdf:
+    geometry:
+      - margin=1in
+    colorlinks: true
+    toc: true
+
+header-includes:
+  - \usepackage{multirow}
+  - \usepackage{hyperref}
+  - \usepackage[capitalise,noabbrev]{cleveref}
+  - \usepackage{float}
+  - \floatplacement{table}{!ht}
+---
+
+{{< pagebreak >}}
+
+```{r}
+#| label: load-packages
+#| include: false
+#| echo: false
+#| warning: false
+
+library(tidyverse)
+library(gt)
+library(kableExtra)
+library(ggplot2)
+library(here)
+library(tidyr)
+library(ISOcodes)
+source(here("build_data", "constants.R"))
+
+civic = readr::read_csv(here::here("data", "final-counts", "full-civic-data.csv"))
+
+num_countries = length(unique(civic$country))
+
+sum_lengths <- 0
+for (i in unique(civic$country)) {
+  lsources_len = local_source_select(i)$lsources
+  sum_lengths <- sum_lengths + length(lsources_len)
+}
+
+lan = read_csv(here::here("writing","languages", "Scraping Process List bbcfde3f5f5b4a80a3a0375e5c07f939.csv")) %>%
+  filter(! Name %in% c("Roya’s project")) %>%
+  filter(!is.na(Language)) %>%
+  mutate(Name = gsub(".*: ", "", Name))
+
+# Remove parentheses and all characters between them
+lan$Language <- gsub("\\(.*?\\)", "", lan$Language)
+
+# Trim any leading or trailing spaces left after removing the parentheses
+lan$Language <- trimws(lan$Language)
+
+# Calculate number of languages
+langs = unique(unlist(strsplit(lan$Language, ", ")))
+
+nl = length(langs)
+
+```
+
+# Appendix A: Data in HQMARC
+
+The High-Quality Media from Aid Receiving Countries (*HQMARC*) corpus contains articles scraped from `r sum_lengths` prominent domestic media outlets based across our sample of `r num_countries` countries and publishing in `r nl` languages. We supplement these domestic outlets with content scraped from `r length(rsources)` regional and `r length(isources)` international outlets. In sharp contrast to other sources of event data, more than 95% of the articles in *HQMARC* are scraped from domestic media outlets.
+
+Using a customized harvesting workflow for each source domain, we achieve comprehensive or near-comprehensive capture of all relevant articles published by each source from 2012 through 2024 (or the earliest/latest publication date). Most large media data corpora run a blind, domain-wide crawler that follows every hyperlink it can find. Instead, we build a small, customized harvesting workflow for each source domain. The first step is URL discovery: we look for a structured entry-point, usually a public sitemap. If the sitemap is incomplete or missing, we switch to site-specific search strategies (pagination through section indexes, keyword queries, RSS feeds, etc.). Only when those programmatic methods fail do we fall back on heavier tools such as Selenium, and even then the goal is to retrieve clean article links, not to crawl arbitrary pages. Once a domain’s URL list is assembled, we scrape those URLs directly. The scraper for each source knows exactly where the title, date, main text and other structured elements live in that site’s HTML, so the resulting data land in a uniform, column-ready format. If a field doesn’t parse correctly on the first pass (e.g., a date embedded in a non-standard tag, the parser not able to extract the correct text), we apply a post-scrape fixer for that column; we do not launch another crawl. Because the URLs are pre-vetted and the parsers are domain-specific, the pipeline yields cleaner, more consistent articles than a generic crawler would. 
+
+
+## Section 1: Domestic and Regional Sources in HQMARC
+
+We divide our countries into five geographic regions. Each region has dedicated regional sources that cover all countries within that geographic region. @fig-source-distribution shows the number of domestic and regional sources for each country. @fig-source-active shows the number of *active* domestic sources for each country-month. Not all sources yield data for every month in our sample. Some sources only start publishing articles after the beginning of our coverage period in January 2012 or cease publishing before the end of our coverage period in December 2024. Other sources hhave incomplete archives or deploy blocking, which restricts our ability to capture articles at the beginning or end of the time series, respectively. We provide data on the months for which articles are actively scraped from each source in the [Source Coverage](https://github.com/DevLab-Duke/mlp-data-intro/tree/main?tab=readme-ov-file#source-coverage) section in our github repository.
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-source-distribution
+#| fig-cap: "Number of domestic and regional media outlets in the HQMARC corpus by country"
+#| fig-height: 6.5
+#| fig-pos: "H"
+
+# Initialize an empty dataframe to store the results
+result_df <- data.frame(country = character(), lsources_len = integer(), rsources_len = integer(), total_sources = integer(), region = character(), stringsAsFactors = FALSE)
+
+sum_lengths <- 0
+for (i in unique(civic$country)) {
+  lsources_len = local_source_select(i)$lsources
+  local_len = length(lsources_len)
+  
+  # Find region for this country
+  country_region <- NA
+  for (region in names(country_regions)) {
+    if (i %in% country_regions[[region]]) {
+      country_region <- region
+      break
+    }
+  }
+  
+  # Get regional sources for this country's region
+  rsources_len = region_sources(i)
+  regional_len = length(rsources_len)
+  total_len = local_len + regional_len
+  
+  # Append the country and the lengths to the dataframe
+  result_df <- rbind(result_df, data.frame(country = i, lsources_len = local_len, rsources_len = regional_len, total_sources = total_len, region = country_region))
+  
+  # Update sum_lengths
+  sum_lengths <- sum_lengths + total_len
+}
+
+# Reshape data for stacked bar chart
+result_df_long <- result_df %>%
+  mutate(region = case_when(
+    region == "EE_CA" ~ "Eastern Europe\n& Central Asia",
+    region == "MENA" ~ "Middle East\n& North Africa", 
+    region == "LAC" ~ "Latin America\n & Caribbean",
+    region == "EA" ~ "East Asia",
+    region == "SSA" ~ "Sub-Saharan\n Africa",
+    TRUE ~ region
+  )) %>%
+  pivot_longer(cols = c(lsources_len, rsources_len), 
+               names_to = "source_type", 
+               values_to = "count") %>%
+  mutate(source_type = case_when(
+    source_type == "lsources_len" ~ "Local",
+    source_type == "rsources_len" ~ "Regional"
+  ))
+
+# Create a stacked horizontal bar plot grouped by region
+a = ggplot(result_df_long, aes(x = count, y = reorder(country, total_sources), fill = source_type)) +
+  geom_bar(stat = "identity") +
+  facet_grid(region ~ ., scales = "free_y", space = "free_y") +
+  labs(title = NULL, 
+       x = NULL, 
+       y = NULL,
+       fill = "Source Type") +
+  theme_bw() +
+  scale_fill_manual(values = c("Local" = "darkblue", "Regional" = "lightblue")) +
+  scale_x_continuous(breaks = 0:max(result_df$total_sources)) +
+  theme(axis.text.y = element_text(size = 6),
+        title = element_text(size = 10),
+        strip.text = element_text(size = 8),
+        strip.text.y = element_text(angle = 0),
+        legend.position = c(0.85, 0.08))
+
+a
+
+# Save the plot
+ggsave(here("writing", "sources_by_region.png"), plot = a, 
+       width = 8, height = 10, dpi = 300)
+
+```
+
+
+ 
+```{r}
+#| echo: false
+#| warning: false
+#| label: fig-source-active
+#| fig-cap: "Number of Active Domestic Sources by Country-Month"
+#| fig-height: 7
+#| fig-width: 8
+#| fig-pos: "H"
+
+# Load the source entries data
+source_entries <- readRDS(here("data", "1-source_entries.rds"))
+
+# Transform data for heatmap
+# The data has columns: date, and then one column for each source
+# We need to transform this to have country information
+
+# First, let's understand which sources belong to which countries
+# We'll need to map sources to countries using the constants.R functions
+
+# Create a mapping of sources to countries
+source_to_country <- data.frame(
+  source = character(),
+  country = character(),
+  stringsAsFactors = FALSE
+)
+
+# Load civic data to get list of countries
+civic_files <- list.files(here("data", "0-civic-by-source"), pattern = "\\.csv$", full.names = TRUE)
+countries <- basename(civic_files) %>% str_remove("\\.csv$")
+
+# For each country, get its local sources and add to mapping
+for (country in countries) {
+  tryCatch({
+    local_sources <- local_source_select(country)$lsources
+    if (length(local_sources) > 0) {
+      # Remove .csv extension if present
+      local_sources <- str_remove(local_sources, "\\.csv$")
+      
+      # Create mapping entries
+      country_mapping <- data.frame(
+        source = local_sources,
+        country = country,
+        stringsAsFactors = FALSE
+      )
+      source_to_country <- rbind(source_to_country, country_mapping)
+    }
+  }, error = function(e) {
+    cat("Error processing country:", country, "\n")
+    cat("Error message:", e$message, "\n")
+  })
+}
+
+# Transform the source_entries data
+# Convert from wide to long format, then aggregate by country
+source_entries_long <- source_entries %>%
+  pivot_longer(cols = -date, names_to = "source", values_to = "active") %>%
+  left_join(source_to_country, by = "source") %>%
+  filter(!is.na(country)) %>%  # Remove sources not mapped to any country
+  group_by(country, date) %>%
+  summarise(
+    active_sources = sum(active, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+# Add region information for each country
+country_regions <- list(
+  "EE_CA" = c("Albania", "Armenia", "Azerbaijan", "Belarus", "Georgia", "Hungary", 
+              "Kazakhstan", "Kosovo", "Kyrgyzstan", "Macedonia", "Moldova", "Serbia", 
+              "Turkey", "Ukraine", "Uzbekistan"),
+  "MENA" = c("Algeria", "Morocco", "Tunisia"),
+  "LAC" = c("Colombia", "Costa Rica", "Dominican Republic", "Ecuador", "El Salvador", 
+            "Guatemala", "Honduras", "Jamaica", "Nicaragua", "Panama", "Paraguay", "Peru"),
+  "EA" = c("Bangladesh", "Cambodia", "India", "Indonesia", "Malaysia", "Nepal", 
+           "Pakistan", "Philippines", "Solomon Islands", "Sri Lanka", "Timor Leste"),
+  "SSA" = c("Angola", "Benin", "Burkina Faso", "Cameroon", "DR Congo", "Ethiopia", 
+            "Ghana", "Kenya", "Liberia", "Malawi", "Mali", "Mauritania", "Mozambique", 
+            "Namibia", "Niger", "Nigeria", "Rwanda", "Senegal", "South Africa", 
+            "South Sudan", "Tanzania", "Uganda", "Zambia", "Zimbabwe")
+)
+
+# Add region information to the data
+source_entries_long <- source_entries_long %>%
+  mutate(region = case_when(
+    country %in% country_regions$EE_CA ~ "Eastern Europe\n& Central Asia",
+    country %in% country_regions$MENA ~ "Middle East\n& North Africa",
+    country %in% country_regions$LAC ~ "Latin America\n& Caribbean",
+    country %in% country_regions$EA ~ "East Asia",
+    country %in% country_regions$SSA ~ "Sub-Saharan\nAfrica",
+    TRUE ~ "Other"
+  ))
+
+# Format dates for better display
+source_entries_long <- source_entries_long %>%
+  mutate(
+    date = as.Date(date),
+    year_month = format(date, "%Y-%m"),
+    year = year(date),
+    month = month(date)
+  )
+
+# Create the heatmap
+p <- ggplot(source_entries_long, aes(x = date, y = reorder(country, active_sources, FUN = max), 
+                                    fill = active_sources)) +
+  geom_tile() +
+  facet_grid(region ~ ., scales = "free_y", space = "free_y") +
+  scale_fill_gradient(name = "Active\nSources", low = "white", high = "darkblue", 
+                      breaks = function(x) pretty(x, n = 5), 
+                      labels = function(x) as.integer(x)) +
+  labs(
+    title = NULL,
+    x = NULL,
+    y = NULL
+  ) +
+  theme_bw() +
+  theme(
+    axis.text.y = element_text(size = 8),
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 8),
+    strip.text.y = element_text(angle = 0, size = 9),
+    strip.background = element_rect(fill = "grey90"),
+    plot.title = element_text(hjust = 0.5, size = 14),
+    legend.position = "bottom",
+    panel.grid = element_blank()
+  ) +
+  scale_x_date(date_breaks = "1 year", date_labels = "%Y", 
+               limits = c(as.Date("2012-01-01"), as.Date("2024-12-01")),
+               expand = c(0, 0))
+
+# Print the plot
+p
+
+# Save the plot
+ggsave(here("writing", "source_entry_heatmap.png"), plot = p, 
+       width = 8, height = 10, dpi = 300)
+
+
+```
+
+
+## Section 2: Languages in HQMARC
+
+
+The *HQMARC* corpus includes domestic media outlets publishing in `r nl` languages. These languages include `r unlist(gsub(";.*", "", ISO_639_2[ISO_639_2$Alpha_2 %in% langs, ]$Name))`. Below, we provide the languages associated with media outlets in each country using the language ISO codes.
+
+```{r}
+#| echo: false
+#| warning: false
+#| results: asis
+
+# Add region information to language data
+language_data <- lan %>%
+  select(Country = Name, Languages = Language) %>%
+  mutate(Region = NA,
+         Country = case_when(Country == "Congo" ~ "DR Congo",
+                     TRUE ~ Country))
+
+# Add region for each country
+for (region in names(country_regions)) {
+  language_data$Region[language_data$Country %in% country_regions[[region]]] <- region
+}
+
+# Define region names
+region_names <- list(
+  "EE_CA" = "Eastern Europe & Central Asia",
+  "MENA" = "Middle East & North Africa", 
+  "LAC" = "Latin America & Caribbean",
+  "EA" = "East Asia",
+  "SSA" = "Sub-Saharan Africa"
+)
+
+# Create separate tables for each region
+for (region_code in names(region_names)) {
+  region_data <- language_data %>%
+    filter(Region == region_code) %>%
+    arrange(Country) %>%
+    select(Country, Languages)
+  
+  if (nrow(region_data) > 0) {
+    region_table <- kable(region_data, 
+          format = "latex", 
+          linesep = "",
+          row.names = FALSE,
+          longtable = FALSE,
+          caption = paste( gsub("&", "\\\\&", region_names[[region_code]]))) %>%
+      kable_styling(bootstrap_options = c("striped", "hover", "condensed"),
+                    full_width = FALSE,
+                    font_size = 10,
+                    latex_options = c("hold_position"))
+    
+    print(region_table)
+    cat("\n\n")
+  }
+}
+
+```
+
+\clearpage
+
+## Section 3: Digital News Sources
+
+In this section, we list the individual sources included in *HQMARC*. First, we list our international sources and regional sources. Second, we list the sources associated with each country, organized by region.
+
+```{r, echo=FALSE, results='asis'}
+library(knitr)
+
+# International Sources as a formatted list
+cat("### International Sources\n\n")
+international_sources <- gsub("\\.csv$", "", isources)
+cat(paste("- ", international_sources, collapse = "\n"))
+cat("\n\n")
+
+# Regional Sources by region
+region_names <- list(
+  "EE_CA" = "Eastern Europe & Central Asia",
+  "MENA" = "Middle East & North Africa", 
+  "LAC" = "Latin America & Caribbean",
+  "EA" = "East Asia",
+  "SSA" = "Sub-Saharan Africa"
+)
+
+for (region_code in names(region_names)) {
+  regional_sources <- region_rsources[[region_code]]
+  if (length(regional_sources) > 0) {
+    cat("### ", region_names[[region_code]], " Regional Sources\n\n")
+    regional_sources_clean <- gsub("\\.csv$", "", regional_sources)
+    cat(paste("- ", regional_sources_clean, collapse = "\n"))
+    cat("\n\n")
+  }
+}
+
+# Local Sources by country and region
+for (region_code in names(region_names)) {
+  countries_in_region <- country_regions[[region_code]]
+  
+  cat("### ", region_names[[region_code]], " Local Sources\n\n")
+  
+  for (country in countries_in_region) {
+    tryCatch({
+      sources <- local_source_select(country)$lsources
+      if (length(sources) > 0) {
+        sources_clean <- gsub("\\.csv$", "", sources)
+        cat(country, ":\n\n")
+        cat(paste("  - ", sources_clean, collapse = "\n"))
+        cat("\n\n")
+      }
+    }, error = function(e) {
+      # Skip countries without local sources
+    })
+  }
+}
+```
+
+## Section 4: Assessing Outlet Independence
+
+To ensure data quality, *HQMARC* aims to capture news from the most trustworthy media outlets available for each country. During the construction of *HQMARC*, our team scraped each source every three months to capture new articles published since the last scrape. For countries ranked outside of the top 100 for media freedom by Reporters Without Borders, we consider their media environments restrictive. For all sources in countries with restrictive media environments, we investigate potential sources of bias for all our sources at a three-month frequency. These frequent bias checks are due to changes in coverage of sources and changes in ownership of sources over times.
+
+For countries with restrictive media environments, we aim to source at least half of the articles from sources that are coded politically independent. For countries where less than half of the articles are collected from independent sources, we encourage users to apply weighting. 
+
+Human coders follow detailed coding instructions to assess each outlet according to Ideology (5-point scale from Right to Left),  Independence from the regime or opposition (Pro-regime, Opposition, or Independent), and Ownership (Government owned or non-government owned). Coders begin by consulting a list of public resources and performing a subjective review of a sample of published articles. Coding instructions and source-level bias data are available on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
+
+# Appendix B: Civic Space Definitions and Keywords
+
+## Section 1: Event Definitions
+
+-   Activism
+
+    -   Any activity by individuals, community organizations, or NGOs that involve some amount of lobbying, raising awareness, or collective action beyond just the donation of money. Importantly, this does not include protests or activities related to election campaigns.
+    -   **Example:** “Retired soldiers make up subsidiary of Just Cause.A group of retired soldiers met yesterday morning in a restaurant in the city of San Miguel to learn about the work of the Association Causa Justa, in order to organize a branch in the eastern part of the country.Jaime García, vice president of Causa Justa, explained that this association has been working for a couple of years to defend the interests of retired soldiers, and since then they have organized a branch in San Ana and now they intend to have another group.”
+
+-   Arrests
+
+    -   An institution within the government-controlled security apparatus –i.e. the police, the military, or other– apprehends people or groups of people who are part of an opposition movement or party, a civil society organization, a media organization, or a protest.
+    -   **Example:** “The Police in Abia on Wednesday arrested 51 persons suspected to be members of the proscribed Indigenous People of Biafra, claiming they ‘operate as members of Judaism,’ in Umuahia."
+
+-   Censor
+
+    -   The government actively prevents free speech by individuals in the media, in public or online. This includes banning certain content from individual speech or news stories, dictating how certain concepts or people can be referred to in public speech, or directly dictating agenda setting for media organizations. This category also includes the government censoring internet websites, internet shutdowns, fines on independent media, limitations on foreign ownership of media outlets, and political actors gaining influence within media organizations. Magnitude is a scale (see below; try to determine the importance of the target with information given).
+    -   **Example:** “The Tanzanian government has suspended newspaper The Citizen for seven days after the publication ran a story on the falling value of the Tanzanian shilling.”
+
+-   Cooperation
+
+    -   Domestic political, social, or business actors collaborate on one or a range of issues or demonstrate an intent to do so. This does not include intragovernmental cooperation, except for local and federal cooperation. Cooperation indicates a willingness for domestic actors to work together to resolve important issues. Cooperation involving international actors is not a civic space event, but is an RAI event.
+    -   **Example:** “Opposition movement NJPE has pledged to work together with President Muhammad to reduce rampant poverty in the capital’s outskirts.”
+
+-   Corruption
+
+    -   The abuse of entrusted power for private gain. This includes street-level corruption (for instance, bribes to police), high-level corruption (in public contracting, for instance), and legal actions around corruptions.
+    -   **Example:** “Ex-President Sarkozy gets Jail Sentence for Corruption in France”
+
+-   Coup
+
+    -   Changes in government or persistence of government that are not in the rules of succession or transition. Coups, refusing to cede power, or a power grab after an unfair election are examples of this event type. Peaceful government transitions are nonviolent transfers of power or legitimate continuity of government elected by democratic means and accepted by a majority of political forces. Code peaceful change as ‘1’ in the direction column. Speech is the pledge to accept the result of an election (a threat of a coup falls under ‘political threat’).
+    -   **Example:** “Forces loyal to Turkey’s president quashed a coup attempt in a night of explosions, air battles and gunfire that left at least 161 people dead and 1,440 wounded, yesterday. President Recep Tayyip Erdogan vowed that those responsible “will pay a heavy price for their treason”.
+
+-   Defamation Case
+
+    -   Cases in which an individual or a group related to an opposition movement or party, current or former government officials, a civil society organization, a media organization, a business leader, a member of a minority group, or a protest are accused, usually by a government official, of: directly defaming/libeling/slandering the government or one or some of its members. Alternatively, these are: strategic lawsuits against civic actors to intimidate public participation. This category is a subset of the ‘Legal Action’ event type (see below).
+    -   **Example:** “A Phnom Penh court on Friday found veteran opposition chief Sam Rainsy guilty of defaming Prime Minister Hun Sen and ordered him to pay damages of \$1 million, the latest blow to an opposition crippled by legal cases this year.”
+
+-   Disaster
+
+    -   This category includes: (1) natural disasters such as earthquakes, hurricanes, floods, famines or food crises or any catastrophic event that results or may result in serious damage. loss of life, and/or political implications; (2) infrastructural accidents that can endanger the population –a dam or pipe bursting, the sinking of a ferry, etc.) The goal is to focus on the types of events that might reflect on government accountability and civic space, not minor events like traffic accidents. Note: this includes deaths or economic strife caused by disasters, including reports on deaths/infections caused by COVID-19.
+    -   **Example:** ROMBO district residents in Kilimanjaro region are in danger of facing food shortage if concerted efforts to control wildlife in consuming crops are not employed.
+
+-   Election Activity
+
+    -   Reporting on regular electoral activities including the introduction of candidacies, the conduct of campaigns, the announcement of results, and the formal transfer of power for public office. This includes situations where the incumbent party/candidate retains power. Normal election results are an example of this event type. Specifically, this includes peaceful government transitions that are nonviolent transfers of power or legitimate continuity of government but does not include coups, which are accounted for separately.
+    -   **Example:** “The President of the Executive Board of the Serbian Progressive Party, Darko Glisic, said that the SNS won a convincing victory with 60.2 percent of the votes, based on the processed 221 out of 231 polling stations where the voting for the parliamentary elections in Serbia was repeated.”
+
+-   Election Irregularities
+
+    -   The altering or attempted altering through legal or extra-legal manipulation of the conduct, rules or results of elections or electoral processes. This could include rescheduling/postponing/cancelling regularly-scheduled elections, calling irregular elections or constitutional referenda, hampering the work of independent election observers, eroding the autonomy/authority of the electoral commission, as well as any other institutional change that directly affects the electoral process. This additionally could include the cancellation of party lists and the boycott of elections by opposition, as well as calls for recounts or other forms of contesting elections. Finally, this includes vote-buying, intimidation, or vote-rigging. This does not include standard election proceedings.
+    -   **Example:** “Nigeria’s electoral authority has delayed presidential and national assembly elections by one week amidst protests from the two main opposition parties. The government alleged logistical problems with ballot delivery to justify the delay.”
+
+-   Legal Action
+
+    -   Legal action refers to the prosecution or investigation of criminal activity or disputes over government authority, as well as the trials, convictions or dismissals that result. This event is related to civic space if the targeted people are part of an opposition movement or party, current and former government officials, a civil society organization, an NGO, a media organization or member, a (legal or illegal) business leader, member of minority group, or a protest. This specifically does not include arrests, which are defined as its own event type. Defamation cases are a subset of ‘Legal Action’ (see above).
+    -   **Example:** “Kosovo President is Indicted for War Crimes for Role in War with Serbia.”
+
+-   Legal Change
+
+    -   Legal change refers to any changes or proposed changes in the laws of a nation in such a way as to affect civic space. This includes legal restrictions on speech, political groups, NGOs, and the changing of constitutions as well as changing of the powers of the government. This also includes some restrictions on assembly, but does not include curfews and other martial law declarations, which are specifically covered by other event categories.
+    -   **Example:** “Venezuela’s constituent assembly yesterday unanimously passed a law that mandates punishment including a prison sentence of up to 20 years for anyone who instigates hate or violence on the radio, television or via social media.”
+
+-   Cooperation
+
+    -   Domestic political, social, or business actors collaborate on one or a range of issues or demonstrate an intent to do so. This does not include intragovernmental cooperation, except for local and federal cooperation. Cooperation indicates a willingness for domestic actors to work together to resolve important issues. Cooperation involving international actors is not a civic space event, but is an RAI event.
+    -   **Example:**
+
+-   Lethal Violence
+
+    -   Any action of aggression by a government entity, organized group or individual that results in the death of one or more people, excluding crimes of passion.
+    -   **Example:** “The Kaduna state government, Friday evening, disclosed that 33 women and children were killed by rebels in Kajuru local government of Kaduna state, less than twenty-four hours to the conduct of the presidential and parliamentary elections.”
+
+-   Martial Law
+
+    -   The executive branch declares a state of emergency or suspends, temporarily or indefinitely, the ability of citizens to gather or protest against the order.
+    -   **Example:** “On Wednesday, President Duterte approved the extension of martial law in the country’s volatile south by a year due to continuing threats by Islamic State group-linked militants and communist insurgents.”
+
+-   Mobilize Security Forces
+
+    -   An event in which the government mobilizes police forces, military troops or government-affiliated militias.
+    -   **Example:** “More than 500 security personnel have being mobilised for Saturday’s governorship election in Sokoto State, says the state commissioner of police (CP), Alhaji Adisa Bolanta.”
+
+-   Non-Lethal Violence
+
+    -   Any action of aggression by a government entity, organized group or individual that physically harms one or more people or property but does NOT result in death, excluding crimes of passion.
+    -   **Example:** “At least four persons were injured at Oruk Anam Local Government Area of Akwa Ibom State on during yesterday’s national election. Reports claim that unknown assailants attempted to snatch ballot boxes while voting was still ongoing.”
+
+-   Protest
+
+    -   Planned or spontaneous public mobilization of a large group of people. Labor strikes, political rallies and riots are also included in this category. When protest events involve deaths, they are coded as lethal violence, but this does not apply for non-lethal violence incidents.
+    -   **Example:** “A reported two thousand people took to the streets yesterday in Nairobi to protest rising fuel prices, which have doubled since the beginning of the year.”
+
+-   Purge/Replace
+
+    -   Purge/replace refers to the removal, firing or resignation of individuals from a government position or the replacement of previously removed individuals, including when the removals/firings themselves are not directly mentioned in the article. This includes the resignation of the chief executive. This description applies to purging of targets such as the bureaucracy, courts, military, police, state-owned companies, or members of political parties, among others.
+    -   **Example:** “Poland’s government carried out a sweeping purge of the Supreme Court on Tuesday night, eroding the judiciary’s independence, escalating a confrontation with the European Union over the rule of law and further dividing this nation.”
+
+-   Raid
+
+    -   Individuals or organizations are assaulted or aggressively coerced. Their property may be encroached or damaged as a result. Examples include a raid on newspaper offices. Victims themselves suffer no physical harm. This category also includes the government shutting down opposition organizations, NGOs, etc.
+    -   **Example:** “A Vanguard newspaper office located on Bassey Duke Street was, yesterday afternoon, raided by hoodlums, who carted away large sums of money and destroyed computers and other equipment.”
+
+-   Threats
+
+    -   A statement of a clear and explicit intention to inflict pain, injury, damage, or other hostile action on an individual or organization. Our targets and actors of interest are part of an opposition movement, the media, a political party, government, or a civil society organization.
+    -   **Example 1:** “A top Kenyan newspaper published a fake death notice of a prominent opposition financier on Wednesday, a bizarre error that rights groups interpreted as another sign of an anti-democratic slide. The Daily Nation apologized by mid-morning for publishing the funeral announcement for businessman Jimi Wanjigi, whose picture, history and family details were used but whose name was slightly altered. The paper said the ad was published in error and it was working with police to uncover who placed it. After a week of arrests of opposition politicians and a crackdown on independent media, a prominent rights campaigner said the announcement amounted to a death threat to Wanjigi, who funded opposition leader Raila Odinga’s election campaign last year and whose house was raided by police in October.”
+    -   **Example 2:** “Nigeria’s main labor unions threatened a nationwide strike over recent increases in gas prices.”
+
+## Section 2 Keywords and Their Use
+
+This document lists the categories where keywords are currently being deployed as well as a brief explanation for their use.
+
+**Legal Action**
+
+-   Keyword lists
+    -   Keyword list one: case \| lawsuit \|sue \| suit \| trial \| court \| charge \| rule \| sentence \| judge
+    -   Keyword list two: defamation \| defame \|libel \| slander \| insult \| disparage \| lese majeste \| lese-majeste \| lese majesty \| reputation
+-   Purpose of Keywords
+    -   The purpose of these keywords is to move articles from legal action that are actually defamation case to the appropriate category. There is no longer a defamation case category, it is now entirely a subset of legal action. The first set of keywords filter out any instances where there are accusations of defamation/libel/slander that are not actual cases, but merely statements. The second set of keywords ensures that the cases are actually related to defamation, since we found that oftentimes, non-defamation cases where being assigned to this event category. The process is two-fold, requiring a key word from both lists.
+    -   If keyword from both lists are not present, the article is left as legal action
+
+**Censor**
+
+-   Keyword list: Freedom \| assembly \| association \| movement \| independent \| independence \| succession \| demonstrate \| demonstration \| repression \| repressive \| crackdown \| draconian \| intimidate \| censoring \| controversial \| censor \| muzzle \| restrictive \| restrict \| authoritarian \| non-governmental organizations \| NGOs \| media \| parties \| civil society \| opposition \| critics \| opponents \| human rights groups \| arbitrary \| stifling \| ban \| strict \| boycott \| protests \| dissent \| demonstrators \| journal.\* \| newspaper \| media \| outlet \| censor \| reporter \| broadcast.\* \| correspondent \| press \| magazine \| paper \| black out \| blacklist \| suppress \| speaking \| false news \| fake news \| radio \| commentator \| blogger \| opposition voice \| voice of the opposition \| speech \| broadcast \| publish \| limit.\* \| independ.\* \| repress.\* \| journalist \| newspaper \| reporter \| internet \| telecommunications \| magazine \| shut down \| broadcast \| radio
+-   Purpose of Keywords
+    -   The purpose of these keywords is to filter out instances where restrictions are applied that are not censorship. This was created primarily in response to closings of schools, businesses, and government offices in relation to COVID-19, which were frequently classified as censorship.
+    -   If one of the keywords is not present in the article, it is reclassified as -999
+
+**Legal Action/Purge/Arrest**
+
+-   Keyword list
+    -   embezzle \| embezzled \| embezzling \| embezzlement \| bribe \| bribes \| bribed \| bribing \| gift \| gifts \| gifted \| fraud \| fraudulent \| corrupt \| corruption \| procure \| procured \| procurement \| budget \| assets \| irregularities \| graft \| enrich \| enriched \| enrichment \| laundering \| fraudulent.
+-   Purpose of Keywords
+    -   The purpose of these keywords is to assign a second event category to those articles in arrest, purge, and legal action that also feature corruption. Articles in those categories that feature these words are double counted as both corruption and the original category.
+
+**Corruption**
+
+-   Keyword lists
+    -   For arrest: arrest; detain; apprehend; capture; custody; imprison; jail
+    -   For legal action: legal process; case*; investigate*; appeal; charged; prosecute\*; case; lawsuit; sue; suit; trial; court; charge; rule; sentence; judge
+    -   For purge: resign*; fire*; dismiss; sack; replace; quit.
+-   Purpose of Keywords
+    -   The purpose of these keywords is to assign a second event category to those articles in corruption that also feature arrests, legal action, and purges. Articles in those categories that feature these words are double counted as both corruption and the original category.
+
+# Appendix C: Descriptive Maps
+
+These temporal world maps provide a comprehensive overview of civic space coverage patterns across all 65 developing countries in the HQMARC corpus from 2012 to 2024. The maps reveal significant variation in both the intensity of civic space reporting and the types of events that dominate coverage across countries and over time. Geographic clustering is evident, with certain regions showing consistently higher civic space article rates and distinct event profiles that reflect regional political and social dynamics. The temporal dimension captures important shifts corresponding to major political events, democratic transitions, and periods of civic space restriction across the developing world.
+
+## Civic Space Coverage Intensity
+
+![Civic space articles as percentage of total coverage by country-year. Countries are colored according to the proportion of their total news coverage dedicated to civic space events, providing insight into the relative salience of civic space issues across different national contexts. Light gray areas indicate countries without data coverage. The maps show temporal evolution from 2012 through 2024, revealing significant variation in civic space reporting intensity both across countries and over time.](descriptive_maps/figures/civic_space_percentage_appendix.png){#fig-civic-space-percentage width="100%"}
+
+## Dominant Civic Events by Country
+
+![Most frequently reported civic event type per country-year. Countries are colored according to the civic event category with the highest reporting frequency in each year, showing the diversity of civic space concerns across different national contexts. The maps reveal regional patterns in dominant event types and temporal shifts in civic space priorities, from electoral activities to protests, corruption reporting, and other civic engagement forms.](descriptive_maps/figures/dominant_event_appendix.png){#fig-dominant-events width="100%"}
+
+# Appendix D: Validation Figures
+
+These validation figures demonstrate the effectiveness of ML4P's event detection methodology by examining State of Emergency declarations across different regions during the COVID-19 pandemic. The vertical dashed red line at March 2020 marks the onset of the global pandemic, when countries worldwide implemented emergency measures including lockdowns, curfews, and restrictions on civil liberties. These plots validate our approach by showing systematic spikes in State of Emergency reporting across all regions coinciding with known policy responses to the pandemic.
+
+## State of Emergency Detection by Region
+
+![State of Emergency events detection in East Asia and Pacific countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Clear spikes are visible across multiple countries starting in March 2020, corresponding to the implementation of emergency measures and lockdowns in response to the pandemic.](event_validation/State_of_Emergency_East_Asia_and_Pacific.png){#fig-soe-eap width="100%"}
+
+![State of Emergency events detection in Europe and Central Asia countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Pronounced spikes are evident across the region starting in March 2020, reflecting the widespread implementation of emergency measures in response to the pandemic.](event_validation/State_of_Emergency_Europe_and_Central_Asia.png){#fig-soe-eca width="100%"}
+
+![State of Emergency events detection in Latin America and Caribbean countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Significant increases in State of Emergency reporting are visible across the region starting in March 2020, corresponding to the implementation of pandemic-related emergency measures.](event_validation/State_of_Emergency_Latin_America_and_Caribbean.png){#fig-soe-lac width="100%"}
+
+![State of Emergency events detection in Middle East and North Africa countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Clear spikes in State of Emergency reporting are visible across countries in the region starting in March 2020, reflecting the implementation of emergency measures in response to the pandemic.](event_validation/State_of_Emergency_Middle_East_and_North_Africa.png){#fig-soe-mena width="100%"}
+
+![State of Emergency events detection in Sub-Saharan Africa countries from 2019-2020. The plot shows the percentage of articles devoted to State of Emergency coverage over time, with red points indicating detected shock events. The vertical dashed red line marks March 2020, the beginning of the COVID-19 pandemic. Systematic increases in State of Emergency reporting are evident across multiple countries starting in March 2020, corresponding to the implementation of pandemic-related emergency measures and lockdowns.](event_validation/State_of_Emergency_Sub-Saharan_Africa.png){#fig-soe-ssa width="100%"}
+# Appendix E: Detection of Civic Space Shocks
+
+Our approach begins with winsorization of the monthlly normalized event counts. This  curbs the influence of extreme outliers by replacing values beyond a specified percentile threshold with the nearest boundary value. Next, we apply a 25-month rolling window to smooth the normalized event counts and perform a grid search to tune various parameters. These include the multipliers for weighted means and weighted standard deviations, as well as the binning weights and decay functions that govern how observations in the window are weighted. To capture shocks accurately, we employ two distinct weighting schemes for the historical (left-hand side, LHS) and future (right-hand side, RHS) segments of the rolling window. For the LHS window, we use a non-linear decay weighting that places progressively less emphasis on more distant historical months, enabling the detection of rapid changes in recent data. For the RHS window, we apply binning weights that decay linearly over time, preventing overestimation of peaks when the underlying data structure shifts. Combining winsorization with context-sensitive decay and binning weights enables monthly detection of significant increases in each civic space event type.
+
+Next, we trained a neural network model to detect spikes in a human-labeled dataset covering the full time-series for 30 country-event pairs. We conducted human-labeling by asking humans to identify months with visually distinct, sharp increases in our event measures. Human labelers were instructed to identify no more than 15% of overall months as shocks, ensuring that peaks are not overly frequent in highly variable data while still capturing meaningful shifts in lower-variance event types. When either the statistical or neural network model detect a shock, we label that month as a shock in the data.
+
+# Appendix F: Event Validation
+
+For each of the 40 country-event-month combinations, we retrieve all relevant articles published by domestic outlets in the *HQMARC* corpus to determine whether these shocks are true or false positives. Because some of these 40 country-event-months with shocks contained hundreds of articles,[^7] we used GPT-4o[^8] to generate brief summaries of the five most important events reported on in the sample of articles. A research assistant then reviewed both (a) the original articles (or a random subset of 50, if more than 50 were available) and (b) the GPT-4o summaries. They evaluated each of the top five summarized events on four dimensions:
+
+[^7]: Across detected events, the number of relevant domestic articles ranged from 1 to 1,002. For rare event categories (e.g., *Defamation Case*), a single article can define an event.
+
+[^8]: The full GPT-4o prompts, GPT-4o generated summaries, human-coding instructions, and validation results can be found in the `shock-validation` subfolder of the Git repository. We accessed GPT-4o through the OpenAI API.
+
+-   How many summarized events are accurately described by GPT-4o (i.e., factually correct)?
+-   How many summarized events are indeed the most important events, according to the underlying articles?
+-   How many occurred in the assigned country?
+-   How many match the assigned event category?
+
+
+
