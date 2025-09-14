@@ -415,6 +415,12 @@ For countries with restrictive media environments, we aim to source at least hal
 
 Human coders follow detailed coding instructions to assess each outlet according to Ideology (5-point scale from Right to Left),  Independence from the regime or opposition (Pro-regime, Opposition, or Independent), and Ownership (Government owned or non-government owned). Coders begin by consulting a list of public resources and performing a subjective review of a sample of published articles. Coding instructions and source-level bias data are available on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
 
+## Section 5: BANGLADESH
+
+
+
+
+
 # Appendix B: Civic Space Definitions, Keywords, and Classifier Performance
 
 ## Section 1: Event Definitions
