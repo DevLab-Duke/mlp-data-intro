@@ -417,6 +417,11 @@ Human coders follow detailed coding instructions to assess each outlet according
 
 ## Section 5: BANGLADESH
 
+To demonstrate the importance of our custom workflow, we present a case study comparing *HQMARC's* coverage with that of several "big data" media corpora, demonstrating that *HQMARC* captures a significantly more articles from high-quality domestic outlets. We then demonstrate the pitfalls of relying on automated parsing tools without human oversight.
+
+We compare *HQMARC's* coverage of three prominent Bangladeshi news outlets to that of GDELT and Internet Archive. We focus on for Bangladesh three reasons. First, Bangladeshi outlets publish a high volume of articles relative to other countries, making them more likely to attract automated crawlers. Second, the website architecture for each outlet is straightforward, maximizing the likelihood that crawlers and automated parsers will accurately retrieve articles. Third, many Bangladeshi sources publish primarily in English, reducing the additional hurdles of multilingual parsing. As a result, we regard these outlets as a "best-case scenario" for large-scale media repositories.
+
+Despite favorable conditions, we find notable differences between *HQMARC* and the aggregators. *HQMARC's* coverage begins in 2013 for one source and in 2015 for the other two. However, GDELT does not have any articles published before 2019 for any of the three sources. Even after 2019, GDELT captures many fewer articles than *HQMARC*. For the source with the smallest disparity between *HQMARC* and GDELT, GDELT retrieves an average of 2,100 articles per month, compared to 2,500 in *HQMARC*. GDELT also includes numerous broken links, redirects, duplicate articles, etc. that *HQMARC's* human review removed. In addition, GDELT's five-second delay per query makes it extremely time-consuming to scrape a full historical archive of this size. Across these three sources, Internet Archive achieved coverage similar to that of *HQMARC*, but more than half of these urls were broken and no longer pointed to the a webpage that contained the article text. Furthermore, collecting URLs from Internet Archive for 2019--2023 required roughly two weeks from a single source and returned many irrelevant and duplicate links not contained in *HQMARC*.
 
 
 
