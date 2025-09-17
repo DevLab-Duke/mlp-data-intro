@@ -415,7 +415,7 @@ For countries with restrictive media environments, we aim to source at least hal
 
 Human coders follow detailed coding instructions to assess each outlet according to Ideology (5-point scale from Right to Left),  Independence from the regime or opposition (Pro-regime, Opposition, or Independent), and Ownership (Government owned or non-government owned). Coders begin by consulting a list of public resources and performing a subjective review of a sample of published articles. Coding instructions and source-level bias data are available on our github at [mlp-data-intro/source_metadata/](https://github.com/DevLab-Duke/mlp-data-intro/tree/main/source_metadata).
 
-## Section 5: BANGLADESH
+## Section 5: Assessing and Comparing Coverage
 
 To demonstrate the importance of our custom workflow, we present a case study comparing *HQMARC's* coverage with that of several "big data" media corpora, demonstrating that *HQMARC* captures a significantly more articles from high-quality domestic outlets. We then demonstrate the pitfalls of relying on automated parsing tools without human oversight.
 
