@@ -445,10 +445,6 @@ Despite favorable conditions, we find notable differences between *HQMARC* and t
     -   The government actively prevents free speech by individuals in the media, in public or online. This includes banning certain content from individual speech or news stories, dictating how certain concepts or people can be referred to in public speech, or directly dictating agenda setting for media organizations. This category also includes the government censoring internet websites, internet shutdowns, fines on independent media, limitations on foreign ownership of media outlets, and political actors gaining influence within media organizations. Magnitude is a scale (see below; try to determine the importance of the target with information given).
     -   **Example:** “The Tanzanian government has suspended newspaper The Citizen for seven days after the publication ran a story on the falling value of the Tanzanian shilling.”
 
--   Cooperation
-
-    -   Domestic political, social, or business actors collaborate on one or a range of issues or demonstrate an intent to do so. This does not include intragovernmental cooperation, except for local and federal cooperation. Cooperation indicates a willingness for domestic actors to work together to resolve important issues. Cooperation involving international actors is not a civic space event, but is an RAI event.
-    -   **Example:** “Opposition movement NJPE has pledged to work together with President Muhammad to reduce rampant poverty in the capital’s outskirts.”
 
 -   Corruption
 
@@ -585,7 +581,6 @@ This document lists the categories where keywords are currently being deployed a
 | **Election irregularities** | 0.72      | 0.68   | 0.70 |
 | **Activism**                | 0.95      | 0.83   | 0.88 |
 | **State of Emergency**      | 0.92      | 0.90   | 0.91 |
-| **Cooperate**               | 0.50      | 0.67   | 0.57 |
 | **Coup**                    | 0.68      | 0.83   | 0.75 |
 | **Non-lethal violence**     | 0.79      | 0.81   | 0.80 |
 | **Lethal violence**         | 0.90      | 0.82   | 0.86 |
