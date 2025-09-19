@@ -1,67 +1,53 @@
 ---
 title: "Tracking Civic Space in Developing Countries with a High-Quality Corpus of Domestic Media and Transformer Models"
-abstract: "Civic space---the fundamental freedoms necessary for citizens to influence politics---is under constant contestation. Despite the importance of day-to-day contestation over these rights, there is very little data allowing us to study the events and processes that constitute this struggle. We introduce new data that captures civic space activity across 65 developing countries from 2012 to 2024. Using an original corpus of over 120 million articles from nearly 350 high-quality domestic media outlets and 30 international and regional outlets, we use human-supervised web scraping and open-source computational tools to track monthly variation in media attention across 20 civic space events. Our approach yields three achievements: first, our corpus provides unprecedented coverage of reporting by developing country media outlets, addressing biases in other media event data; second, the resulting monthly event data set covers a wide range of new civic space activities; and third, we demonstrate the utility of this data for identifying and forecasting major political events and discuss applications for research on regime dynamics during a time of democratic backsliding."
+abstract: "Civic space---the fundamental freedoms necessary for citizens to influence politics---is under constant contestation. Despite the importance of day-to-day contestation over these rights, there is very little data allowing us to study the events and processes that constitute this struggle. We introduce new data that captures civic space activity across 66 developing countries from 2012 to 2024. Using an original corpus of over 120 million articles from nearly 350 high-quality domestic media outlets and 30 international and regional outlets, we use human-supervised web scraping and open-source computational tools to track monthly variation in media attention across 20 civic space events. Our approach yields three achievements: first, our corpus provides unprecedented coverage of reporting by developing country media outlets, addressing biases in other media event data; second, the resulting monthly event data set covers a wide range of new civic space activities; and third, we demonstrate the utility of this data for identifying and forecasting major political events and discuss applications for research on regime dynamics during a time of democratic backsliding."
 
-thanks: This study was funded by the United States Agency for International Development (USAID) Bureau for Democracy, Human Rights, and Governance and the Open Society Foundations. We would like to thank many partners in the NGO and policy world who have helped in the development of this work, including Laura McKechnie, Dan Spealman, Asta Zinbo, Daniel Sabet, Erin McCarthy, and David Jacobstein. We also thank several researchers who were instrumental in the origins of this project, including Scott de Marchi and Spencer Dorsey, and a number of others who made critical contributions along the way, including Rethis Togbedji Gansey, Andreas Beger, Tim McDade, Akanksha Bhattacharyya, and Joan Timoneda.
+thanks: This paper is the result of a collaborative effort, and authors appear in alphabetical order. Donald A. Moratz took the lead in drafting the manuscript, Jeremy Springman in conducting the analysis, Erik Wibbels in guiding the project as PI, and all other authors contributed to the development and writing of the paper. This study was funded by the United States Agency for International Development (USAID) Bureau for Democracy, Human Rights, and Governance and the Open Society Foundations. We would like to thank many partners in the NGO and policy world who have helped in the development of this work, including Laura McKechnie, Dan Spealman, Asta Zinbo, Daniel Sabet, Erin McCarthy, and David Jacobstein. We also thank several researchers who were instrumental in the origins of this project, including Scott de Marchi and Spencer Dorsey, and a number of others who made critical contributions along the way, including Rethis Togbedji Gansey, Andreas Beger, Tim McDade, Akanksha Bhattacharyya, and Joan Timoneda.
 
-date: today 
-date-format: long
+
+#date: today 
+#date-format: long
 
 authors:
-  - name: Donald A. Moratz
-    affiliations:
-      - ref: upenn1
-      - ref: upenn2
-    corresponding: false
-    email: dmoratz@sas.upenn.edu
-    equal-contributor: true
-  - name: Jeremy Springman
-    affiliations:
-      - ref: upenn1
-      - ref: upenn2
-    corresponding: false
-    email: jspr@sas.upenn.edu
-    equal-contributor: true
-  - name: Erik Wibbels
-    affiliations:
-      - ref: upenn1
-      - ref: upenn2
-    corresponding: false
-    email: ewibbels@sas.upenn.edu
-    equal-contributor: true
   - name: Serkant Adiguzel
     affiliations:
       - ref: su
     corresponding: false
     email: serkant.adiguzel@sabanciuniv.edu
     equal-contributor: false
-  - name: Mateo Villamizar-Chaparro
-    affiliations:
-      - ref: ucu
-    corresponding: false
-    email: santiago.villamizar@ucu.edu.uy
-    equal-contributor: false
   - name: Zung-Ru Lin
     affiliations:
-      - ref: upenn1
+      - ref: upenn
     corresponding: false
     email: zungru@sas.upenn.edu
+    equal-contributor: false
+  - name: Donald A. Moratz
+    affiliations:
+      - ref: upenn
+    corresponding: false
+    email: dmoratz@sas.upenn.edu
     equal-contributor: false
   - name: Diego Romero
     affiliations:
       - ref: uta
     corresponding: false
     email: diego.romero@austin.utexas.edu
-    equal-contributor: false
+    equal-contributor: false    
   - name: Mahda Soltani
     affiliations:
       - ref: stu
     corresponding: false
     email: msoltani@sas.upenn.edu
     equal-contributor: false
+  - name: Jeremy Springman
+    affiliations:
+      - ref: upenn
+    corresponding: false
+    email: jspr@sas.upenn.edu
+    equal-contributor: false    
   - name: Hanling Su
     affiliations:
-      - ref: upenn1
+      - ref: upenn
     corresponding: false
     email: hanlings@sas.upenn.edu
     equal-contributor: false
@@ -70,24 +56,32 @@ authors:
       - ref: tu
     corresponding: false
     email: jswami@sas.upenn.edu
+    equal-contributor: false    
+  - name: Mateo Villamizar-Chaparro
+    affiliations:
+      - ref: ucu
+    corresponding: false
+    email: santiago.villamizar@ucu.edu.uy
     equal-contributor: false
-
+  - name: Erik Wibbels
+    affiliations:
+      - ref: upenn
+    corresponding: false
+    email: ewibbels@sas.upenn.edu
+    equal-contributor: false
 affiliations:
-  - id: upenn1
-    name: PDRI-DevLab, University of Pennsylvania
-  - id: upenn2
-    name: Department of Political Science, University of Pennsylvania
   - id: su
     name: Sabanci University, Turkiye
-  - id: ucu
-    name: Universidad Católica del Uruguay, Uruguay
+  - id: upenn
+    name: University of Pennsylvania
   - id: uta
     name: Univerity of Texas at Austin
   - id: stu
-    name: Stanford University
+    name: Stanford University 
   - id: tu
-    name: Temple University
-
+    name: Temple University   
+  - id: ucu
+    name: Universidad Católica del Uruguay, Uruguay
 filters:
   - authors-block
 
@@ -98,6 +92,11 @@ format:
     geometry:
       - margin=1in
     colorlinks: true
+    include-in-header:
+      text: |
+        \usepackage{etoolbox}
+        % Reduce vertical space just before the abstract
+        \AtBeginEnvironment{abstract}{\vspace{-0.75\baselineskip}}
 
 header-includes:
   - \usepackage{multirow}
@@ -171,7 +170,11 @@ This article introduces the Machine Learning for Peace (*ML4P*) dataset, which p
 
 *HQMARC* employs a human-supervised, source-specific scraping methodology that prioritizes data quality and comprehensiveness over the broad but shallow coverage typical of automated web crawlers. This process proves particularly valuable for domestic news sources, whose websites are less stable than international outlets. Our efforts yield significant advantages over both "big data" media repositories like GDELT, Internet Archive, and Common Crawl and expensive commercial databases like Factive and LexisNexis, delivering a stable corpus composition with superior linguistic diversity and coverage of high-quality developing-country sources. Of course, *HQMARC's* size and linguistic diversity makes human classification prohibitively expensive. To produce *ML4P's* structured data on civic space events, we apply open-source computational tools to translate and extract information from each article, identifying the main event being reported on and the country in which the event occurs.
 
+<<<<<<< Updated upstream
 This paper proceeds as follows. Section 2 discusses how *ML4P* complements existing regime data and opens new research avenues. Section 3 details our data production process and methodological advantages, highlighting *HQMARC’s* superior coverage compared to other major media repositories. Section 4 introduces the *ML4P* data and presents validation exercises confirming its quality and underscoring the importance of relying on domestic rather than international media. The final sections address *ML4P’s* limitations and explain why, despite them, it remains a valuable resource for studying democratic backsliding, contentious politics, and media behavior.
+=======
+This paper proceeds as follows. Section 2 discusses how *ML4P* complements existing regime data and opens new research avenues. Section 3 details our data production process and methodological advantages, highlighting *HQMARC’s* superior coverage compared to other major media repositories. Section 4 introduces the *ML4P* data and presents validation exercises confirming its quality and underscoring the importance of relying on domestic rather than international media. The final sections address *ML4P's* limitations and explain why, despite them, it remains a valuable resource for studying democratic backsliding, contentious politics, media behavior, and crisis response.
+>>>>>>> Stashed changes
 
 
 # 2. Democratic Erosion, Annual Indices, and the Need for Civic Space Data {#sec-background}
@@ -290,12 +293,10 @@ In this section, we present the data, show the importance of *HQMARC's* reliance
 *need 1-3 examples here showing time-series variation on a few event types across a few countries to show how the data behaves in time-series* 
 -->
 
-Nevertheless, many of the most compelling applications of the data involve dynamic, within-country analysis. To illustrate this, we focus on the 2023 Guatemalan general elections, where opposition candidate Bernardo Arévalo won a surprise victory despite institutional efforts to undermine him. The electoral period ran from January to August, concluding with a run-off election. As expected, the upper-left panel of @fig-gt_2023 shows a shock in Election Activity during this period. The upper-right panel captures attempts to disqualify Arévalo between the June 25 first round and the August 20 run-off, detecting shocks in Election Irregularities both before and after the election. The lower-left panel shows increased reporting on Legal Actions in September, corresponding to the Public Prosecutor’s efforts to nullify the election results. The lower-right panel identifies a shock in reporting on the massive October protests in favor of a peaceful transition of power---mobilization which was widely seen as crucial to securing the transfer of power [@schwartz2023guatemala; @melendez2023guatemalans; @romero2024guatemala]. This case demonstrates *ML4P’s* ability to capture fast-paced civic events underlying an attempted—and failed—autocratic turn.[^9]
+Nevertheless, many of the most compelling applications of the data involve dynamic, within-country analysis. To illustrate this, we focus on the 2023 Guatemalan general elections, where opposition candidate Bernardo Arévalo won a surprise victory despite institutional efforts to undermine him. The electoral period ran from January to August, concluding with a run-off election. As expected, the upper-left panel of @fig-gt_2023 shows a shock in Election Activity during this period. The upper-right panel captures attempts to disqualify Arévalo between the June 25 first round and the August 20 run-off, detecting shocks in Election Irregularities both before and after the election. The lower-left panel shows increased reporting on Legal Actions in September, corresponding to the Public Prosecutor’s efforts to nullify the election results. The lower-right panel identifies a shock in reporting on the massive October protests in favor of a peaceful transition of power---mobilization which was widely seen as crucial to securing the transfer of power [@schwartz2023guatemala; @melendez2023guatemalans; @romero2024guatemala]. This case demonstrates *ML4P's* ability to capture fast-paced civic events underlying an attempted—and failed—autocratic turn.[^9]
 
-[^9]: Beyond Guatemala, we use the data to study discontinuities in press freedom in Tanzania and how mainstream vs. propaganda outlets respond to corruption scandals in El Salvador.
-<!--
-\footnote{Beyond Guatemala, we use the data to study discontinuities in press freedom in Tanzania [@tza2025media] and how mainstream vs. propaganda outlets respond to corruption scandals in El Salvador [@slv2023report].} 
--->
+[^9]: Beyond Guatemala, we use the data to study discontinuities in press freedom in Tanzania [@tza2025media] and how mainstream vs. propaganda outlets respond to corruption scandals in El Salvador [@slv2023report].
+
 
 ![Elections in Guatemala 2023. The vertical lines in each panel represent key milestones in Guatemala's 2023 electoral cycle, beginning with the official election announcement in January 2023 and concluding with the presidential inauguration in January 2024. The general elections were held in June 2023, followed by the presidential runoff in August 2023.](event_validation/Combined_GTM2023_Plots.png){#fig-gt_2023}
 
@@ -362,7 +363,7 @@ As democratic institutions confront unprecedented challenges in an era of autocr
 
 Our contribution is both empirical and methodological. Empirically, *ML4P* provides monthly measures of 19 civic space event types, with 95% of coverage drawn from domestic rather than international sources—an unprecedented scale for civic space data. Methodologically, we show that combining human-supervised web scraping with open-source transformer models yields comprehensive coverage and high classification accuracy while remaining cost-effective. Validation exercises confirm that *ML4P* captures real-world dynamics, from COVID-19 lockdowns to coups and democratic crises. We also document systematic biases in international media: correlations with domestic reporting are weak, and major events are often entirely absent. Furthermore, we demonstrated the predictive utility of *ML4P* through our travel advisory forecasting model, which shows that the data provides early warning signals of instability rather than mere reporting noise.
 
-By offering temporal granularity and broad coverage, *ML4P* enables new research on the mechanics of democratic backsliding, contentious politics, media behavior, corruption, and political violence. It also allows comparative analysis of which democracies resist backsliding, and how international shocks translate into domestic political behavior. Moreover, future research could expand *ML4P’s* geographic coverage and link it to other high-frequency indicators to deepen our understanding of how civic space dynamics intersect with economic conditions, social movements, and international interventions. For policymakers, the findings underscore the dangers of relying solely on international sources and highlight the value of investing in human-supervised infrastructures like *HQMARC*. More than a dataset, *ML4P* provides a new lens for understanding how civic space contracts and democracy erodes in real time, offering both scholars and policymakers an essential tool for documenting these processes and informing effective responses.
+By offering temporal granularity and broad coverage, *ML4P* enables new research on the mechanics of democratic backsliding, contentious politics, media behavior, corruption, and political violence. It also allows comparative analysis of which democracies resist backsliding, and how international shocks translate into domestic political behavior. Moreover, future research could expand *ML4P's* geographic coverage and link it to other high-frequency indicators to deepen our understanding of how civic space dynamics intersect with economic conditions, social movements, and international interventions. For policymakers, the findings underscore the dangers of relying solely on international sources and highlight the value of investing in human-supervised infrastructures like *HQMARC*. More than a dataset, *ML4P* provides a new lens for understanding how civic space contracts and democracy erodes in real time, offering both scholars and policymakers an essential tool for documenting these processes and informing effective responses.
 
 
 ## References
